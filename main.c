@@ -3,15 +3,15 @@
 #include <string.h>
 #include <unistd.h>
 void performLoop();
-void setenv (char * variable, char * word);
-void printenv();
-void unsetenv(char * variable);
-void cd(char * directory);
+void setenv1(char * variable, char * word);
+void printenv1();
+void unsetenv1(char * variable);
+void cd1(char * directory);
 int searchEnvNames(char * variable);
-int searchAliasNames(char * firstWord);
-void alias();
-void alias(char * name, char * word);
-void unalias(char * name);
+int searchaliasNames(char * string);
+void alias2();
+void alias1(char * name, char * word);
+void unalias1(char * name);
 char ** envValues;
 char ** envNames;
 char ** aliasNames;
@@ -24,13 +24,13 @@ int envNameSize = 0;
 int envNameIndex = 0;
 int envValueSize = 0;
 int envValueIndex = 0;
-int main(int argc, char **argv, char** envp)
+int main(int argc, char **argv, char **envp)
 {
   char** env;
   for (env = envp; *env != 0; env++)
   {
-    envNames [envNamesIndex] = *env;
-	envValues [valueIndex] = getenv(*env);
+    envNames [envNameIndex] = *env;
+	envValues [envValueIndex] = getenv(*env);
 	envValueSize++;
 	envValueIndex++;
 	envNameSize ++;
@@ -47,42 +47,102 @@ void performLoop()
 	while(strcmp(string, "bye") != 0)
 	{
 		//parse and get first word
-		int result = searchAliasNames(firstWord);
+		int result = searchaliasNames(string);
 		if(result == -1)
 		{
-			if(strcmp(firstWord, "setenv") == 0)
+			if(strcmp(string, "setenv") == 0)
 			{
-				setenv(variable, word);
+				char variable [100];
+				printf("Please enter a variable: \n");
+				gets(variable);
+				char word [100];
+				printf("Please enter a word: \n");
+				gets(word);
+				if(strcmp(variable, "") != 0 && strcmp(word, "") != 0)
+				{
+					setenv1(variable, word);
+				}
+				else
+				{
+					perror("Invalid input.\n");
+				}
 			}
-			else if(strcmp(firstWord, "printenv") == 0)
+			else if(strcmp(string, "printenv") == 0)
 			{
-				printenv();
+				printenv1();
 			}
-			else if(strcmp(firstWord, "unsetenv") == 0)
+			else if(strcmp(string, "unsetenv") == 0)
 			{
-				unsetenv(variable);
+				char variable [100];
+				printf("Please enter a variable: \n");
+				gets(variable);
+				if(strcmp(variable, "") != 0)
+				{
+					(variable);
+				}
+				else
+				{
+					perror("Invalid input.\n");
+				}
 			}
-			else if(strcmp(firstWord, "cd") == 0)
+			else if(strcmp(string, "cd") == 0)
 			{
+				char directory [100];
+				printf("Please enter a directory: \n");
+				gets(directory);
 				//if there is second word
-				cd(directory);
+				if(strcmp(directory, "") != 0)
+				{
+					cd1(directory);
+				}
 				//no second word
-				cd("HOME");
+				else
+				{
+					cd1("HOME");
+				}
 			}
-			else if(strcmp(firstWord, "alias") == 0)
+			else if(strcmp(string, "alias") == 0)
 			{
-				//if there is second word
-				alias(name, word);
-				//no second word
-				alias();
+				char name [100];
+				printf("Please enter a name: \n");
+				gets(name);
+				char word [100];
+				printf("Please enter a word: \n");
+				gets(word);
+				if(strcmp(name, "") == 0 && strcmp(word, "") == 0)
+				{
+					alias2();
+				}
+				else if(strcmp(name, "") != 0 && strcmp(word, "") != 0)
+				{
+					alias1(name, word);
+				}
+				else
+				{
+					perror("Invalid input.\n");
+				}
 			}
-			else if(strcmp(firstWord, "unalias") == 0)
+			else if(strcmp(string, "unalias") == 0)
 			{
-				unalias(name);
+				char name [100];
+				printf("Please enter a name: \n");
+				gets(name);
+				if(strcmp(name, "") != 0)
+				{
+					unalias1(name);
+				}
+				else
+				{
+					perror("Invalid input.\n");
+				}
+			}
+			else if(strcmp(string, "bye") == 0)
+			{
+				exit(0);
 			}
 			else
 			{
-				exit();
+				perror("Invalid input.\n");
 			}
 		}
 		else
@@ -105,7 +165,7 @@ int searchEnvNames(char * variable)
 	}
 	return -1;
 }
-void setenv(char * variable, char * word)
+void setenv1(char * variable, char * word)
 {
 	int i = 0;
 	int result = searchEnvNames(variable);
@@ -118,7 +178,7 @@ void setenv(char * variable, char * word)
 		strcpy(envValues[result],word);
 	}
 }
-void printenv ()
+void printenv1 ()
 {
 	int i = 0;
 	while(i < envValueSize)
@@ -127,7 +187,7 @@ void printenv ()
 		i++;
 	}
 }
-void unsetenv(char * variable)
+void unsetenv1(char * variable)
 {
 	int result = searchEnvNames(variable);
 	if(result == -1)
@@ -135,39 +195,42 @@ void unsetenv(char * variable)
 		return;
 	}
 	//fully remove, give back original value, ??
-	values[result] = ?
+	envValues[result] = "";
 }
-void cd(char * directory)
+void cd1(char * directory)
 {
-	chdir(directory);
+	if(chdir(directory) == 1)
+	{
+		perror("Directory does not exist.\n");
+	}
 }
-int searchAliasNames (char * firstWord)
+int searchaliasNames (char * string)
 {
 	int i = 0;
 	while(i < aliasNamesSize)
 	{
-		if(strcmp(aliasNames[i], firstWord) == 0)
+		if(strcmp(aliasNames[i], string) == 0)
 		{
 			return i;
 		}
 	}
 	return -1;
 }
-void alias()
+void alias2()
 {
 	int i = 0;
-	while(i < aliasNameSize)
+	while(i < aliasNamesSize)
 	{
 		printf("%s\n", aliasNames[i]);
 		i++;
 	}
 }
-void alias(char * name, char * word)
+void alias1(char * name, char * word)
 {
-	int result = searchAliasNames(name);
+	int result = searchaliasNames(name);
 	if(result != -1)
 	{
-		strcpy(aliasValues[i],word);
+		strcpy(aliasValues[result],word);
 	}
 	else
 	{
@@ -177,9 +240,9 @@ void alias(char * name, char * word)
 		aliasValuesSize++;
 	}
 }
-void unalias(char * name)
+void unalias1(char * name)
 {
-	int result = searchAliasNames(name);
+	int result = searchaliasNames(name);
 	if(result == -1)
 	{
 		perror("Cannot destroy alias that doesn't exist.\n");
