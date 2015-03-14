@@ -12,10 +12,10 @@ int searchaliasNames(char * string);
 void alias2();
 void alias1(char * name, char * word);
 void unalias1(char * name);
-char ** envValues;
-char ** envNames;
-char ** aliasNames;
-char ** aliasValues;
+char envValues [100][300];
+char envNames [100][300];
+char aliasNames [100][300];
+char aliasValues [100][300];
 int aliasNamesIndex = 0;
 int aliasNamesSize = 0;
 int aliasValuesIndex = 0;
@@ -26,16 +26,16 @@ int envValueSize = 0;
 int envValueIndex = 0;
 int main(int argc, char **argv, char **envp)
 {
-  char** env;
-  for (env = envp; *env != 0; env++)
-  {
-    envNames [envNameIndex] = *env;
-	envValues [envValueIndex] = getenv(*env);
-	envValueSize++;
-	envValueIndex++;
-	envNameSize ++;
-	envNameIndex ++;
-  }
+  char ** env;
+  //for (env = envp; *env != 0; env++)
+  //{
+    //strcpy(envNames [envNameIndex],*env);
+	//strcpy(envValues [envValueIndex],getenv(*env));
+	//envValueSize++;
+	//envValueIndex++;
+	//envNameSize ++;
+	//envNameIndex ++;
+  //}
 	performLoop();
 	return 0;
 }
@@ -195,7 +195,7 @@ void unsetenv1(char * variable)
 		return;
 	}
 	//fully remove, give back original value, ??
-	envValues[result] = "";
+	strcpy(envValues[result],"");
 }
 void cd1(char * directory)
 {
@@ -234,8 +234,8 @@ void alias1(char * name, char * word)
 	}
 	else
 	{
-		aliasNames[aliasNamesIndex++] = name;
-		aliasValues[aliasValuesIndex++] = word;
+		strcpy(aliasNames[aliasNamesIndex++],name);
+		strcpy(aliasValues[aliasValuesIndex++],word);
 		aliasNamesSize++;
 		aliasValuesSize++;
 	}
@@ -252,8 +252,8 @@ void unalias1(char * name)
 		int i = result;
 		while (i < aliasNamesSize)
 		{
-			aliasNames[i - 1] = aliasNames[i];
-			aliasValues[i - 1] = aliasValues[i];
+			strcpy(aliasNames[i - 1],aliasNames[i]);
+			strcpy(aliasValues[i - 1],aliasValues[i]);
 		}
 		aliasNamesSize--;
 		aliasValuesSize--;
