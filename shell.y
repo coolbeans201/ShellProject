@@ -4,7 +4,7 @@
   int yywrap(){return 1;}
   main(){yyparse();}
 %}
-%token CD PRINTENV UNSETENV SETENV ALIAS UNALIAS BYE WORD
+%token CD PRINTENV UNSETENV SETENV ALIAS UNALIAS BYE WORD WORDWITHMETA WHITESPACE MATCHER ENVIRONMENT EXPLICITMATCHER COLON TILDE SPECIALCOMMAND
 %%
 commands: 
 		| commands command;
@@ -13,19 +13,20 @@ command:
 cd2_case:
 		CD		{printf("Second CD command entered\n");};
 cd_case:
-	    CD WORD {printf("CD command entered\n");};
+	    CD WHITESPACE WORD {printf("CD command entered\n");};
 printenv_case:
 	    PRINTENV {printf("Printenv command entered\n");};
 unsetenv_case:
-		UNSETENV WORD {printf("Unsetenv command entered\n");};
+		UNSETENV WHITESPACE WORD {printf("Unsetenv command entered\n");};
 setenv_case:
-		SETENV WORD WORD   {printf("Setenv command entered\n");};
+		SETENV WHITESPACE WORD WHITESPACE WORD   {printf("Setenv command entered\n");};
 alias2_case:
 		ALIAS			   {printf("Second alias command entered\n");};
 alias_case:
-		ALIAS WORD WORD    {printf("Alias command entered\n");};
+		ALIAS WHITESPACE WORD WHITESPACE WORD    {printf("Alias command entered\n");};
 unalias_case:
-		UNALIAS WORD       {printf("Unalias command entered\n");};
+		UNALIAS WHITESPACE WORD       {printf("Unalias command entered\n");};
 bye_case:
 		BYE				   {printf("Bye command entered\n");};
+
 		
