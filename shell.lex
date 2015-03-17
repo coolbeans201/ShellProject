@@ -10,6 +10,13 @@ setenv return SETENV;
 alias return ALIAS;
 unalias return UNALIAS;
 bye return BYE;
-[a-zA-Z]+ return WORD;
+[a-zA-Z0-9]+ return WORD;
+\[<>\"|&]+ | [<>\"|&]+ return WORDWITHMETA;
+[ \t\n]+ return WHITESPACE;
+[*?] return MATCHER;
+"." | "/." | "/" return EXPLICITMATCHER;
+":" return COLON;
+"~" return TILDE;
 . {yyerror("Unrecognized character"); return 0;}
 %%
+
