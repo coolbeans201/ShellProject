@@ -4,12 +4,12 @@
   int yywrap(){return 1;}
   main(){yyparse();}
 %}
-%token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD WORDWITHMETA MATCHER ENVIRONMENT EXPLICITMATCHER COLON TILDE SPECIALCOMMAND
+%token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD WORDWITHMETA MATCHER COLON TILDE QUOTES ENVIRONMENTSTART ENVIRONMENTEND 
 %%
 commands: 
 		| commands command NEWLINE;
 command:
-		cd2_case|cd_case|printenv_case|unsetenv_case|setenv_case|alias2_case|alias_case|unalias_case|bye_case;
+		cd2_case|cd_case|printenv_case|unsetenv_case|setenv_case|alias2_case|alias_case|unalias_case|bye_case|quote_case|environment_variable|word_case;
 cd2_case:
 		CD {printf("Second CD command entered\n");};
 cd_case:
@@ -27,6 +27,10 @@ alias_case:
 unalias_case:
 		UNALIAS WORD       {printf("Unalias command entered\n");};
 bye_case:
-		BYE				   {printf("Bye command entered\n");};
-
-		
+		BYE				   {printf("Bye command entered\n"); return 0;};
+quote_case:
+		QUOTES				{printf("Quotes entered\n");};
+environment_variable:
+		ENVIRONMENTSTART WORD ENVIRONMENTEND {printf("Environment variable entered\n");};
+word_case:
+		WORD				{printf("Word entered\n");};
