@@ -10,12 +10,16 @@
   int yywrap(){
 				return 1;
 			  }
-  char** textArray;
-  char** newTextArray;
-  int words = 0;
+  void unsetenv_function(char *text);
+  void unalias_function (char *text);
+  char** textArray; //words
+  char** newTextArray; //copied words
+  int words = 0; //number of words
   extern char** environ; //environment variables
   extern char* yytext; //text from user
   char** aliases; //alias names and values
+  char** newAliases; //copied aliases
+  int aliasCount = 0; //number of aliases
   main(){
 		 yyparse();}
 %}
@@ -63,67 +67,73 @@ printenv_case:
 				};
 unsetenv_case:
 		UNSETENV WORD {
-						printf("Unsetenv command entered\n");
-						char **envVariableNames, **rightEnvVariableNames;
-						size_t length;
-						if (yytext == NULL || yytext == '\0' || strchr(yytext, '=') != NULL) {
-							perror("Entered an invalid name!\n");
-						}
-
-						length = strlen(yytext);
-						for (envVariableNames = environ; *envVariableNames != NULL; )
-						{
-							if (strncmp(*envVariableNames, yytext, length) == 0 && (*envVariableNames)[length] == '=') { //found a match
-								for (rightEnvVariableNames = envVariableNames; *rightEnvVariableNames != NULL; rightEnvVariableNames++)
-								{
-										*rightEnvVariableNames = *(rightEnvVariableNames + 1); //shift over
-								}
-								/* Continue around the loop to further instances of 'name' */
-							} 
-							else {
-								envVariableNames++;
-							}
-						}
+						unsetenv_function(yytext);
 					};
 setenv_case:
 		SETENV word_case word_case   {
 										printf("Setenv command entered\n");
-										printf("%s\n", textArray[words - 1]);
-										printf("%s\n", textArray[words - 2]);
+										char *es;
+										if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
+										{
+											perror("Invalid argument.\n");
+										}
+										unsetenv_function(textArray[words - 2]);             /* Remove all occurrences */
+										es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
+																	/* +2 for '=' and null terminator */
+										if (es == NULL) //error
+										{
+											perror("Error with memory allocation.\n");
+										}
+										strcpy(es, textArray[words - 2]); //copy variable
+										strcat(es, "="); //copy =
+										strcat(es, textArray[words - 1]); //copy value
+										int result = putenv(es); //put into array
+										if(result == -1) //error
+										{
+											perror("Error inserting element into environment variable array.\n");
+										}
 									 };
 alias2_case:
 		ALIAS	{
 					printf("Second alias command entered\n");
-					char ** a;
-					for(a = aliases; *a!= NULL; a++)
+					int i;
+					for(i = 0; i < aliasCount; i++)
 					{
-						printf("%s\n", *a); //print each alias line by line
+						printf("%s\n", aliases[i]); //print each alias line by line
 					}
 				};
 alias_case:
-		ALIAS  WORD  WORD    {printf("Alias command entered\n");};
+		ALIAS  word_case  word_case    
+							 {
+								printf("Alias command entered\n");
+								char *es;
+								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
+								{
+									perror("Invalid argument.\n");
+								}
+								unalias_function(textArray[words - 2]);             /* Remove all occurrences */
+								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
+								if (es == NULL) //error
+								{
+									perror("Error with memory allocation.\n");
+								}
+								strcpy(es, textArray[words - 2]); //copy variable
+								strcat(es, "="); //copy =
+								strcat(es, textArray[words - 1]); //copy value
+								newAliases = (char **) malloc((aliasCount+2)*sizeof(char *)); //null entry and new word
+								if ( newAliases == (char **) NULL ) //no array created
+								{
+									perror("Array not created.\n");
+								}
+								memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
+								newAliases[aliasCount] = es; //word
+								newAliases[aliasCount + 1] = NULL; //null entry
+								aliases = newAliases;
+								aliasCount++; //increment index
+							 };
 unalias_case:
 		UNALIAS WORD       {
-								printf("Unalias command entered\n");
-								char **aliasNames, **rightAliasNames;
-								size_t length;
-								if (yytext == NULL || yytext == '\0' || strchr(yytext, '=') != NULL) {
-									perror("Entered an invalid alias!\n");
-								}
-								length = strlen(yytext);
-								for (aliasNames = aliases; *aliasNames != NULL; )
-								{
-									if (strncmp(*aliasNames, yytext, length) == 0 && (*aliasNames)[length] == '=') { //found match
-									for (rightAliasNames = aliasNames; *rightAliasNames != NULL; rightAliasNames++)
-									{
-											*rightAliasNames = *(rightAliasNames + 1); //shift over
-									}
-									/* Continue around the loop to further instances of 'name' */
-								} 
-								else {
-									aliasNames++;
-								}
-							}
+								unalias_function(yytext);
 							};
 bye_case:
 		BYE				   {printf("Bye command entered\n"); return 0;};
@@ -133,21 +143,19 @@ environment_variable:
 		ENVIRONMENTSTART WORD ENVIRONMENTEND {printf("Environment variable entered\n");};
 word_case:
 		WORD				{
-		
-								printf("Word entered\n");
 								char * es;
-								es = malloc(strlen(yytext) + 1);
-								strcpy(es, yytext);
-								newTextArray = (char **) malloc((words+2)*sizeof(char *));
-								if ( newTextArray == (char **) NULL )
+								es = malloc(strlen(yytext) + 1); //allocate space for word and terminating character
+								strcpy(es, yytext); //copy text into pointer
+								newTextArray = (char **) malloc((words+2)*sizeof(char *)); //null entry and new word
+								if ( newTextArray == (char **) NULL ) //no array created
 								{
-									yyerror("Array not created.\n");
+									perror("Array not created.\n");
 								}
-								memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *));
-								newTextArray[words]   = es;
-								newTextArray[words+1] = NULL;
+								memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *)); //copy all entries from textArray into newTextArray
+								newTextArray[words]   = es; //word
+								newTextArray[words+1] = NULL; //null entry
 								textArray = newTextArray;
-								words++;
+								words++; //increment index
 							};
 slash_case:
 		SLASH				{printf("Slash entered\n");};
@@ -161,3 +169,48 @@ ampersand_case:
 		AMPERSAND			{printf("Ampersand entered\n");};
 matcher_case:
 		MATCHER				{printf("Matcher entered\n");};
+%%
+void unsetenv_function(char *text)
+{
+	printf("Unsetenv command entered\n");
+	char **envVariableNames, **rightEnvVariableNames;
+	size_t length;
+	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) {
+		perror("Entered an invalid name!\n");
+	}
+	length = strlen(text);
+	for (envVariableNames = environ; *envVariableNames != NULL; )
+	{
+		if (strncmp(*envVariableNames, text, length) == 0 && (*envVariableNames)[length] == '=') { //found a match
+			for (rightEnvVariableNames = envVariableNames; *rightEnvVariableNames != NULL; rightEnvVariableNames++)
+			{
+				*rightEnvVariableNames = *(rightEnvVariableNames + 1); //shift over
+			}
+			/* Continue around the loop to further instances of 'name' */
+		} 
+		else {
+				envVariableNames++;
+		}
+	}
+}
+void unalias_function(char *text)
+{
+	printf("Unalias command entered\n");
+	size_t length;
+	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) {
+		perror("Entered an invalid alias!\n");
+	}
+	length = strlen(text);
+	int i;
+	int j;
+	for (i = 0; i < aliasCount; i++)
+	{
+		if (strncmp(aliases[i], text, length) == 0 && aliases[i][length] == '=') { //found match
+			for (j = i; j < aliasCount; j++)
+			{
+				aliases[j] = aliases[j + 1]; //shift over
+			}
+			aliasCount--;
+		} 
+	}
+}
