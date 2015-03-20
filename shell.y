@@ -3,12 +3,20 @@
   #include <errno.h>
   #include <unistd.h>
   #include <stdlib.h>
+  #include <fcntl.h>
+  #include <sys/types.h>
+  #include <sys/stat.h>
   void yyerror(const char *str){fprintf(stderr,"error: %s\n", str);}
-  int yywrap(){return 1;}
+  int yywrap(){
+				return 1;
+			  }
+  char** textArray;
+  char** newTextArray;
+  int words = 0;
   extern char** environ; //environment variables
   extern char* yytext; //text from user
   char** aliases; //alias names and values
-  main(){execl("/bin/ls","ls", "ls", "-l", "/usr", (char *) 0);
+  main(){
 		 yyparse();}
 %}
 %token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTSTART ENVIRONMENTEND SLASH READFROM WRITETO PIPE AMPERSAND
@@ -20,15 +28,30 @@ command:
 cd2_case:
 		CD {
 				printf("Second CD command entered\n");
-				chdir(getenv("HOME")); //get home directory and move to it
+				int result = chdir(getenv("HOME")); //get home directory and move to it
+				int fd = open("datafile.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+				if(fd == -1) //error
+				{
+					perror("File not opened.\n");
+				}
+				if(result == -1) //error
+				{
+					perror("Directory not changed.\n");
+				}
 			};
 cd_case:
 	    CD WORD {
 				printf("CD command entered\n");
-				char* current = getenv("PWD"); //get current directory
-				current = strcat(current, "/"); //add slash
-				current = strcat(current, yytext); //add user text
-				chdir(current); //move directory
+				int result = chdir(yytext); //move directory
+				if (result == -1) //error
+				{
+					perror("Directory not changed.\n");
+				}
+				int fd = open("datafile.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+				if(fd == -1) //error
+				{
+					perror("File not opened.\n");
+				}
 		};
 printenv_case:
 	    PRINTENV {printf("Printenv command entered\n");
@@ -63,7 +86,11 @@ unsetenv_case:
 						}
 					};
 setenv_case:
-		SETENV WORD WORD   {printf("Setenv command entered\n");};
+		SETENV word_case word_case   {
+										printf("Setenv command entered\n");
+										printf("%s\n", textArray[words - 1]);
+										printf("%s\n", textArray[words - 2]);
+									 };
 alias2_case:
 		ALIAS	{
 					printf("Second alias command entered\n");
@@ -105,7 +132,23 @@ quote_case:
 environment_variable:
 		ENVIRONMENTSTART WORD ENVIRONMENTEND {printf("Environment variable entered\n");};
 word_case:
-		WORD				{printf("Word entered\n");};
+		WORD				{
+		
+								printf("Word entered\n");
+								char * es;
+								es = malloc(strlen(yytext) + 1);
+								strcpy(es, yytext);
+								newTextArray = (char **) malloc((words+2)*sizeof(char *));
+								if ( newTextArray == (char **) NULL )
+								{
+									yyerror("Array not created.\n");
+								}
+								memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *));
+								newTextArray[words]   = es;
+								newTextArray[words+1] = NULL;
+								textArray = newTextArray;
+								words++;
+							};
 slash_case:
 		SLASH				{printf("Slash entered\n");};
 read_from_case:
