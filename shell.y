@@ -6,6 +6,7 @@
   #include <fcntl.h>
   #include <sys/types.h>
   #include <sys/stat.h>
+  #include <pwd.h>
   void yyerror(const char *str){fprintf(stderr,"error: %s\n", str);}
   int yywrap(){
 				return 1;
@@ -20,6 +21,8 @@
   char** aliases; //alias names and values
   char** newAliases; //copied aliases
   int aliasCount = 0; //number of aliases
+  int s;
+  struct passwd* pwd;
   main(){
 		 yyparse();}
 %}
@@ -28,7 +31,7 @@
 commands: 
 		| commands command NEWLINE;
 command:
-		cd2_case|cd_case|printenv_case|unsetenv_case|setenv_case|alias2_case|alias_case|unalias_case|bye_case|quote_case|environment_variable|word_case|slash_case|read_from_case|write_to_case|pipe_case|ampersand_case|matcher_case;
+		cd2_case|cd_case|printenv_case|unsetenv_case|setenv_case|alias2_case|alias_case|unalias_case|bye_case|quote_case|environment_variable|word_case|slash_case|read_from_case|write_to_case|pipe_case|ampersand_case|matcher_case|setenv_environment_case|unsetenv_environment_case;
 cd2_case:
 		CD {
 				printf("Second CD command entered\n");
@@ -46,15 +49,53 @@ cd2_case:
 cd_case:
 	    CD WORD {
 				printf("CD command entered\n");
-				int result = chdir(yytext); //move directory
-				if (result == -1) //error
+				if(strncmp(yytext, "~", 1) == 0) //tilde expansion
 				{
-					perror("Directory not changed.\n");
+					int length = strlen(&yytext[1]);
+					if(length == 0)
+					{
+						int result = chdir(getenv("HOME")); //get home directory and move to it
+						int fd = open("datafile2.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+						if(fd == -1) //error
+						{
+							//perror("File not opened.\n");
+						}
+						if(result == -1) //error
+						{
+							perror("Directory not changed.\n");
+						}
+					}
+					else
+					{
+					   pwd = getpwnam(&yytext[1]);
+					   if (pwd == NULL) 
+					   {
+							perror("Error with getting struct.\n");
+					   }
+					   int result = chdir(pwd->pw_dir); //get home directory and move to it
+					   int fd = open("datafile4.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+					   if(fd == -1) //error
+					   {
+							perror("File not opened.\n");
+					   }
+					   if(result == -1) //error
+					   {
+							perror("Directory not changed.\n");
+					   }
+					}
 				}
-				int fd = open("datafile.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-				if(fd == -1) //error
+				else
 				{
-					perror("File not opened.\n");
+					int result = chdir(yytext); //move directory
+					if (result == -1) //error
+					{
+						perror("Directory not changed.\n");
+					}
+					int fd = open("datafile.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+					if(fd == -1) //error
+					{
+						perror("File not opened.\n");
+					}
 				}
 		};
 printenv_case:
@@ -169,6 +210,36 @@ ampersand_case:
 		AMPERSAND			{printf("Ampersand entered\n");};
 matcher_case:
 		MATCHER				{printf("Matcher entered\n");};
+setenv_environment_case:
+		SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
+							{
+								printf("Setenv command entered\n");
+								char *es;
+								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
+								{
+									perror("Invalid argument.\n");
+								}
+								unsetenv_function(textArray[words - 2]);             /* Remove all occurrences */
+								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
+																	/* +2 for '=' and null terminator */
+								if (es == NULL) //error
+								{
+									perror("Error with memory allocation.\n");
+								}
+								strcpy(es, textArray[words - 2]); //copy variable
+								strcat(es, "="); //copy =
+								strcat(es, textArray[words - 1]); //copy value
+								int result = putenv(es); //put into array
+								if(result == -1) //error
+								{
+									perror("Error inserting element into environment variable array.\n");
+								}
+							};
+unsetenv_environment_case:
+		UNSETENV ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								unsetenv_function(textArray[words - 1]);
+							};
 %%
 void unsetenv_function(char *text)
 {
