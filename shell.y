@@ -21,8 +21,7 @@
   char** aliases; //alias names and values
   char** newAliases; //copied aliases
   int aliasCount = 0; //number of aliases
-  int s;
-  struct passwd* pwd;
+  struct passwd* pwd; //contains result of getpwnam
   main(){
 		 yyparse();}
 %}
@@ -31,7 +30,7 @@
 commands: 
 		| commands command NEWLINE;
 command:
-		cd2_case|cd_case|printenv_case|unsetenv_case|setenv_case|alias2_case|alias_case|unalias_case|bye_case|quote_case|environment_variable|word_case|slash_case|read_from_case|write_to_case|pipe_case|ampersand_case|matcher_case|setenv_environment_case|unsetenv_environment_case;
+		cd2_case|cd_case|printenv_case|unsetenv_case|setenv_case|alias2_case|alias_case|unalias_case|bye_case|quote_case|word_case|slash_case|read_from_case|write_to_case|pipe_case|ampersand_case|matcher_case|setenv_environment_case|unsetenv_environment_case;
 cd2_case:
 		CD {
 				printf("Second CD command entered\n");
@@ -51,8 +50,8 @@ cd_case:
 				printf("CD command entered\n");
 				if(strncmp(yytext, "~", 1) == 0) //tilde expansion
 				{
-					int length = strlen(&yytext[1]);
-					if(length == 0)
+					int length = strlen(&yytext[1]); 
+					if(length == 0) //empty afterwards
 					{
 						int result = chdir(getenv("HOME")); //get home directory and move to it
 						int fd = open("datafile2.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
@@ -65,7 +64,7 @@ cd_case:
 							perror("Directory not changed.\n");
 						}
 					}
-					else
+					else //actual expansion
 					{
 					   pwd = getpwnam(&yytext[1]);
 					   if (pwd == NULL) 
@@ -177,11 +176,9 @@ unalias_case:
 								unalias_function(yytext);
 							};
 bye_case:
-		BYE				   {printf("Bye command entered\n"); return 0;};
+		BYE				   {printf("Bye command entered\n"); exit(0);};
 quote_case:
 		QUOTES				{printf("Quotes entered\n");};
-environment_variable:
-		ENVIRONMENTSTART WORD ENVIRONMENTEND {printf("Environment variable entered\n");};
 word_case:
 		WORD				{
 								char * es;
@@ -201,9 +198,33 @@ word_case:
 slash_case:
 		SLASH				{printf("Slash entered\n");};
 read_from_case:
-		READFROM			{printf("Read from entered\n");};
+		READFROM WORD			{
+								printf("Read from entered\n");
+								int in = open(yytext, O_RDONLY);
+								if(in == -1) //error
+								{
+									perror("File not opened.\n");
+								}
+								int result = dup2(in, 0); //connect
+								if (result == -1) //error
+								{
+									perror("Input not redirected.\n");
+								}
+							};
 write_to_case:
-		WRITETO				{printf("Write to entered\n");};
+		WRITETO	WORD		{
+								printf("Write to entered\n");
+								int out = open(yytext, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+								if(out == -1) //error
+								{
+									perror("File not created.\n");
+								}
+								int result = dup2(out, 1);
+								if (result == -1)
+								{
+									perror("Output not redirected.\n");
+								}
+							};
 pipe_case:
 		PIPE				{printf("Pipe entered\n");};
 ampersand_case:
@@ -260,7 +281,7 @@ void unsetenv_function(char *text)
 			/* Continue around the loop to further instances of 'name' */
 		} 
 		else {
-				envVariableNames++;
+				envVariableNames++; //keep moving
 		}
 	}
 }
@@ -268,7 +289,7 @@ void unalias_function(char *text)
 {
 	printf("Unalias command entered\n");
 	size_t length;
-	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) {
+	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) { //invalid
 		perror("Entered an invalid alias!\n");
 	}
 	length = strlen(text);
@@ -281,7 +302,7 @@ void unalias_function(char *text)
 			{
 				aliases[j] = aliases[j + 1]; //shift over
 			}
-			aliasCount--;
+			aliasCount--; //decrement count
 		} 
 	}
 }
