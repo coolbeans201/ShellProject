@@ -4,9 +4,12 @@
   #include <unistd.h>
   #include <stdlib.h>
   #include <fcntl.h>
+  #include <sys/ioctl.h>
   #include <sys/types.h>
   #include <sys/stat.h>
+  #include <sys/wait.h>
   #include <pwd.h>
+  #include <fnmatch.h>
   void yyerror(const char *str){fprintf(stderr,"error: %s\n", str);}
   int yywrap(){
 				return 1;
