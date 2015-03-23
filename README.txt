@@ -15,7 +15,7 @@ Features NOT Implemented
 10. Other commands
 
 Features Implemented
-1. Built-in commands
+1. Built-in commands (with I/O redirection)
 2. I/O redirection
 3. Environment variable expansion
 4. Tilde expansion (some)
