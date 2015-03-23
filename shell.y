@@ -21,6 +21,9 @@
   void unsetenv_function(char *text);
   void unalias_function (char *text);
   void setenv_function (char *text, char *text2);
+  void alias_function(char *text, char *text2);
+  void cd_function();
+  void cd_function2(char *text);
   char** textArray; //words
   char** newTextArray; //copied words
   int words = 0; //number of words
@@ -104,74 +107,12 @@ command:
 cd2_case:
 		CD 
 							{
-								printf("Second CD command entered\n");
-								int result = chdir(getenv("HOME")); //get home directory and move to it
-								int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-								if(fd == -1) //error
-								{
-									perror("File not opened");
-								}
-								if(result == -1) //error
-								{
-									perror("Directory not changed");
-								}
-								setenv_function("PWD", getenv("HOME")); //change PWD
+								cd_function();
 							};
 cd_case:
 	    CD WORD 
 							{
-								printf("CD command entered\n");
-								if(strncmp(yytext, "~", 1) == 0) //tilde expansion
-								{
-									int length = strlen(&yytext[1]); 
-									if(length == 0) //empty afterwards
-									{
-										int result = chdir(getenv("HOME")); //get home directory and move to it
-										int fd = open("datafile2.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-										if(fd == -1) //error
-										{
-											//perror("File not opened");
-										}
-										if(result == -1) //error
-										{
-											perror("Directory not changed");
-										}
-										setenv_function("PWD", getenv("HOME")); //change PWD
-									}
-									else //actual expansion
-									{
-									   pwd = getpwnam(&yytext[1]); //gets user info
-									   if (pwd == NULL) //error
-									   {
-											perror("Error with getting struct.\n");
-									   }
-									   int result = chdir(pwd->pw_dir); //get home directory and move to it
-									   int fd = open("datafile4.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-									   if(fd == -1) //error
-									   {
-											perror("File not opened");
-									   }
-									   if(result == -1) //error
-									   {
-											perror("Directory not changed");
-									   }
-									   setenv_function("PWD", pwd->pw_dir); //change PWD
-									}
-								}
-								else
-								{
-									int result = chdir(yytext); //move directory
-									if (result == -1) //error
-									{
-										perror("Directory not changed");
-									}
-									int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-									if(fd == -1) //error
-									{
-										perror("File not opened");
-									}
-									setenv_function("PWD", yytext); //change PWD
-								}
+								cd_function2(yytext);
 							};
 printenv_case:
 	    PRINTENV 
@@ -206,31 +147,7 @@ alias2_case:
 alias_case:
 		ALIAS  word_case  word_case    
 							{
-								printf("Alias command entered\n");
-								char *es;
-								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
-								{
-									perror("Invalid argument.\n");
-								}
-								unalias_function(textArray[words - 2]);             /* Remove all occurrences */
-								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
-								if (es == NULL) //error
-								{
-									perror("Error with memory allocation");
-								}
-								strcpy(es, textArray[words - 2]); //copy variable
-								strcat(es, "="); //copy =
-								strcat(es, textArray[words - 1]); //copy value
-								newAliases = (char **) malloc((aliasCount+2)*sizeof(char *)); //null entry and new word
-								if ( newAliases == (char **) NULL ) //no array created
-								{
-									perror("Array not created.\n");
-								}
-								memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
-								newAliases[aliasCount] = es; //word
-								newAliases[aliasCount + 1] = NULL; //null entry
-								aliases = newAliases;
-								aliasCount++; //increment index
+								alias_function(textArray[words - 2], textArray[words - 1]);
 							};
 unalias_case:
 		UNALIAS WORD       
@@ -327,55 +244,7 @@ unsetenv_environment_case:
 cd_environment_case:
 		CD ENVIRONMENTSTART word_case ENVIRONMENTEND
 							{
-								printf("CD command entered\n");
-								if(strncmp(textArray[words - 1], "~", 1) == 0) //tilde expansion
-								{
-									int length = strlen(&textArray[words - 1][1]); 
-									if(length == 0) //empty afterwards
-									{
-										int result = chdir(getenv("HOME")); //get home directory and move to it
-										int fd = open("datafile2.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-										if(fd == -1) //error
-										{
-											//perror("File not opened");
-										}
-										if(result == -1) //error
-										{
-											perror("Directory not changed");
-										}
-									}
-									else //actual expansion
-									{
-									   pwd = getpwnam(&textArray[words - 1][1]);
-									   if (pwd == NULL) 
-									   {
-											perror("Error with getting struct.\n");
-									   }
-									   int result = chdir(pwd->pw_dir); //get home directory and move to it
-									   int fd = open("datafile4.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-									   if(fd == -1) //error
-									   {
-											perror("File not opened");
-									   }
-									   if(result == -1) //error
-									   {
-											perror("Directory not changed");
-									   }
-									}
-								}
-								else
-								{
-									int result = chdir(textArray[words - 1]); //move directory
-									if (result == -1) //error
-									{
-										perror("Directory not changed");
-									}
-									int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-									if(fd == -1) //error
-									{
-										perror("File not opened");
-									}
-								}
+								cd_function2(textArray[words - 1]);
 							};
 unalias_environment_case:
 		UNALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND
@@ -395,89 +264,17 @@ setenv_environment_case3:
 alias_environment_case:
 		ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
 							{
-								printf("Alias command entered\n");
-								char *es;
-								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
-								{
-									perror("Invalid argument.\n");
-								}
-								unalias_function(textArray[words - 2]);             /* Remove all occurrences */
-								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
-								if (es == NULL) //error
-								{
-									perror("Error with memory allocation");
-								}
-								strcpy(es, textArray[words - 2]); //copy variable
-								strcat(es, "="); //copy =
-								strcat(es, textArray[words - 1]); //copy value
-								newAliases = (char **) malloc((aliasCount+2)*sizeof(char *)); //null entry and new word
-								if ( newAliases == (char **) NULL ) //no array created
-								{
-									perror("Array not created.\n");
-								}
-								memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
-								newAliases[aliasCount] = es; //word
-								newAliases[aliasCount + 1] = NULL; //null entry
-								aliases = newAliases;
-								aliasCount++; //increment index
+								alias_function(textArray[words - 2], textArray[words - 1]);
 							};
 alias_environment_case2:
 		ALIAS word_case ENVIRONMENTSTART word_case ENVIRONMENTEND
 							{
-								printf("Alias command entered\n");
-								char *es;
-								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
-								{
-									perror("Invalid argument.\n");
-								}
-								unalias_function(textArray[words - 2]);             /* Remove all occurrences */
-								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
-								if (es == NULL) //error
-								{
-									perror("Error with memory allocation");
-								}
-								strcpy(es, textArray[words - 2]); //copy variable
-								strcat(es, "="); //copy =
-								strcat(es, textArray[words - 1]); //copy value
-								newAliases = (char **) malloc((aliasCount+2)*sizeof(char *)); //null entry and new word
-								if ( newAliases == (char **) NULL ) //no array created
-								{
-									perror("Array not created.\n");
-								}
-								memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
-								newAliases[aliasCount] = es; //word
-								newAliases[aliasCount + 1] = NULL; //null entry
-								aliases = newAliases;
-								aliasCount++; //increment index
+								alias_function(textArray[words - 2], textArray[words - 1]);
 							};
 alias_environment_case3:
 		ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND ENVIRONMENTSTART word_case ENVIRONMENTEND
 							{
-								printf("Alias command entered\n");
-								char *es;
-								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
-								{
-									perror("Invalid argument.\n");
-								}
-								unalias_function(textArray[words - 2]);             /* Remove all occurrences */
-								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
-								if (es == NULL) //error
-								{
-									perror("Error with memory allocation");
-								}
-								strcpy(es, textArray[words - 2]); //copy variable
-								strcat(es, "="); //copy =
-								strcat(es, textArray[words - 1]); //copy value
-								newAliases = (char **) malloc((aliasCount+2)*sizeof(char *)); //null entry and new word
-								if ( newAliases == (char **) NULL ) //no array created
-								{
-									perror("Array not created.\n");
-								}
-								memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
-								newAliases[aliasCount] = es; //word
-								newAliases[aliasCount + 1] = NULL; //null entry
-								aliases = newAliases;
-								aliasCount++; //increment index
+								alias_function(textArray[words - 2], textArray[words - 1]);
 							};
 cd_read_from_case:
 			cd2_case read_from_case
@@ -753,5 +550,103 @@ void setenv_function (char *text, char *text2)
 	if(result == -1) //error
 	{
 		perror("Error inserting element into environment variable array");
+	}
+}
+void alias_function(char *text, char *text2)
+{
+	printf("Alias command entered\n");
+	char *es;
+	if (text == NULL || text[0] == '\0' || strchr(text, '=') != NULL || text2 == NULL) //check to see if valid
+	{
+		perror("Invalid argument");
+	}
+	unalias_function(text);             /* Remove all occurrences */
+	es = malloc(strlen(text) + strlen(text2) + 2);
+	if (es == NULL) //error
+	{
+		perror("Error with memory allocation");
+	}
+	strcpy(es, text); //copy variable
+	strcat(es, "="); //copy =
+	strcat(es, text2); //copy value
+	newAliases = (char **) malloc((aliasCount+2)*sizeof(char *)); //null entry and new word
+	if ( newAliases == (char **) NULL ) //no array created
+	{
+		perror("Array not created.");
+	}
+	memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
+	newAliases[aliasCount] = es; //word
+	newAliases[aliasCount + 1] = NULL; //null entry
+	aliases = newAliases;
+	aliasCount++; //increment index
+}
+void cd_function()
+{
+	printf("Second CD command entered\n");
+	int result = chdir(getenv("HOME")); //get home directory and move to it
+	int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+	if(fd == -1) //error
+	{
+		perror("File not opened");
+	}
+	if(result == -1) //error
+	{
+		perror("Directory not changed");
+	}
+	setenv_function("PWD", getenv("HOME")); //change PWD
+}
+void cd_function2(char *text)
+{
+	printf("CD command entered\n");
+	if(strncmp(text, "~", 1) == 0) //tilde expansion
+	{
+		int length = strlen(&text[1]); 
+		if(length == 0) //empty afterwards
+		{
+			int result = chdir(getenv("HOME")); //get home directory and move to it
+			int fd = open("datafile2.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+			if(fd == -1) //error
+			{
+				perror("File not opened");
+			}
+			if(result == -1) //error
+			{
+				perror("Directory not changed");
+			}
+			setenv_function("PWD", getenv("HOME")); //change PWD
+		}
+		else //actual expansion
+		{
+			pwd = getpwnam(&text[1]); //gets user info
+			if (pwd == NULL) //error
+			{
+				perror("Error with getting struct.\n");
+			}
+			int result = chdir(pwd->pw_dir); //get home directory and move to it
+			int fd = open("datafile4.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+			if(fd == -1) //error
+			{
+				perror("File not opened");
+			}
+			if(result == -1) //error
+			{
+				perror("Directory not changed");
+			}
+			setenv_function("PWD", pwd->pw_dir); //change PWD
+		}
+	}
+	else
+	{
+		int result = chdir(text); //move directory
+		if (result == -1) //error
+		{
+			perror("Directory not changed");
+		}
+		int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+		if(fd == -1) //error
+		{
+			perror("File not opened");
+		}
+		setenv_function("PWD", text); //change PWD
 	}
 }
