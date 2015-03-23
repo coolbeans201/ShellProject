@@ -10,10 +10,14 @@
   #include <sys/wait.h>
   #include <pwd.h>
   #include <fnmatch.h>
-  void yyerror(const char *str){fprintf(stderr,"error: %s\n", str);}
-  int yywrap(){
-				return 1;
-			  }
+  void yyerror(const char *str)
+  {
+	fprintf(stderr,"error: %s\n", str);
+  }
+  int yywrap()
+  {
+	return 1;
+  }
   void unsetenv_function(char *text);
   void unalias_function (char *text);
   char** textArray; //words
@@ -26,95 +30,160 @@
   int aliasCount = 0; //number of aliases
   struct passwd* pwd; //contains result of getpwnam
   main(){
-		 yyparse();}
+		 yyparse();
+		}
 %}
 %token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTSTART ENVIRONMENTEND SLASH READFROM WRITETO PIPE AMPERSAND
 %%
 commands: 
 		| commands command NEWLINE;
 command:
-		cd2_case|cd_case|printenv_case|unsetenv_case|setenv_case|alias2_case|alias_case|unalias_case|bye_case|quote_case|word_case|slash_case|read_from_case|write_to_case|pipe_case|ampersand_case|matcher_case|setenv_environment_case|unsetenv_environment_case|cd_environment_case|unalias_environment_case|setenv_environment_case2|setenv_environment_case3|alias_environment_case|alias_environment_case2|alias_environment_case3|cd_read_from_case|cd2_read_from_case|cd_write_to_case|cd2_write_to_case|cd_environment_read_from_case|cd_environment_write_to_case|setenv_read_from_case|setenv_write_to_case|setenv_environment_read_from_case|setenv_environment_read_from_case2|setenv_environment_read_from_case3|setenv_environment_write_to_case|setenv_environment_write_to_case2|setenv_environment_write_to_case3|unsetenv_read_from_case|unsetenv_write_to_case|unsetenv_environment_read_from_case|unsetenv_environment_write_to_case|printenv_read_from_case|printenv_write_to_case|alias_read_from_case|alias_write_to_case|alias2_read_from_case|alias2_write_to_case|alias2_environment_read_from_case|alias2_environment_read_from_case2|alias2_environment_read_from_case3|alias2_environment_write_to_case|alias2_environment_write_to_case2|alias2_environment_write_to_case3|unalias_read_from_case|unalias_write_to_case|unalias_environment_read_from_case|unalias_environment_write_to_case;
+		cd2_case
+		|cd_case
+		|printenv_case
+		|unsetenv_case
+		|setenv_case
+		|alias2_case
+		|alias_case
+		|unalias_case
+		|bye_case
+		|quote_case
+		|word_case
+		|slash_case
+		|read_from_case
+		|write_to_case
+		|pipe_case
+		|ampersand_case
+		|matcher_case
+		|setenv_environment_case
+		|unsetenv_environment_case
+		|cd_environment_case
+		|unalias_environment_case
+		|setenv_environment_case2
+		|setenv_environment_case3
+		|alias_environment_case
+		|alias_environment_case2
+		|alias_environment_case3
+		|cd_read_from_case
+		|cd2_read_from_case
+		|cd_write_to_case
+		|cd2_write_to_case
+		|cd_environment_read_from_case
+		|cd_environment_write_to_case
+		|setenv_read_from_case
+		|setenv_write_to_case
+		|setenv_environment_read_from_case
+		|setenv_environment_read_from_case2
+		|setenv_environment_read_from_case3
+		|setenv_environment_write_to_case
+		|setenv_environment_write_to_case2
+		|setenv_environment_write_to_case3
+		|unsetenv_read_from_case
+		|unsetenv_write_to_case
+		|unsetenv_environment_read_from_case
+		|unsetenv_environment_write_to_case
+		|printenv_read_from_case
+		|printenv_write_to_case
+		|alias_read_from_case
+		|alias_write_to_case
+		|alias2_read_from_case
+		|alias2_write_to_case
+		|alias2_environment_read_from_case
+		|alias2_environment_read_from_case2
+		|alias2_environment_read_from_case3
+		|alias2_environment_write_to_case
+		|alias2_environment_write_to_case2
+		|alias2_environment_write_to_case3
+		|unalias_read_from_case
+		|unalias_write_to_case
+		|unalias_environment_read_from_case
+		|unalias_environment_write_to_case;
 cd2_case:
-		CD {
-				printf("Second CD command entered\n");
-				int result = chdir(getenv("HOME")); //get home directory and move to it
-				int fd = open("datafile.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-				if(fd == -1) //error
-				{
-					perror("File not opened");
-				}
-				if(result == -1) //error
-				{
-					perror("Directory not changed");
-				}
-			};
+		CD 
+							{
+								printf("Second CD command entered\n");
+								int result = chdir(getenv("HOME")); //get home directory and move to it
+								int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+								if(fd == -1) //error
+								{
+									perror("File not opened");
+								}
+								if(result == -1) //error
+								{
+									perror("Directory not changed");
+								}
+							};
 cd_case:
 	    CD WORD 
-		{
-				printf("CD command entered\n");
-				if(strncmp(yytext, "~", 1) == 0) //tilde expansion
-				{
-					int length = strlen(&yytext[1]); 
-					if(length == 0) //empty afterwards
-					{
-						int result = chdir(getenv("HOME")); //get home directory and move to it
-						int fd = open("datafile2.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-						if(fd == -1) //error
-						{
-							//perror("File not opened");
-						}
-						if(result == -1) //error
-						{
-							perror("Directory not changed");
-						}
-					}
-					else //actual expansion
-					{
-					   pwd = getpwnam(&yytext[1]);
-					   if (pwd == NULL) 
-					   {
-							perror("Error with getting struct.\n");
-					   }
-					   int result = chdir(pwd->pw_dir); //get home directory and move to it
-					   int fd = open("datafile4.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-					   if(fd == -1) //error
-					   {
-							perror("File not opened");
-					   }
-					   if(result == -1) //error
-					   {
-							perror("Directory not changed");
-					   }
-					}
-				}
-				else
-				{
-					int result = chdir(yytext); //move directory
-					if (result == -1) //error
-					{
-						perror("Directory not changed");
-					}
-					int fd = open("datafile.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-					if(fd == -1) //error
-					{
-						perror("File not opened");
-					}
-				}
-		};
+							{
+								printf("CD command entered\n");
+								if(strncmp(yytext, "~", 1) == 0) //tilde expansion
+								{
+									int length = strlen(&yytext[1]); 
+									if(length == 0) //empty afterwards
+									{
+										int result = chdir(getenv("HOME")); //get home directory and move to it
+										int fd = open("datafile2.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+										if(fd == -1) //error
+										{
+											//perror("File not opened");
+										}
+										if(result == -1) //error
+										{
+											perror("Directory not changed");
+										}
+									}
+									else //actual expansion
+									{
+									   pwd = getpwnam(&yytext[1]); //gets user info
+									   if (pwd == NULL) //error
+									   {
+											perror("Error with getting struct.\n");
+									   }
+									   int result = chdir(pwd->pw_dir); //get home directory and move to it
+									   int fd = open("datafile4.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+									   if(fd == -1) //error
+									   {
+											perror("File not opened");
+									   }
+									   if(result == -1) //error
+									   {
+											perror("Directory not changed");
+									   }
+									}
+								}
+								else
+								{
+									int result = chdir(yytext); //move directory
+									if (result == -1) //error
+									{
+										perror("Directory not changed");
+									}
+									int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+									if(fd == -1) //error
+									{
+										perror("File not opened");
+									}
+								}
+							};
 printenv_case:
-	    PRINTENV {printf("Printenv command entered\n");
-				char ** ep;
-				for(ep = environ; *ep!= NULL; ep++)
-				{
-					printf("%s\n", *ep); //print everything line by line
-				}
-				};
+	    PRINTENV 
+							{
+								printf("Printenv command entered\n");
+								char ** ep;
+								for(ep = environ; *ep!= NULL; ep++)
+								{
+									printf("%s\n", *ep); //print everything line by line
+								}
+							};
 unsetenv_case:
-		UNSETENV WORD {
-						unsetenv_function(yytext);
-					};
+		UNSETENV WORD 
+							{
+								unsetenv_function(yytext);
+							};
 setenv_case:
-		SETENV word_case word_case   {
+		SETENV word_case word_case   
+							{
 										printf("Setenv command entered\n");
 										char *es;
 										if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
@@ -136,19 +205,20 @@ setenv_case:
 										{
 											perror("Error inserting element into environment variable array");
 										}
-									 };
+							};
 alias2_case:
-		ALIAS	{
-					printf("Second alias command entered\n");
-					int i;
-					for(i = 0; i < aliasCount; i++)
-					{
-						printf("%s\n", aliases[i]); //print each alias line by line
-					}
-				};
+		ALIAS	
+							{
+								printf("Second alias command entered\n");
+								int i;
+								for(i = 0; i < aliasCount; i++)
+								{
+									printf("%s\n", aliases[i]); //print each alias line by line
+								}
+							};
 alias_case:
 		ALIAS  word_case  word_case    
-							 {
+							{
 								printf("Alias command entered\n");
 								char *es;
 								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
@@ -174,17 +244,26 @@ alias_case:
 								newAliases[aliasCount + 1] = NULL; //null entry
 								aliases = newAliases;
 								aliasCount++; //increment index
-							 };
+							};
 unalias_case:
-		UNALIAS WORD       {
+		UNALIAS WORD       
+							{
 								unalias_function(yytext);
 							};
 bye_case:
-		BYE				   {printf("Bye command entered\n"); exit(0);};
+		BYE				   
+							{
+								printf("Bye command entered\n"); 
+								exit(0); //exit shell
+							};
 quote_case:
-		QUOTES				{printf("Quotes entered\n");};
+		QUOTES				
+							{
+								printf("Quotes entered\n");
+							};
 word_case:
-		WORD				{
+		WORD				
+							{
 								char * es;
 								es = malloc(strlen(yytext) + 1); //allocate space for word and terminating character
 								strcpy(es, yytext); //copy text into pointer
@@ -200,11 +279,15 @@ word_case:
 								words++; //increment index
 							};
 slash_case:
-		SLASH				{printf("Slash entered\n");};
+		SLASH				
+							{
+								printf("Slash entered\n");
+							};
 read_from_case:
-		READFROM WORD			{
+		READFROM WORD			
+							{
 								printf("Read from entered\n");
-								int in = open(yytext, O_RDONLY);
+								int in = open(yytext, O_RDONLY); //open file
 								if(in == -1) //error
 								{
 									perror("File not opened");
@@ -218,7 +301,7 @@ read_from_case:
 write_to_case:
 		WRITETO	WORD		{
 								printf("Write to entered\n");
-								int out = open(yytext, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+								int out = open(yytext, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
 								if(out == -1) //error
 								{
 									perror("File not created");
@@ -230,11 +313,20 @@ write_to_case:
 								}
 							};
 pipe_case:
-		PIPE				{printf("Pipe entered\n");};
+		PIPE				
+							{
+								printf("Pipe entered\n");
+							};
 ampersand_case:
-		AMPERSAND			{printf("Ampersand entered\n");};
+		AMPERSAND			
+							{
+								printf("Ampersand entered\n");
+							};
 matcher_case:
-		MATCHER				{printf("Matcher entered\n");};
+		MATCHER				
+							{
+								printf("Matcher entered\n");
+							};
 setenv_environment_case:
 		SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
 							{
@@ -275,7 +367,7 @@ cd_environment_case:
 									if(length == 0) //empty afterwards
 									{
 										int result = chdir(getenv("HOME")); //get home directory and move to it
-										int fd = open("datafile2.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+										int fd = open("datafile2.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
 										if(fd == -1) //error
 										{
 											//perror("File not opened");
@@ -293,7 +385,7 @@ cd_environment_case:
 											perror("Error with getting struct.\n");
 									   }
 									   int result = chdir(pwd->pw_dir); //get home directory and move to it
-									   int fd = open("datafile4.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+									   int fd = open("datafile4.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
 									   if(fd == -1) //error
 									   {
 											perror("File not opened");
@@ -311,7 +403,7 @@ cd_environment_case:
 									{
 										perror("Directory not changed");
 									}
-									int fd = open("datafile.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+									int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
 									if(fd == -1) //error
 									{
 										perror("File not opened");
