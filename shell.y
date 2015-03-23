@@ -20,6 +20,7 @@
   }
   void unsetenv_function(char *text);
   void unalias_function (char *text);
+  void setenv_function (char *text, char *text2);
   char** textArray; //words
   char** newTextArray; //copied words
   int words = 0; //number of words
@@ -97,7 +98,9 @@ command:
 		|unalias_read_from_case
 		|unalias_write_to_case
 		|unalias_environment_read_from_case
-		|unalias_environment_write_to_case;
+		|unalias_environment_write_to_case
+		|standard_error_redirect_case
+		|standard_error_redirect_case2;
 cd2_case:
 		CD 
 							{
@@ -112,6 +115,7 @@ cd2_case:
 								{
 									perror("Directory not changed");
 								}
+								setenv_function("PWD", getenv("HOME")); //change PWD
 							};
 cd_case:
 	    CD WORD 
@@ -132,6 +136,7 @@ cd_case:
 										{
 											perror("Directory not changed");
 										}
+										setenv_function("PWD", getenv("HOME")); //change PWD
 									}
 									else //actual expansion
 									{
@@ -150,6 +155,7 @@ cd_case:
 									   {
 											perror("Directory not changed");
 									   }
+									   setenv_function("PWD", pwd->pw_dir); //change PWD
 									}
 								}
 								else
@@ -164,6 +170,7 @@ cd_case:
 									{
 										perror("File not opened");
 									}
+									setenv_function("PWD", yytext); //change PWD
 								}
 							};
 printenv_case:
@@ -184,27 +191,7 @@ unsetenv_case:
 setenv_case:
 		SETENV word_case word_case   
 							{
-										printf("Setenv command entered\n");
-										char *es;
-										if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
-										{
-											perror("Invalid argument.\n");
-										}
-										unsetenv_function(textArray[words - 2]);             /* Remove all occurrences */
-										es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
-																	/* +2 for '=' and null terminator */
-										if (es == NULL) //error
-										{
-											perror("Error with memory allocation");
-										}
-										strcpy(es, textArray[words - 2]); //copy variable
-										strcat(es, "="); //copy =
-										strcat(es, textArray[words - 1]); //copy value
-										int result = putenv(es); //put into array
-										if(result == -1) //error
-										{
-											perror("Error inserting element into environment variable array");
-										}
+								setenv_function(textArray[words - 2], textArray [words - 1]);		
 							};
 alias2_case:
 		ALIAS	
@@ -330,27 +317,7 @@ matcher_case:
 setenv_environment_case:
 		SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
 							{
-								printf("Setenv command entered\n");
-								char *es;
-								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
-								{
-									perror("Invalid argument");
-								}
-								unsetenv_function(textArray[words - 2]);             /* Remove all occurrences */
-								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
-																	/* +2 for '=' and null terminator */
-								if (es == NULL) //error
-								{
-									perror("Error with memory allocation");
-								}
-								strcpy(es, textArray[words - 2]); //copy variable
-								strcat(es, "="); //copy =
-								strcat(es, textArray[words - 1]); //copy value
-								int result = putenv(es); //put into array
-								if(result == -1) //error
-								{
-									perror("Error inserting element into environment variable array");
-								}
+								setenv_function(textArray[words - 2], textArray[words - 1]);
 							};
 unsetenv_environment_case:
 		UNSETENV ENVIRONMENTSTART word_case ENVIRONMENTEND
@@ -418,52 +385,12 @@ unalias_environment_case:
 setenv_environment_case2:
 		SETENV word_case ENVIRONMENTSTART word_case ENVIRONMENTEND
 							{
-								printf("Setenv command entered\n");
-								char *es;
-								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
-								{
-									perror("Invalid argument");
-								}
-								unsetenv_function(textArray[words - 2]);             /* Remove all occurrences */
-								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
-																	/* +2 for '=' and null terminator */
-								if (es == NULL) //error
-								{
-									perror("Error with memory allocation");
-								}
-								strcpy(es, textArray[words - 2]); //copy variable
-								strcat(es, "="); //copy =
-								strcat(es, textArray[words - 1]); //copy value
-								int result = putenv(es); //put into array
-								if(result == -1) //error
-								{
-									perror("Error inserting element into environment variable array");
-								}
+								setenv_function(textArray[words - 2], textArray[words - 1]);
 							};
 setenv_environment_case3:
 		SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND ENVIRONMENTSTART word_case ENVIRONMENTEND
 							{
-								printf("Setenv command entered\n");
-								char *es;
-								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
-								{
-									perror("Invalid argument");
-								}
-								unsetenv_function(textArray[words - 2]);             /* Remove all occurrences */
-								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
-																	/* +2 for '=' and null terminator */
-								if (es == NULL) //error
-								{
-									perror("Error with memory allocation");
-								}
-								strcpy(es, textArray[words - 2]); //copy variable
-								strcat(es, "="); //copy =
-								strcat(es, textArray[words - 1]); //copy value
-								int result = putenv(es); //put into array
-								if(result == -1) //error
-								{
-									perror("Error inserting element into environment variable array");
-								}
+								setenv_function(textArray[words - 2], textArray[words - 1]);
 							};
 alias_environment_case:
 		ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
@@ -722,6 +649,43 @@ unalias_environment_write_to_case:
 							{
 							
 							};
+standard_error_redirect_case:
+			word_case WRITETO AMPERSAND word_case
+							{
+								if(strncmp(textArray[words - 2], "2", 1) != 0 || strncmp(textArray[words - 1], "1", 1) != 0)
+								{
+									perror("Invalid input");
+								}
+								else
+								{
+									int result = dup2(1, 2);
+									if (result == -1) //error
+									{
+										perror("Standard error not redirected to output");
+									}
+								}
+							};
+standard_error_redirect_case2:
+		word_case WRITETO word_case
+							{
+								if(strncmp(textArray[words - 2], "2", 1) != 0)
+								{
+									perror("Invalid input");
+								}
+								else
+								{
+									int out = open(textArray[words - 1], O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
+									if(out == -1) //error
+									{
+										perror("File not created");
+									}
+									int result = dup2(out, 2);
+									if (result == -1) //error
+									{
+										perror("Standard error not redirected");
+									}
+								}
+							};
 %%
 void unsetenv_function(char *text)
 {
@@ -765,5 +729,29 @@ void unalias_function(char *text)
 			}
 			aliasCount--; //decrement count
 		} 
+	}
+}
+void setenv_function (char *text, char *text2)
+{
+	printf("Setenv command entered\n");
+	char *es;
+	if (text == NULL || text[0] == '\0' || strchr(text, '=') != NULL || text2 == NULL) //check to see if valid
+	{
+		perror("Invalid argument.\n");
+	}
+	unsetenv_function(text);             /* Remove all occurrences */
+	es = malloc(strlen(text) + strlen(text2) + 2);
+	/* +2 for '=' and null terminator */
+	if (es == NULL) //error
+	{
+		perror("Error with memory allocation");
+	}
+	strcpy(es, text); //copy variable
+	strcat(es, "="); //copy =
+	strcat(es, text2); //copy value
+	int result = putenv(es); //put into array
+	if(result == -1) //error
+	{
+		perror("Error inserting element into environment variable array");
 	}
 }
