@@ -10,6 +10,9 @@
   #include <sys/wait.h>
   #include <pwd.h>
   #include <fnmatch.h>
+  #define STRINGIFY(x) #x
+  #define TOSTRING(x) STRINGIFY(x)
+  #define AT __FILE__ ":" TOSTRING(__LINE__)
   void yyerror(const char *str)
   {
 	fprintf(stderr,"error: %s\n", str);
@@ -24,6 +27,11 @@
   void alias_function(char *text, char *text2);
   void cd_function();
   void cd_function2(char *text);
+  void standard_error_redirect_function (char *text, char *text2);
+  void standard_error_redirect_function2 (char *text, char *text2);
+  void write_to_function (char *text);
+  void read_from_function (char *text);
+  void word_function (char *text);
   char** textArray; //words
   char** newTextArray; //copied words
   int words = 0; //number of words
@@ -168,19 +176,7 @@ quote_case:
 word_case:
 		WORD				
 							{
-								char * es;
-								es = malloc(strlen(yytext) + 1); //allocate space for word and terminating character
-								strcpy(es, yytext); //copy text into pointer
-								newTextArray = (char **) malloc((words+2)*sizeof(char *)); //null entry and new word
-								if ( newTextArray == (char **) NULL ) //no array created
-								{
-									perror("Array not created");
-								}
-								memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *)); //copy all entries from textArray into newTextArray
-								newTextArray[words]   = es; //word
-								newTextArray[words+1] = NULL; //null entry
-								textArray = newTextArray;
-								words++; //increment index
+								word_function(yytext);
 							};
 slash_case:
 		SLASH				
@@ -190,31 +186,11 @@ slash_case:
 read_from_case:
 		READFROM WORD			
 							{
-								printf("Read from entered\n");
-								int in = open(yytext, O_RDONLY); //open file
-								if(in == -1) //error
-								{
-									perror("File not opened");
-								}
-								int result = dup2(in, 0); //connect
-								if (result == -1) //error
-								{
-									perror("Input not redirected");
-								}
+								read_from_function(yytext);
 							};
 write_to_case:
 		WRITETO	WORD		{
-								printf("Write to entered\n");
-								int out = open(yytext, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
-								if(out == -1) //error
-								{
-									perror("File not created");
-								}
-								int result = dup2(out, 1);
-								if (result == -1)
-								{
-									perror("Output not redirected");
-								}
+								write_to_function(yytext);
 							};
 pipe_case:
 		PIPE				
@@ -449,39 +425,12 @@ unalias_environment_write_to_case:
 standard_error_redirect_case:
 			word_case WRITETO AMPERSAND word_case
 							{
-								if(strncmp(textArray[words - 2], "2", 1) != 0 || strncmp(textArray[words - 1], "1", 1) != 0)
-								{
-									perror("Invalid input");
-								}
-								else
-								{
-									int result = dup2(1, 2);
-									if (result == -1) //error
-									{
-										perror("Standard error not redirected to output");
-									}
-								}
+								standard_error_redirect_function(textArray[words - 2], textArray[words - 1]);
 							};
 standard_error_redirect_case2:
 		word_case WRITETO word_case
 							{
-								if(strncmp(textArray[words - 2], "2", 1) != 0)
-								{
-									perror("Invalid input");
-								}
-								else
-								{
-									int out = open(textArray[words - 1], O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
-									if(out == -1) //error
-									{
-										perror("File not created");
-									}
-									int result = dup2(out, 2);
-									if (result == -1) //error
-									{
-										perror("Standard error not redirected");
-									}
-								}
+								standard_error_redirect_function2(textArray[words - 2], textArray[words - 1]);
 							};
 %%
 void unsetenv_function(char *text)
@@ -491,6 +440,8 @@ void unsetenv_function(char *text)
 	size_t length;
 	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) {
 		perror("Entered an invalid name");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 	length = strlen(text);
 	for (envVariableNames = environ; *envVariableNames != NULL; )
@@ -513,6 +464,8 @@ void unalias_function(char *text)
 	size_t length;
 	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) { //invalid
 		perror("Entered an invalid alias");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 	length = strlen(text);
 	int i;
@@ -535,6 +488,8 @@ void setenv_function (char *text, char *text2)
 	if (text == NULL || text[0] == '\0' || strchr(text, '=') != NULL || text2 == NULL) //check to see if valid
 	{
 		perror("Invalid argument.\n");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 	unsetenv_function(text);             /* Remove all occurrences */
 	es = malloc(strlen(text) + strlen(text2) + 2);
@@ -542,6 +497,8 @@ void setenv_function (char *text, char *text2)
 	if (es == NULL) //error
 	{
 		perror("Error with memory allocation");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 	strcpy(es, text); //copy variable
 	strcat(es, "="); //copy =
@@ -550,6 +507,8 @@ void setenv_function (char *text, char *text2)
 	if(result == -1) //error
 	{
 		perror("Error inserting element into environment variable array");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 }
 void alias_function(char *text, char *text2)
@@ -559,12 +518,16 @@ void alias_function(char *text, char *text2)
 	if (text == NULL || text[0] == '\0' || strchr(text, '=') != NULL || text2 == NULL) //check to see if valid
 	{
 		perror("Invalid argument");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 	unalias_function(text);             /* Remove all occurrences */
 	es = malloc(strlen(text) + strlen(text2) + 2);
 	if (es == NULL) //error
 	{
 		perror("Error with memory allocation");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 	strcpy(es, text); //copy variable
 	strcat(es, "="); //copy =
@@ -573,6 +536,8 @@ void alias_function(char *text, char *text2)
 	if ( newAliases == (char **) NULL ) //no array created
 	{
 		perror("Array not created.");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 	memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
 	newAliases[aliasCount] = es; //word
@@ -588,10 +553,14 @@ void cd_function()
 	if(fd == -1) //error
 	{
 		perror("File not opened");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 	if(result == -1) //error
 	{
 		perror("Directory not changed");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 	setenv_function("PWD", getenv("HOME")); //change PWD
 }
@@ -608,10 +577,14 @@ void cd_function2(char *text)
 			if(fd == -1) //error
 			{
 				perror("File not opened");
+				printf("Error at line %d\n", __LINE__);
+				return;
 			}
 			if(result == -1) //error
 			{
 				perror("Directory not changed");
+				printf("Error at line %d\n", __LINE__);
+				return;
 			}
 			setenv_function("PWD", getenv("HOME")); //change PWD
 		}
@@ -624,16 +597,22 @@ void cd_function2(char *text)
 				if (pwd == NULL) //error
 				{
 					perror("Error with getting struct.\n");
+					printf("Error at line %d\n", __LINE__);
+					return;
 				}
 				int result = chdir(pwd->pw_dir); //get home directory and move to it
 				int fd = open("datafile4.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
 				if(fd == -1) //error
 				{
 					perror("File not opened");
+					printf("Error at line %d\n", __LINE__);
+					return;
 				}
 				if(result == -1) //error
 				{
 					perror("Directory not changed");
+					printf("Error at line %d\n", __LINE__);
+					return;
 				}
 				setenv_function("PWD", pwd->pw_dir); //change PWD
 			}
@@ -646,10 +625,14 @@ void cd_function2(char *text)
 				if(fd == -1) //error
 				{
 					perror("File not opened");
+					printf("Error at line %d\n", __LINE__);
+					return;
 				}
 				if(result == -1) //error
 				{
 					perror("Directory not changed");
+					printf("Error at line %d\n", __LINE__);
+					return;
 				}
 				setenv_function("PWD", directory); //change PWD
 			}
@@ -661,12 +644,121 @@ void cd_function2(char *text)
 		if (result == -1) //error
 		{
 			perror("Directory not changed");
+			printf("Error at line %d\n", __LINE__);
+			return;
 		}
 		int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
 		if(fd == -1) //error
 		{
 			perror("File not opened");
+			printf("Error at line %d\n", __LINE__);
+			return;
 		}
 		setenv_function("PWD", text); //change PWD
 	}
+}
+void standard_error_redirect_function(char *text, char *text2)
+{
+	if(strcmp(text, "2") != 0 || strcmp(text2, "1") != 0)
+	{
+		perror("Invalid input");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	else
+	{
+		int result = dup2(1, 2);
+		if (result == -1) //error
+		{
+			perror("Standard error not redirected to output");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+	}
+}
+void standard_error_redirect_function2(char *text, char *text2)
+{
+	if(strcmp(text, "2") != 0)
+	{
+		perror("Invalid input");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	else
+	{
+		int out = open(text2, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
+		if(out == -1) //error
+		{
+			perror("File not created");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		int result = dup2(out, 2);
+		if (result == -1) //error
+		{
+			perror("Standard error not redirected");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+	}
+}
+void write_to_function(char *text)
+{
+	printf("Write to entered\n");
+	int out = open(text, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
+	if(out == -1) //error
+	{
+		perror("File not created");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	int result = dup2(out, 1);
+	if (result == -1)
+	{
+		perror("Output not redirected");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+}
+void read_from_function (char *text)
+{
+		printf("Read from entered\n");
+		int in = open(text, O_RDONLY); //open file
+		if(in == -1) //error
+		{
+			perror("File not opened");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		int result = dup2(in, 0); //connect
+		if (result == -1) //error
+		{
+			perror("Input not redirected");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+}
+void word_function(char *text)
+{
+	char * es;
+	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
+	if (es == NULL)
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	strcpy(es, text); //copy text into pointer
+	newTextArray = (char **) malloc((words+2)*sizeof(char *)); //null entry and new word
+	if ( newTextArray == (char **) NULL ) //no array created
+	{
+		perror("Array not created");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *)); //copy all entries from textArray into newTextArray
+	newTextArray[words]   = es; //word
+	newTextArray[words+1] = NULL; //null entry
+	textArray = newTextArray;
+	words++; //increment index
 }
