@@ -617,22 +617,42 @@ void cd_function2(char *text)
 		}
 		else //actual expansion
 		{
-			pwd = getpwnam(&text[1]); //gets user info
-			if (pwd == NULL) //error
+			char *result = strchr(&text[1], '/');
+			if (result == NULL) //end of string
 			{
-				perror("Error with getting struct.\n");
+				pwd = getpwnam(&text[1]); //gets user info
+				if (pwd == NULL) //error
+				{
+					perror("Error with getting struct.\n");
+				}
+				int result = chdir(pwd->pw_dir); //get home directory and move to it
+				int fd = open("datafile4.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+				if(fd == -1) //error
+				{
+					perror("File not opened");
+				}
+				if(result == -1) //error
+				{
+					perror("Directory not changed");
+				}
+				setenv_function("PWD", pwd->pw_dir); //change PWD
 			}
-			int result = chdir(pwd->pw_dir); //get home directory and move to it
-			int fd = open("datafile4.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-			if(fd == -1) //error
+			else //string continues
 			{
-				perror("File not opened");
+				char* directory = getenv("HOME");
+				strcat(directory, &text[1]);
+				int result = chdir(directory); //get home directory and move to it
+				int fd = open("datafile4.dat", O_RDWR |S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+				if(fd == -1) //error
+				{
+					perror("File not opened");
+				}
+				if(result == -1) //error
+				{
+					perror("Directory not changed");
+				}
+				setenv_function("PWD", directory); //change PWD
 			}
-			if(result == -1) //error
-			{
-				perror("Directory not changed");
-			}
-			setenv_function("PWD", pwd->pw_dir); //change PWD
 		}
 	}
 	else
