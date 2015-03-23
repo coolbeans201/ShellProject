@@ -33,7 +33,7 @@
 commands: 
 		| commands command NEWLINE;
 command:
-		cd2_case|cd_case|printenv_case|unsetenv_case|setenv_case|alias2_case|alias_case|unalias_case|bye_case|quote_case|word_case|slash_case|read_from_case|write_to_case|pipe_case|ampersand_case|matcher_case|setenv_environment_case|unsetenv_environment_case;
+		cd2_case|cd_case|printenv_case|unsetenv_case|setenv_case|alias2_case|alias_case|unalias_case|bye_case|quote_case|word_case|slash_case|read_from_case|write_to_case|pipe_case|ampersand_case|matcher_case|setenv_environment_case|unsetenv_environment_case|cd_environment_case|unalias_environment_case|setenv_environment_case2|setenv_environment_case3|alias_environment_case|alias_environment_case2|alias_environment_case3|cd_read_from_case|cd2_read_from_case|cd_write_to_case|cd2_write_to_case|cd_environment_read_from_case|cd_environment_write_to_case|setenv_read_from_case|setenv_write_to_case|setenv_environment_read_from_case|setenv_environment_read_from_case2|setenv_environment_read_from_case3|setenv_environment_write_to_case|setenv_environment_write_to_case2|setenv_environment_write_to_case3|unsetenv_read_from_case|unsetenv_write_to_case|unsetenv_environment_read_from_case|unsetenv_environment_write_to_case|printenv_read_from_case|printenv_write_to_case|alias_read_from_case|alias_write_to_case|alias2_read_from_case|alias2_write_to_case|alias2_environment_read_from_case|alias2_environment_read_from_case2|alias2_environment_read_from_case3|alias2_environment_write_to_case|alias2_environment_write_to_case2|alias2_environment_write_to_case3|unalias_read_from_case|unalias_write_to_case|unalias_environment_read_from_case|unalias_environment_write_to_case;
 cd2_case:
 		CD {
 				printf("Second CD command entered\n");
@@ -41,15 +41,16 @@ cd2_case:
 				int fd = open("datafile.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
 				if(fd == -1) //error
 				{
-					perror("File not opened.\n");
+					perror("File not opened");
 				}
 				if(result == -1) //error
 				{
-					perror("Directory not changed.\n");
+					perror("Directory not changed");
 				}
 			};
 cd_case:
-	    CD WORD {
+	    CD WORD 
+		{
 				printf("CD command entered\n");
 				if(strncmp(yytext, "~", 1) == 0) //tilde expansion
 				{
@@ -60,11 +61,11 @@ cd_case:
 						int fd = open("datafile2.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
 						if(fd == -1) //error
 						{
-							//perror("File not opened.\n");
+							//perror("File not opened");
 						}
 						if(result == -1) //error
 						{
-							perror("Directory not changed.\n");
+							perror("Directory not changed");
 						}
 					}
 					else //actual expansion
@@ -78,11 +79,11 @@ cd_case:
 					   int fd = open("datafile4.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
 					   if(fd == -1) //error
 					   {
-							perror("File not opened.\n");
+							perror("File not opened");
 					   }
 					   if(result == -1) //error
 					   {
-							perror("Directory not changed.\n");
+							perror("Directory not changed");
 					   }
 					}
 				}
@@ -91,12 +92,12 @@ cd_case:
 					int result = chdir(yytext); //move directory
 					if (result == -1) //error
 					{
-						perror("Directory not changed.\n");
+						perror("Directory not changed");
 					}
 					int fd = open("datafile.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
 					if(fd == -1) //error
 					{
-						perror("File not opened.\n");
+						perror("File not opened");
 					}
 				}
 		};
@@ -125,7 +126,7 @@ setenv_case:
 																	/* +2 for '=' and null terminator */
 										if (es == NULL) //error
 										{
-											perror("Error with memory allocation.\n");
+											perror("Error with memory allocation");
 										}
 										strcpy(es, textArray[words - 2]); //copy variable
 										strcat(es, "="); //copy =
@@ -133,7 +134,7 @@ setenv_case:
 										int result = putenv(es); //put into array
 										if(result == -1) //error
 										{
-											perror("Error inserting element into environment variable array.\n");
+											perror("Error inserting element into environment variable array");
 										}
 									 };
 alias2_case:
@@ -158,7 +159,7 @@ alias_case:
 								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
 								if (es == NULL) //error
 								{
-									perror("Error with memory allocation.\n");
+									perror("Error with memory allocation");
 								}
 								strcpy(es, textArray[words - 2]); //copy variable
 								strcat(es, "="); //copy =
@@ -190,7 +191,7 @@ word_case:
 								newTextArray = (char **) malloc((words+2)*sizeof(char *)); //null entry and new word
 								if ( newTextArray == (char **) NULL ) //no array created
 								{
-									perror("Array not created.\n");
+									perror("Array not created");
 								}
 								memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *)); //copy all entries from textArray into newTextArray
 								newTextArray[words]   = es; //word
@@ -206,12 +207,12 @@ read_from_case:
 								int in = open(yytext, O_RDONLY);
 								if(in == -1) //error
 								{
-									perror("File not opened.\n");
+									perror("File not opened");
 								}
 								int result = dup2(in, 0); //connect
 								if (result == -1) //error
 								{
-									perror("Input not redirected.\n");
+									perror("Input not redirected");
 								}
 							};
 write_to_case:
@@ -220,12 +221,12 @@ write_to_case:
 								int out = open(yytext, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
 								if(out == -1) //error
 								{
-									perror("File not created.\n");
+									perror("File not created");
 								}
 								int result = dup2(out, 1);
 								if (result == -1)
 								{
-									perror("Output not redirected.\n");
+									perror("Output not redirected");
 								}
 							};
 pipe_case:
@@ -241,14 +242,14 @@ setenv_environment_case:
 								char *es;
 								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
 								{
-									perror("Invalid argument.\n");
+									perror("Invalid argument");
 								}
 								unsetenv_function(textArray[words - 2]);             /* Remove all occurrences */
 								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
 																	/* +2 for '=' and null terminator */
 								if (es == NULL) //error
 								{
-									perror("Error with memory allocation.\n");
+									perror("Error with memory allocation");
 								}
 								strcpy(es, textArray[words - 2]); //copy variable
 								strcat(es, "="); //copy =
@@ -256,13 +257,378 @@ setenv_environment_case:
 								int result = putenv(es); //put into array
 								if(result == -1) //error
 								{
-									perror("Error inserting element into environment variable array.\n");
+									perror("Error inserting element into environment variable array");
 								}
 							};
 unsetenv_environment_case:
 		UNSETENV ENVIRONMENTSTART word_case ENVIRONMENTEND
 							{
 								unsetenv_function(textArray[words - 1]);
+							};
+cd_environment_case:
+		CD ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								printf("CD command entered\n");
+								if(strncmp(textArray[words - 1], "~", 1) == 0) //tilde expansion
+								{
+									int length = strlen(&textArray[words - 1][1]); 
+									if(length == 0) //empty afterwards
+									{
+										int result = chdir(getenv("HOME")); //get home directory and move to it
+										int fd = open("datafile2.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+										if(fd == -1) //error
+										{
+											//perror("File not opened");
+										}
+										if(result == -1) //error
+										{
+											perror("Directory not changed");
+										}
+									}
+									else //actual expansion
+									{
+									   pwd = getpwnam(&textArray[words - 1][1]);
+									   if (pwd == NULL) 
+									   {
+											perror("Error with getting struct.\n");
+									   }
+									   int result = chdir(pwd->pw_dir); //get home directory and move to it
+									   int fd = open("datafile4.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+									   if(fd == -1) //error
+									   {
+											perror("File not opened");
+									   }
+									   if(result == -1) //error
+									   {
+											perror("Directory not changed");
+									   }
+									}
+								}
+								else
+								{
+									int result = chdir(textArray[words - 1]); //move directory
+									if (result == -1) //error
+									{
+										perror("Directory not changed");
+									}
+									int fd = open("datafile.dat", O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
+									if(fd == -1) //error
+									{
+										perror("File not opened");
+									}
+								}
+							};
+unalias_environment_case:
+		UNALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								unalias_function(textArray[words - 1]);
+							};
+setenv_environment_case2:
+		SETENV word_case ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								printf("Setenv command entered\n");
+								char *es;
+								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
+								{
+									perror("Invalid argument");
+								}
+								unsetenv_function(textArray[words - 2]);             /* Remove all occurrences */
+								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
+																	/* +2 for '=' and null terminator */
+								if (es == NULL) //error
+								{
+									perror("Error with memory allocation");
+								}
+								strcpy(es, textArray[words - 2]); //copy variable
+								strcat(es, "="); //copy =
+								strcat(es, textArray[words - 1]); //copy value
+								int result = putenv(es); //put into array
+								if(result == -1) //error
+								{
+									perror("Error inserting element into environment variable array");
+								}
+							};
+setenv_environment_case3:
+		SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								printf("Setenv command entered\n");
+								char *es;
+								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
+								{
+									perror("Invalid argument");
+								}
+								unsetenv_function(textArray[words - 2]);             /* Remove all occurrences */
+								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
+																	/* +2 for '=' and null terminator */
+								if (es == NULL) //error
+								{
+									perror("Error with memory allocation");
+								}
+								strcpy(es, textArray[words - 2]); //copy variable
+								strcat(es, "="); //copy =
+								strcat(es, textArray[words - 1]); //copy value
+								int result = putenv(es); //put into array
+								if(result == -1) //error
+								{
+									perror("Error inserting element into environment variable array");
+								}
+							};
+alias_environment_case:
+		ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
+							{
+								printf("Alias command entered\n");
+								char *es;
+								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
+								{
+									perror("Invalid argument.\n");
+								}
+								unalias_function(textArray[words - 2]);             /* Remove all occurrences */
+								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
+								if (es == NULL) //error
+								{
+									perror("Error with memory allocation");
+								}
+								strcpy(es, textArray[words - 2]); //copy variable
+								strcat(es, "="); //copy =
+								strcat(es, textArray[words - 1]); //copy value
+								newAliases = (char **) malloc((aliasCount+2)*sizeof(char *)); //null entry and new word
+								if ( newAliases == (char **) NULL ) //no array created
+								{
+									perror("Array not created.\n");
+								}
+								memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
+								newAliases[aliasCount] = es; //word
+								newAliases[aliasCount + 1] = NULL; //null entry
+								aliases = newAliases;
+								aliasCount++; //increment index
+							};
+alias_environment_case2:
+		ALIAS word_case ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								printf("Alias command entered\n");
+								char *es;
+								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
+								{
+									perror("Invalid argument.\n");
+								}
+								unalias_function(textArray[words - 2]);             /* Remove all occurrences */
+								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
+								if (es == NULL) //error
+								{
+									perror("Error with memory allocation");
+								}
+								strcpy(es, textArray[words - 2]); //copy variable
+								strcat(es, "="); //copy =
+								strcat(es, textArray[words - 1]); //copy value
+								newAliases = (char **) malloc((aliasCount+2)*sizeof(char *)); //null entry and new word
+								if ( newAliases == (char **) NULL ) //no array created
+								{
+									perror("Array not created.\n");
+								}
+								memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
+								newAliases[aliasCount] = es; //word
+								newAliases[aliasCount + 1] = NULL; //null entry
+								aliases = newAliases;
+								aliasCount++; //increment index
+							};
+alias_environment_case3:
+		ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								printf("Alias command entered\n");
+								char *es;
+								if (textArray[words - 2] == NULL || textArray[words - 2][0] == '\0' || strchr(textArray[words - 2], '=') != NULL || textArray[words - 1] == NULL) //check to see if valid
+								{
+									perror("Invalid argument.\n");
+								}
+								unalias_function(textArray[words - 2]);             /* Remove all occurrences */
+								es = malloc(strlen(textArray[words - 2]) + strlen(textArray[words - 1]) + 2);
+								if (es == NULL) //error
+								{
+									perror("Error with memory allocation");
+								}
+								strcpy(es, textArray[words - 2]); //copy variable
+								strcat(es, "="); //copy =
+								strcat(es, textArray[words - 1]); //copy value
+								newAliases = (char **) malloc((aliasCount+2)*sizeof(char *)); //null entry and new word
+								if ( newAliases == (char **) NULL ) //no array created
+								{
+									perror("Array not created.\n");
+								}
+								memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
+								newAliases[aliasCount] = es; //word
+								newAliases[aliasCount + 1] = NULL; //null entry
+								aliases = newAliases;
+								aliasCount++; //increment index
+							};
+cd_read_from_case:
+			cd2_case read_from_case
+							{
+								
+							};
+cd2_read_from_case:
+			cd_case read_from_case
+							{
+								
+							};
+cd_write_to_case:
+			cd2_case write_to_case
+							{
+								
+							};
+cd2_write_to_case:
+			cd_case write_to_case
+							{
+								
+							};
+cd_environment_read_from_case:
+			cd_environment_case read_from_case
+							{
+							
+							};
+cd_environment_write_to_case:
+			cd_environment_case write_to_case
+							{
+							
+							};
+setenv_read_from_case:
+			setenv_case read_from_case
+							{
+							
+							};
+setenv_write_to_case:
+			setenv_case write_to_case
+							{
+							
+							};
+setenv_environment_read_from_case:
+			setenv_environment_case read_from_case
+							{
+							
+							};
+setenv_environment_read_from_case2:
+			setenv_environment_case2 read_from_case
+							{
+							
+							};
+setenv_environment_read_from_case3:
+			setenv_environment_case3 read_from_case
+							{
+							
+							};
+setenv_environment_write_to_case:
+			setenv_environment_case write_to_case
+							{
+							
+							};
+setenv_environment_write_to_case2:
+			setenv_environment_case2 write_to_case
+							{
+							
+							};
+setenv_environment_write_to_case3:
+			setenv_environment_case3 write_to_case
+							{
+							
+							};
+unsetenv_read_from_case:
+			unsetenv_case read_from_case
+							{
+							
+							};
+unsetenv_write_to_case:
+			unsetenv_case write_to_case
+							{
+							
+							};
+unsetenv_environment_read_from_case:
+			unsetenv_environment_case read_from_case
+							{
+							
+							};
+unsetenv_environment_write_to_case:
+			unsetenv_environment_case write_to_case
+							{
+							
+							};
+printenv_read_from_case:
+			printenv_case read_from_case
+							{
+							
+							};
+printenv_write_to_case:
+			printenv_case write_to_case
+							{
+							
+							};
+alias_read_from_case:
+			alias2_case read_from_case
+							{
+							
+							};
+alias_write_to_case:
+			alias2_case write_to_case
+							{
+							
+							};
+alias2_read_from_case:
+			alias_case read_from_case
+							{
+							
+							};
+alias2_write_to_case:
+			alias_case  write_to_case
+							{
+							
+							};
+alias2_environment_read_from_case:
+			alias_environment_case read_from_case
+							{
+							
+							};
+alias2_environment_read_from_case2:
+			alias_environment_case2 read_from_case
+							{
+							
+							};
+alias2_environment_read_from_case3:
+			alias_environment_case3 read_from_case
+							{
+							
+							};
+alias2_environment_write_to_case:
+			alias_environment_case write_to_case
+							{
+							
+							};
+alias2_environment_write_to_case2:
+			alias_environment_case2 write_to_case
+							{
+							
+							};
+alias2_environment_write_to_case3:
+			alias_environment_case3 write_to_case
+							{
+							
+							};
+unalias_read_from_case:
+			unalias_case read_from_case
+							{
+							
+							};
+unalias_write_to_case:
+			unalias_case write_to_case
+							{
+							
+							};
+unalias_environment_read_from_case:
+			unalias_environment_case read_from_case
+							{
+							
+							};
+unalias_environment_write_to_case:
+			unalias_environment_case write_to_case
+							{
+							
 							};
 %%
 void unsetenv_function(char *text)
@@ -271,7 +637,7 @@ void unsetenv_function(char *text)
 	char **envVariableNames, **rightEnvVariableNames;
 	size_t length;
 	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) {
-		perror("Entered an invalid name!\n");
+		perror("Entered an invalid name");
 	}
 	length = strlen(text);
 	for (envVariableNames = environ; *envVariableNames != NULL; )
@@ -293,7 +659,7 @@ void unalias_function(char *text)
 	printf("Unalias command entered\n");
 	size_t length;
 	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) { //invalid
-		perror("Entered an invalid alias!\n");
+		perror("Entered an invalid alias");
 	}
 	length = strlen(text);
 	int i;
