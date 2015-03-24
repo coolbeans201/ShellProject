@@ -9,10 +9,9 @@ Features NOT Implemented
 4. File name completion (using the ESC character in Lex/YACC)
 5. Metacharacters       (recursive YACC)
 6. Piping               
-7. Special commands     (recirsive YACC)
+7. Other commands     (recirsive YACC, with I/O redirection and piping)
 8. Tilde expansion (not completely)
 9. Alias commands/infinite alias expansion (more YACC handling)
-10. Other commands (executing, recurisve YACC)
 
 Features Implemented
 1. Built-in commands (with I/O redirection)
