@@ -1,5 +1,7 @@
 %{
 	#include <stdio.h>
+	#include <string.h>
+	#include <stdlib.h>
 	#include "y.tab.h"
 %}
 %%
@@ -10,7 +12,7 @@ setenv return SETENV;
 alias return ALIAS;
 unalias return UNALIAS;
 bye return BYE;
-[@!#%'=~./:A-Za-z0-9]+ return WORD;
+[@!#%'=~.:/:A-Za-z0-9]+ return WORD;
 [*?] return MATCHER;
 "\"" return QUOTES;
 \n return NEWLINE;
@@ -22,5 +24,6 @@ bye return BYE;
 ">" return WRITETO;
 "|" return PIPE;
 "&" return AMPERSAND;
+<<EOF>>	{exit(0);}
 . {yyerror("Unrecognized character"); return 0;}
 %%
