@@ -438,7 +438,7 @@ void unsetenv_function(char *text)
 	printf("Unsetenv command entered\n");
 	char **envVariableNames, **rightEnvVariableNames;
 	size_t length;
-	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) {
+	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) { //error
 		perror("Entered an invalid name");
 		printf("Error at line %d\n", __LINE__);
 		return;
@@ -499,6 +499,41 @@ void setenv_function (char *text, char *text2)
 		perror("Error with memory allocation");
 		printf("Error at line %d\n", __LINE__);
 		return;
+	}
+	if(strcmp(text, "PATH") == 0) //setting path
+	{
+		char *pch = strtok(text2, ":");
+		while (pch != NULL)
+		{
+				if(strncmp(pch, "~", 1) == 0) //tilde
+				{
+					int length = strlen(&pch[1]); 
+					if(length == 0) //empty afterwards
+					{
+						char *directory = getenv("HOME"); //get home directory
+					}
+					else //actual expansion
+					{
+						char *result = strchr(&pch[1], '/');
+						if (result == NULL) //end of string
+						{
+							pwd = getpwnam(&pch[1]); //gets user info
+							if (pwd == NULL) //error
+							{
+								perror("Error with getting struct.\n");
+								printf("Error at line %d\n", __LINE__);
+								return;
+							}
+							char *directory = pwd->pw_dir; //get home directory
+						}
+						else //string continues
+						{
+							char* directory = getenv("HOME"); //get home directory
+							strcat(directory, &pch[1]); //add on text afterwards
+						}
+					}
+				}
+		}
 	}
 	strcpy(es, text); //copy variable
 	strcat(es, "="); //copy =
@@ -618,9 +653,9 @@ void cd_function2(char *text)
 			}
 			else //string continues
 			{
-				char* directory = getenv("HOME");
-				strcat(directory, &text[1]);
-				int result = chdir(directory); //get home directory and move to it
+				char* directory = getenv("HOME"); //get home directory
+				strcat(directory, &text[1]); //add on to it
+				int result = chdir(directory); //move to it
 				int fd = open("datafile4.dat", O_RDWR |S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
 				if(fd == -1) //error
 				{
@@ -659,7 +694,7 @@ void cd_function2(char *text)
 }
 void standard_error_redirect_function(char *text, char *text2)
 {
-	if(strcmp(text, "2") != 0 || strcmp(text2, "1") != 0)
+	if(strcmp(text, "2") != 0 || strcmp(text2, "1") != 0) //error
 	{
 		perror("Invalid input");
 		printf("Error at line %d\n", __LINE__);
@@ -678,7 +713,7 @@ void standard_error_redirect_function(char *text, char *text2)
 }
 void standard_error_redirect_function2(char *text, char *text2)
 {
-	if(strcmp(text, "2") != 0)
+	if(strcmp(text, "2") != 0) //error
 	{
 		perror("Invalid input");
 		printf("Error at line %d\n", __LINE__);
@@ -713,7 +748,7 @@ void write_to_function(char *text)
 		return;
 	}
 	int result = dup2(out, 1);
-	if (result == -1)
+	if (result == -1) //error
 	{
 		perror("Output not redirected");
 		printf("Error at line %d\n", __LINE__);
@@ -742,7 +777,7 @@ void word_function(char *text)
 {
 	char * es;
 	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
-	if (es == NULL)
+	if (es == NULL) //error
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
