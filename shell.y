@@ -283,7 +283,7 @@ void setenv_function (char *text, char *text2)
 	char *es;
 	if (text == NULL || text[0] == '\0' || strchr(text, '=') != NULL || text2 == NULL) //check to see if valid
 	{
-		perror("Invalid argument.\n");
+		perror("Invalid argument.");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
@@ -296,17 +296,21 @@ void setenv_function (char *text, char *text2)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	if(strcmp(text, "PATH") == 0) //setting path
+	if(strcmp(text, "PATH") == 0 || strcmp(text, "ARGPATH") == 0) //setting path
 	{
-		char *pch = strtok(text2, ":");
-		while (pch != NULL)
+		char *pch = strtok(text2, ":"); //split on colons
+		char *path = malloc(500 * sizeof(char));
+		while (pch != NULL) //still have tokens
 		{
 				if(strncmp(pch, "~", 1) == 0) //tilde
 				{
 					int length = strlen(&pch[1]); 
 					if(length == 0) //empty afterwards
 					{
-						char *directory = getenv("HOME"); //get home directory
+						char *directory = malloc(300 * sizeof(char));
+						strcpy(directory, getenv("HOME")); //get home directory
+						strcat(path, directory); //set to home directory
+						strcat(path, ":"); //colon-separate
 					}
 					else //actual expansion
 					{
@@ -320,16 +324,92 @@ void setenv_function (char *text, char *text2)
 								printf("Error at line %d\n", __LINE__);
 								return;
 							}
-							char *directory = pwd->pw_dir; //get home directory
+							char *directory = malloc(300 * sizeof(char));
+							strcpy(directory, pwd->pw_dir); 
+							strcat(path, directory); //set to home directory
+							strcat(path, ":"); //colon-separate
 						}
 						else //string continues
 						{
-							char* directory = getenv("HOME"); //get home directory
-							strcat(directory, &pch[1]); //add on text afterwards
+							char *directory = malloc(300 * sizeof(char));
+							strcpy(directory, "/home/"); //start with home directory
+							int index = length - 1;
+							int i;
+							for(i = 0; i < strlen(pch); i++)
+							{
+								if(pch[i] == '/') //get everything to slash
+								{
+									index = i;
+									break;
+								}
+							}
+							char *toadd = malloc(300 * sizeof(char));
+							strncpy(toadd, &pch[1], index - 1);
+							strcat(toadd, "/"); //slash at end
+							strcat(directory, toadd); //copy over
+							strcat(path, directory); //copy over
+							strcat(path, ":"); //colon-separate
 						}
 					}
 				}
+				else
+				{
+					strcat(path, pch); //no tilde
+					strcat(path, ":"); //colon-separate
+				}
+				pch = strtok(NULL, ":"); //keep parsing
 		}
+		path[strlen(path) - 1] = '\0'; //get rid of colon at the end
+		strcpy(text2, path);
+	}
+	else
+	{
+			if(strncmp(text2, "~", 1) == 0) //tilde expansion
+			{
+				int length = strlen(&text2[1]); 
+				if(length == 0) //empty afterwards
+				{
+					strcpy(text2, getenv("HOME")); //get home directory and move to it
+				}
+				else //actual expansion
+				{
+					char *result = strchr(&text2[1], '/');
+					if (result == NULL) //end of string
+					{
+						pwd = getpwnam(&text2[1]); //gets user info
+						if (pwd == NULL) //error
+						{
+							perror("Error with getting struct.\n");
+							printf("Error at line %d\n", __LINE__);
+							return;
+						}
+						strcpy(text2, pwd->pw_dir); //set to home directory
+					}
+					else //string continues
+					{
+						char *directory = malloc(300 * sizeof(char));
+						strcpy(directory, "/home/"); //start with home
+						int index = length - 1;
+						int i;
+						for(i = 0; i < length; i++)
+						{
+							if(text2[i] == '/') //find slash
+							{
+								index = i;
+								break;
+							}
+						}
+						char *toadd = malloc(300 * sizeof(char));
+						strncpy(toadd, &text2[1], index - 1); //copy over
+						strcat(toadd, "/"); //add slash
+						strcat(directory, toadd); //copy over
+						strcpy(text2, directory); //copy over
+					}
+				}
+			}
+			else //nothing to do because we are not changing text2
+			{
+			}
 	}
 	strcpy(es, text); //copy variable
 	strcat(es, "="); //copy =
@@ -380,13 +460,6 @@ void cd_function()
 {
 	printf("Second CD command entered\n");
 	int result = chdir(getenv("HOME")); //get home directory and move to it
-	int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-	if(fd == -1) //error
-	{
-		perror("File not opened");
-		printf("Error at line %d\n", __LINE__);
-		return;
-	}
 	if(result == -1) //error
 	{
 		perror("Directory not changed");
@@ -394,6 +467,7 @@ void cd_function()
 		return;
 	}
 	setenv_function("PWD", getenv("HOME")); //change PWD
+	printf("%s\n", getenv("PWD"));
 }
 void cd_function2(char *text)
 {
@@ -404,13 +478,6 @@ void cd_function2(char *text)
 		if(length == 0) //empty afterwards
 		{
 			int result = chdir(getenv("HOME")); //get home directory and move to it
-			int fd = open("datafile2.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-			if(fd == -1) //error
-			{
-				perror("File not opened");
-				printf("Error at line %d\n", __LINE__);
-				return;
-			}
 			if(result == -1) //error
 			{
 				perror("Directory not changed");
@@ -418,6 +485,7 @@ void cd_function2(char *text)
 				return;
 			}
 			setenv_function("PWD", getenv("HOME")); //change PWD
+			printf("%s\n", getenv("PWD"));
 		}
 		else //actual expansion
 		{
@@ -427,18 +495,11 @@ void cd_function2(char *text)
 				pwd = getpwnam(&text[1]); //gets user info
 				if (pwd == NULL) //error
 				{
-					perror("Error with getting struct.\n");
+					perror("Error with getting struct.");
 					printf("Error at line %d\n", __LINE__);
 					return;
 				}
 				int result = chdir(pwd->pw_dir); //get home directory and move to it
-				int fd = open("datafile4.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-				if(fd == -1) //error
-				{
-					perror("File not opened");
-					printf("Error at line %d\n", __LINE__);
-					return;
-				}
 				if(result == -1) //error
 				{
 					perror("Directory not changed");
@@ -446,19 +507,27 @@ void cd_function2(char *text)
 					return;
 				}
 				setenv_function("PWD", pwd->pw_dir); //change PWD
+				printf("%s\n", getenv("PWD"));
 			}
 			else //string continues
 			{
-				char* directory = getenv("HOME"); //get home directory
-				strcat(directory, &text[1]); //add on to it
-				int result = chdir(directory); //move to it
-				int fd = open("datafile4.dat", O_RDWR |S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-				if(fd == -1) //error
+				char *directory = malloc(300 * sizeof(char));
+				strcpy(directory, "/home/"); //start with home directory
+				int index = length - 1;
+				int i;
+				for(i = 0; i < length; i++)
 				{
-					perror("File not opened");
-					printf("Error at line %d\n", __LINE__);
-					return;
+					if(text[i] == '/') //find slash
+					{
+						index = i;
+						break;
+					}
 				}
+				char *toadd = malloc(300 * sizeof(char));
+				strncpy(toadd, &text[1], index - 1); //copy everything up until slash
+				strcat(toadd, "/");
+				strcat(directory, toadd);
+				int result = chdir(directory); //move to it
 				if(result == -1) //error
 				{
 					perror("Directory not changed");
@@ -466,26 +535,32 @@ void cd_function2(char *text)
 					return;
 				}
 				setenv_function("PWD", directory); //change PWD
+				printf("%s\n", getenv("PWD"));
 			}
 		}
 	}
-	else
+	else //no tilde
 	{
-		int result = chdir(text); //move directory
-		if (result == -1) //error
+		char *directory = malloc(300 * sizeof(char));
+		strcpy(directory, getenv("PWD")); //start with current directory and see if it's relative or absolute
+		strcat(directory, "/");
+		strcat(directory, text); //check if relative
+		int result = chdir(directory); //move directory
+		if (result == -1) //error, could be absolute, could be actual error
 		{
-			perror("Directory not changed");
-			printf("Error at line %d\n", __LINE__);
+			int result2 = chdir(text); //absolute
+			if (result2 == -1) //error
+			{
+				perror("Directory not changed");
+				printf("Error at line %d\n", __LINE__);
+				return;
+			}
+			setenv_function("PWD", text); //change PWD to absolute
+			printf("%s\n", getenv("PWD"));
 			return;
 		}
-		int fd = open("datafile.dat", O_RDWR | S_IREAD | S_IWRITE); //create a file so that we can see that this actually works with ls
-		if(fd == -1) //error
-		{
-			perror("File not opened");
-			printf("Error at line %d\n", __LINE__);
-			return;
-		}
-		setenv_function("PWD", text); //change PWD
+		setenv_function("PWD", directory); //change PWD to absolute
+		printf("%s\n", getenv("PWD"));
 	}
 }
 void standard_error_redirect_function(char *text, char *text2)
@@ -498,7 +573,7 @@ void standard_error_redirect_function(char *text, char *text2)
 	}
 	else
 	{
-		int result = dup2(1, 2);
+		int result = dup2(1, 2); //redirect output to standard error
 		if (result == -1) //error
 		{
 			perror("Standard error not redirected to output");
@@ -524,7 +599,7 @@ void standard_error_redirect_function2(char *text, char *text2)
 			printf("Error at line %d\n", __LINE__);
 			return;
 		}
-		int result = dup2(out, 2);
+		int result = dup2(out, 2); //redirect standard error to output file
 		if (result == -1) //error
 		{
 			perror("Standard error not redirected");
@@ -543,7 +618,7 @@ void write_to_function(char *text)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	int result = dup2(out, 1);
+	int result = dup2(out, 1); //redirect output to file
 	if (result == -1) //error
 	{
 		perror("Output not redirected");
@@ -561,7 +636,7 @@ void read_from_function (char *text)
 			printf("Error at line %d\n", __LINE__);
 			return;
 		}
-		int result = dup2(in, 0); //connect
+		int result = dup2(in, 0); //redirect input from file
 		if (result == -1) //error
 		{
 			perror("Input not redirected");
