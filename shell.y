@@ -302,10 +302,30 @@ void setenv_function (char *text, char *text2)
 		char *path = malloc(500 * sizeof(char));
 		while (pch != NULL) //still have tokens
 		{
-				if(strncmp(pch, "~", 1) == 0) //tilde
+				if(strncmp(pch, ".", 1) == 0) //first character is a dot, so explicitly match
+				{
+						char *directory = malloc(300 * sizeof(char));
+						strcpy(directory, getenv("PWD")); //get current directory
+						strcat(directory, &pch[1]); //take everything after dot
+						strcat(path, directory);
+						strcat(path, ":"); //colon-separate
+				}
+				else if(strncmp(pch, "/.", 2) == 0) //first two characters are /., so get root
+				{
+					strcpy(path, "/"); //root directory
+					strcat(path, &pch[2]); //take everything after dot
+					strcat(path, ":"); //colon-separate
+				}
+				else if (strncmp(pch, "/", 1) == 0) //also the root directory
+				{
+					strcpy(path, "/"); //root directory
+					strcat(path, &pch[1]); //take everything after slash
+					strcat(path, ":"); //colon-separate
+				}
+				else if(strncmp(pch, "~", 1) == 0) //tilde
 				{
 					int length = strlen(&pch[1]); 
-					if(length == 0) //empty afterwards
+					if(length == 0) //empty afterwards, so get home directory
 					{
 						char *directory = malloc(300 * sizeof(char));
 						strcpy(directory, getenv("HOME")); //get home directory
@@ -315,7 +335,7 @@ void setenv_function (char *text, char *text2)
 					else //actual expansion
 					{
 						char *result = strchr(&pch[1], '/');
-						if (result == NULL) //end of string
+						if (result == NULL) //end of string, so can only be username
 						{
 							pwd = getpwnam(&pch[1]); //gets user info
 							if (pwd == NULL) //error
@@ -329,7 +349,7 @@ void setenv_function (char *text, char *text2)
 							strcat(path, directory); //set to home directory
 							strcat(path, ":"); //colon-separate
 						}
-						else //string continues
+						else //string continues, go up until /
 						{
 							char *directory = malloc(300 * sizeof(char));
 							strcpy(directory, "/home/"); //start with home directory
@@ -367,14 +387,14 @@ void setenv_function (char *text, char *text2)
 			if(strncmp(text2, "~", 1) == 0) //tilde expansion
 			{
 				int length = strlen(&text2[1]); 
-				if(length == 0) //empty afterwards
+				if(length == 0) //empty afterwards, so get home directory
 				{
 					strcpy(text2, getenv("HOME")); //get home directory and move to it
 				}
 				else //actual expansion
 				{
 					char *result = strchr(&text2[1], '/');
-					if (result == NULL) //end of string
+					if (result == NULL) //end of string, so has to be a username
 					{
 						pwd = getpwnam(&text2[1]); //gets user info
 						if (pwd == NULL) //error
@@ -385,7 +405,7 @@ void setenv_function (char *text, char *text2)
 						}
 						strcpy(text2, pwd->pw_dir); //set to home directory
 					}
-					else //string continues
+					else //string continues, go until slash
 					{
 						char *directory = malloc(300 * sizeof(char));
 						strcpy(directory, "/home/"); //start with home
@@ -406,9 +426,6 @@ void setenv_function (char *text, char *text2)
 						strcpy(text2, directory); //copy over
 					}
 				}
-			}
-			else //nothing to do because we are not changing text2
-			{
 			}
 	}
 	strcpy(es, text); //copy variable
@@ -475,7 +492,7 @@ void cd_function2(char *text)
 	if(strncmp(text, "~", 1) == 0) //tilde expansion
 	{
 		int length = strlen(&text[1]); 
-		if(length == 0) //empty afterwards
+		if(length == 0) //empty afterwards, so get home directory
 		{
 			int result = chdir(getenv("HOME")); //get home directory and move to it
 			if(result == -1) //error
@@ -490,7 +507,7 @@ void cd_function2(char *text)
 		else //actual expansion
 		{
 			char *result = strchr(&text[1], '/');
-			if (result == NULL) //end of string
+			if (result == NULL) //end of string, so must be username
 			{
 				pwd = getpwnam(&text[1]); //gets user info
 				if (pwd == NULL) //error
@@ -509,10 +526,10 @@ void cd_function2(char *text)
 				setenv_function("PWD", pwd->pw_dir); //change PWD
 				printf("%s\n", getenv("PWD"));
 			}
-			else //string continues
+			else //string continues, go until /
 			{
 				char *directory = malloc(300 * sizeof(char));
-				strcpy(directory, "/home/"); //start with home directory
+				strcpy(directory, getenv("HOME")); //start with home directory
 				int index = length - 1;
 				int i;
 				for(i = 0; i < length; i++)
@@ -543,7 +560,68 @@ void cd_function2(char *text)
 	{
 		char *directory = malloc(300 * sizeof(char));
 		strcpy(directory, getenv("PWD")); //start with current directory and see if it's relative or absolute
-		strcat(directory, "/");
+		if(directory[strlen(directory) - 1] != '/') //last character is not a slash
+		{
+			strcat(directory, "/"); //adds a slash
+		}
+		if(text[0] == '.')
+		{
+			if(strlen(text) == 1 || (strlen(text) == 2 && text[1] == '/')) //just a dot or dot-slash
+			{
+				strcpy(text, ""); //blank it
+			}
+			else if(text[1] != '.') //append text after dot
+			{
+				strcpy(text, &text[1]);
+			}
+			else if(text[1] == '.' && strcmp(directory, "/") != 0)//go up a level (not in the root)
+			{
+				int i;
+				int lastSlashIndex = 1;
+				for(i = strlen(directory) - 2; i >= 0; i--) //find occurence of last slash
+				{
+					if(directory[i] == '/')
+					{
+						lastSlashIndex = i; //found last slash
+						break;
+					}
+				}
+				char *directory2 = malloc(300 * sizeof(char));
+				strncpy(directory2, directory, lastSlashIndex); //get everything up to the slash
+				strcpy(directory, directory2);
+				if(strlen(text) > 2)
+				{
+					strcat(directory, "/"); //add slash
+					strcpy(text, &text[3]); //take everything after the slash
+				}
+				else //nothing
+				{
+					strcpy(text, ""); //blank it
+				}
+			}
+		}
+		if(text[0] == '/') //first character is slash
+		{
+			if(strlen(text) == 1 || (strlen(text) == 2 && text[1] == '.')) //just a slash or slash-dot
+			{
+				int result = chdir("/"); //move to slash directory
+				if(result == -1)
+				{
+					perror("Directory not changed");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+				setenv_function("PWD", "/"); //set to slash
+				printf("%s\n", getenv("PWD"));
+				return;
+			}
+			else
+			{
+				char* text2 = malloc(300 * sizeof(char));
+				memcpy(text2, &text[1], strlen(&text[1]) * sizeof(char)); //copy everything after slash
+				strcpy(text, text2); //copy back into text
+			}
+		}
 		strcat(directory, text); //check if relative
 		int result = chdir(directory); //move directory
 		if (result == -1) //error, could be absolute, could be actual error
@@ -559,8 +637,17 @@ void cd_function2(char *text)
 			printf("%s\n", getenv("PWD"));
 			return;
 		}
-		setenv_function("PWD", directory); //change PWD to absolute
-		printf("%s\n", getenv("PWD"));
+		if(strncmp(&directory[strlen(directory) - 1], "/", 1) == 0) //last character is a slash
+		{
+			directory[strlen(directory) - 1] = '\0'; //remove slash
+			setenv_function("PWD", directory); //change PWD to absolute
+			printf("%s\n", getenv("PWD"));
+		}
+		else
+		{
+			setenv_function("PWD", directory); //change PWD to absolute
+			printf("%s\n", getenv("PWD"));
+		}
 	}
 }
 void standard_error_redirect_function(char *text, char *text2)
