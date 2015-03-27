@@ -12,18 +12,17 @@ setenv return SETENV;
 alias return ALIAS;
 unalias return UNALIAS;
 bye return BYE;
-[@!#%'=~.:/:A-Za-z0-9]+ return WORD;
-[*?] return MATCHER;
+[*?@!#%'=~.:/:A-Za-z0-9]+ return WORD;
 "\"" return QUOTES;
 \n return NEWLINE;
 [ \t]+ /* ignore end of line */;
 "${"	return ENVIRONMENTSTART;
 "}"	return ENVIRONMENTEND;
-\\ return SLASH;
-"<" return READFROM;
-">" return WRITETO;
-"|" return PIPE;
-"&" return AMPERSAND;
+\\+ return SLASH;
+"<"+ return READFROM;
+">"+ return WRITETO;
+"|"+ return PIPE;
+"&"+ return AMPERSAND;
 <<EOF>>	{exit(0);}
-. {yyerror("Unrecognized character"); return 0;}
+. {yyerror("Unrecognized character");}
 %%
