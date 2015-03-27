@@ -77,11 +77,23 @@ void setenv_function (char *text, char *text2)
 	{
 		char *pch = strtok(text2, ":"); //split on colons
 		char *path = malloc(500 * sizeof(char));
+		if(path == (char *) NULL)
+		{
+			perror("Error with memory allocation.");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
 		while (pch != NULL) //still have tokens
 		{
 				if(strncmp(pch, ".", 1) == 0) //first character is a dot, so explicitly match
 				{
 						char *directory = malloc(300 * sizeof(char));
+						if(directory == (char *) NULL)
+						{
+							perror("Error with memory allocation.");
+							printf("Error at line %d\n", __LINE__);
+							return;
+						}
 						strcpy(directory, getenv("PWD")); //get current directory
 						strcat(directory, &pch[1]); //take everything after dot
 						strcat(path, directory);
@@ -105,6 +117,12 @@ void setenv_function (char *text, char *text2)
 					if(length == 0) //empty afterwards, so get home directory
 					{
 						char *directory = malloc(300 * sizeof(char));
+						if(directory == (char *) NULL)
+						{
+							perror("Error with memory allocation.");
+							printf("Error at line %d\n", __LINE__);
+							return;
+						}
 						strcpy(directory, getenv("HOME")); //get home directory
 						strcat(path, directory); //set to home directory
 						strcat(path, ":"); //colon-separate
@@ -122,6 +140,12 @@ void setenv_function (char *text, char *text2)
 								return;
 							}
 							char *directory = malloc(300 * sizeof(char));
+							if(directory == (char *) NULL)
+							{
+								perror("Error with memory allocation.");
+								printf("Error at line %d\n", __LINE__);
+								return;
+							}
 							strcpy(directory, pwd->pw_dir); 
 							strcat(path, directory); //set to home directory
 							strcat(path, ":"); //colon-separate
@@ -129,6 +153,12 @@ void setenv_function (char *text, char *text2)
 						else //string continues, go up until /
 						{
 							char *directory = malloc(300 * sizeof(char));
+							if(directory == (char *) NULL)
+							{
+								perror("Error with memory allocation.");
+								printf("Error at line %d\n", __LINE__);
+								return;
+							}
 							strcpy(directory, "/home/"); //start with home directory
 							int index = length - 1;
 							int i;
@@ -141,6 +171,12 @@ void setenv_function (char *text, char *text2)
 								}
 							}
 							char *toadd = malloc(300 * sizeof(char));
+							if(toadd == (char *) NULL)
+							{
+								perror("Error with memory allocation.");
+								printf("Error at line %d\n", __LINE__);
+								return;
+							}
 							strncpy(toadd, &pch[1], index - 1);
 							strcat(toadd, "/"); //slash at end
 							strcat(directory, toadd); //copy over
@@ -197,6 +233,12 @@ void setenv_function (char *text, char *text2)
 							}
 						}
 						char *toadd = malloc(300 * sizeof(char));
+						if(toadd == (char *) NULL)
+						{
+							perror("Error with memory allocation.");
+							printf("Error at line %d\n", __LINE__);
+							return;
+						}
 						strncpy(toadd, &text2[1], index - 1); //copy over
 						strcat(toadd, "/"); //add slash
 						strcat(directory, toadd); //copy over
@@ -318,6 +360,12 @@ void cd_function2(char *text)
 					}
 				}
 				char *toadd = malloc(300 * sizeof(char));
+				if(toadd == (char *) NULL)
+				{
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
 				strncpy(toadd, &text[1], index - 1); //copy everything up until slash
 				strcat(toadd, "/");
 				strcat(directory, toadd);
@@ -336,6 +384,12 @@ void cd_function2(char *text)
 	else //no tilde
 	{
 		char *directory = malloc(300 * sizeof(char));
+		if(directory == (char *) NULL)
+		{
+			perror("Error with memory allocation.");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
 		strcpy(directory, getenv("PWD")); //start with current directory and see if it's relative or absolute
 		if(directory[strlen(directory) - 1] != '/') //last character is not a slash
 		{
@@ -364,6 +418,12 @@ void cd_function2(char *text)
 					}
 				}
 				char *directory2 = malloc(300 * sizeof(char));
+				if(directory2 = (char *) NULL)
+				{
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
 				strncpy(directory2, directory, lastSlashIndex); //get everything up to the slash
 				strcpy(directory, directory2);
 				if(strlen(text) > 2)
@@ -395,6 +455,12 @@ void cd_function2(char *text)
 			else
 			{
 				char* text2 = malloc(300 * sizeof(char));
+				if(text2 = (char *) NULL)
+				{
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
 				memcpy(text2, &text[1], strlen(&text[1]) * sizeof(char)); //copy everything after slash
 				strcpy(text, text2); //copy back into text
 			}
@@ -557,4 +623,71 @@ int getAliasCount()
 int getWords()
 {
 	return words;
+}
+char** getDirectories(char* text)
+{
+	int numberOfDirectories = 0;
+	directories = (char **)malloc(300 * sizeof(char *));
+	printf("Here\n");
+	if(directories == (char **)NULL)
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	DIR *dir;
+	struct dirent *ent;
+	if ((dir = opendir (getenv("PWD"))) != NULL) 
+	{
+		/* print all the files and directories within directory */
+		while ((ent = readdir (dir)) != NULL) 
+		{
+			regex_t regex;
+			int reti;
+			char msgbuf[100];
+
+			/* Compile regular expression */
+			reti = regcomp(&regex, text, 0);
+			if (reti) 
+			{
+				perror ("Cannot open directory");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+
+			/* Execute regular expression */
+			reti = regexec(&regex, ent->d_name, 0, NULL, 0);
+			if (!reti) 
+			{
+				directories[numberOfDirectories] = ent->d_name;
+				directories[numberOfDirectories + 1] = NULL;
+				numberOfDirectories ++;
+			}
+			else if (reti == REG_NOMATCH) 
+			{
+				
+			}
+			else 
+			{
+				perror ("Error with regular expression");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+			/* Free compiled regular expression if you want to use the regex_t again */
+			regfree(&regex);
+		}
+	closedir (dir);
+	} 
+	else 
+	{
+		/* could not open directory */
+		perror ("Cannot open directory");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	return directories;
+}
+void pipe_function(char *text)
+{
+
 }
