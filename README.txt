@@ -24,6 +24,5 @@ Features Implemented
 
 Questions
 1. How to use YACC recursively?
-2. How to integrate shell.c file into YACC and Lex? (if necessary)
-3. System calls to handle wildcard matching?
-4. Executing other commands
+2. System calls to handle wildcard matching?
+3. Executing other commands
