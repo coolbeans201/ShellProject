@@ -9,6 +9,7 @@ cd	return CD;
 printenv return PRINTENV;
 unsetenv return UNSETENV;
 setenv return SETENV;
+regex return REGEX;
 alias return ALIAS;
 unalias return UNALIAS;
 bye return BYE;
