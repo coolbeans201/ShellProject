@@ -3,7 +3,7 @@ Matthew Weingarten
 README
 -------------------
 Features NOT Implemented
-1. Wildcard matching (system call to handle this case?)
+1. Wildcard matching (use regular expressions to match after listing all the files in a directory)
 2. Quotes being interpreted as one word (recursive YACC)
 3. File name completion (using the ESC character in Lex/YACC)
 4. Metacharacters       (recursive YACC)
@@ -24,5 +24,4 @@ Features Implemented
 
 Questions
 1. How to use YACC recursively?
-2. System calls to handle wildcard matching?
-3. Executing other commands
+2. Executing other commands
