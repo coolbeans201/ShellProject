@@ -67,15 +67,6 @@ command:
 		|pipe_case
 		|ampersand_case
 		|matcher_case
-		|setenv_environment_case
-		|unsetenv_environment_case
-		|cd_environment_case
-		|unalias_environment_case
-		|setenv_environment_case2
-		|setenv_environment_case3
-		|alias_environment_case
-		|alias_environment_case2
-		|alias_environment_case3
 		|standard_error_redirect_case
 		|standard_error_redirect_case2;
 cd2_case:
@@ -87,6 +78,10 @@ cd_case:
 	    CD WORD 
 							{
 								cd_function2(yytext);
+							}
+	|	CD ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								cd_function2(textArray[words - 1]);
 							};
 printenv_case:
 	    PRINTENV 
@@ -102,11 +97,27 @@ unsetenv_case:
 		UNSETENV WORD 
 							{
 								unsetenv_function(yytext);
+							}
+	|	UNSETENV ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								unsetenv_function(textArray[words - 1]);
 							};
 setenv_case:
 		SETENV word_case word_case   
 							{
 								setenv_function(textArray[words - 2], textArray [words - 1]);		
+							}
+	|	SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								setenv_function(textArray[words - 2], textArray[words - 1]);
+							}
+	|	SETENV word_case ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								setenv_function(textArray[words - 2], textArray[words - 1]);
+							}
+	|	SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
+							{
+								setenv_function(textArray[words - 2], textArray[words - 1]);
 							};
 alias2_case:
 		ALIAS	
@@ -122,11 +133,27 @@ alias_case:
 		ALIAS  word_case  word_case    
 							{
 								alias_function(textArray[words - 2], textArray[words - 1]);
+							}
+	|	ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								alias_function(textArray[words - 2], textArray[words - 1]);
+							}
+	|	ALIAS word_case ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								alias_function(textArray[words - 2], textArray[words - 1]);
+							}
+	|	ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
+							{
+								alias_function(textArray[words - 2], textArray[words - 1]);
 							};
 unalias_case:
 		UNALIAS WORD       
 							{
 								unalias_function(yytext);
+							}
+	|	UNALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND
+							{
+								unalias_function(textArray[words - 1]);
 							};
 bye_case:
 		BYE				   
@@ -172,51 +199,6 @@ matcher_case:
 		MATCHER				
 							{
 								printf("Matcher entered\n");
-							};
-setenv_environment_case:
-		SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
-							{
-								setenv_function(textArray[words - 2], textArray[words - 1]);
-							};
-unsetenv_environment_case:
-		UNSETENV ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								unsetenv_function(textArray[words - 1]);
-							};
-cd_environment_case:
-		CD ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								cd_function2(textArray[words - 1]);
-							};
-unalias_environment_case:
-		UNALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								unalias_function(textArray[words - 1]);
-							};
-setenv_environment_case2:
-		SETENV word_case ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								setenv_function(textArray[words - 2], textArray[words - 1]);
-							};
-setenv_environment_case3:
-		SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								setenv_function(textArray[words - 2], textArray[words - 1]);
-							};
-alias_environment_case:
-		ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
-							{
-								alias_function(textArray[words - 2], textArray[words - 1]);
-							};
-alias_environment_case2:
-		ALIAS word_case ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								alias_function(textArray[words - 2], textArray[words - 1]);
-							};
-alias_environment_case3:
-		ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								alias_function(textArray[words - 2], textArray[words - 1]);
 							};
 standard_error_redirect_case:
 			word_case WRITETO AMPERSAND word_case
@@ -733,6 +715,8 @@ void read_from_function (char *text)
 }
 void word_function(char *text)
 {
+	printf("%s\n", text);
+	printf("Entered\n");
 	char * es;
 	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
 	if (es == NULL) //error
