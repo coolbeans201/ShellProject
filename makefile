@@ -1,13 +1,8 @@
-all: y
-
-y.tab.c y.tab.h:	shell.y
-	bison -dy shell.y
-
-lex.yy.c: shell.lex y.tab.h
+shell: lex.yy.c y.tab.c
+	gcc -g shell.c lex.yy.c y.tab.c -o shell
+lex.yy.c: y.tab.c shell.lex
 	flex shell.lex
-
-y: lex.yy.c y.tab.c y.tab.h
-	gcc lex.yy.c y.tab.c -o shell
-
-clean:
-	rm shell y.tab.c lex.yy.c y.tab.h
+y.tab.c: shell.y
+	bison -dy shell.y
+clean: 
+	rm -f lex.yy.c y.tab.c y.tab.h shell
