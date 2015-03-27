@@ -14,7 +14,7 @@
 		 yyparse();
   }
 %}
-%token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTSTART ENVIRONMENTEND SLASH READFROM WRITETO PIPE AMPERSAND
+%token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTSTART ENVIRONMENTEND SLASH READFROM WRITETO PIPE AMPERSAND REGEX
 %%
 commands: 
 		| commands command NEWLINE;
@@ -37,7 +37,9 @@ command:
 		|ampersand_case
 		|matcher_case
 		|standard_error_redirect_case
-		|standard_error_redirect_case2;
+		|standard_error_redirect_case2
+		|error_case
+		|regex_case;
 cd2_case:
 		CD 
 							{
@@ -147,7 +149,7 @@ write_to_case:
 pipe_case:
 		PIPE word_case			
 							{
-								printf("Pipe entered\n");
+								pipe_function(textArray[getWords() - 1]);
 							};
 ampersand_case:
 		AMPERSAND			
@@ -168,4 +170,18 @@ standard_error_redirect_case2:
 		word_case WRITETO word_case
 							{
 								standard_error_redirect_function2(textArray[getWords() - 2], textArray[getWords() - 1]);
+							};
+error_case:
+	error
+							{
+								printf("Syntax error.\n");
+							};
+regex_case:
+	REGEX WORD				{
+								int i = 0;
+								while(directories[i] != NULL)
+								{
+									printf("%s\n", directories[i]);
+									i++;
+								}
 							};
