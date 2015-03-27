@@ -12,6 +12,8 @@
   #include <sys/wait.h>
   #include <pwd.h>
   #include <fnmatch.h>
+  #include <dirent.h>
+  #include <regex.h>
   #define STRINGIFY(x) #x
   #define TOSTRING(x) STRINGIFY(x)
   #define AT __FILE__ ":" TOSTRING(__LINE__)
