@@ -30,7 +30,10 @@
   void read_from_function (char *text);
   void word_function (char *text);
   void alias_function2(void);
+  void pipe_function(char *text);
   int getWords(void);
   int getAliasCount(void);
+  char** getDirectories(char *text);
   char** textArray; //words
+  char** directories; //contains directories matching the pattern
   #endif
