@@ -1,12 +1,12 @@
 #include "shell.h"
-  char** newTextArray; //copied words
-  int words = 0; //number of words
-  extern char** environ; //environment variables
-  char** aliases; //alias names and values
-  char** newAliases; //copied aliases
-  int aliasCount = 0; //number of aliases
-  struct passwd* pwd; //contains result of getpwnam
-  int numberOfDirectores = 0;
+char** newTextArray; //copied words
+int words = 0; //number of words
+extern char** environ; //environment variables
+char** aliases; //alias names and values
+char** newAliases; //copied aliases
+int aliasCount = 0; //number of aliases
+struct passwd* pwd; //contains result of getpwnam
+int numberOfDirectories = 0;
 void unsetenv_function(char *text)
 {
 	printf("Unsetenv command entered\n");
@@ -625,12 +625,19 @@ int getWords()
 {
 	return words;
 }
-char** getDirectories(char* text)
+void getDirectories(char* text)
 {
+	char** newDirectories;
 	int numberOfDirectories = 0;
-	directories = (char **)malloc(300 * sizeof(char *));
-	printf("Here\n");
-	if(directories == (char **)NULL)
+	char *addedText = malloc(300 * sizeof(char));
+	if(addedText == (char *)NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	directories = malloc(300 * sizeof(char*));
+	if(directories == (char **)NULL) //error
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
@@ -638,93 +645,183 @@ char** getDirectories(char* text)
 	}
 	DIR *dir;
 	struct dirent *ent;
-	regex_t regex;
-	int reti;
-	int index = 0;
-	int i;
-	if(strchr(text, '*') != NULL) //have a *
-	{
-		char* textToCompare = malloc(300 * sizeof(char));
-		if(textToCompare == (char*) NULL) //error
-		{
-			perror ("Error with memory allocation");
-			printf ("Error at line %d\n", __LINE__);
-			return;
-		}
-		for(i = 0; i < strlen(text); i++) //find where * is
-		{
-			if(text[i] == '*')
-			{
-					index = i;
-					break;
-			}
-		}
-		if(index > 0) //first character is not *
-		{
-			strncpy(textToCompare, text, index);
-		}
-		strcat(textToCompare, "[A-Za-z0-9]*"); //regular expression for at least character
-		if(index + 1 != strlen(text)) //append everything afterwards
-		{
-			strcat(textToCompare, &text[index + 1]);
-		}
-		/* Compile regular expression */
-		reti = regcomp(&regex, textToCompare, 0);
-	}
-	else if(strchr(text, '?') != NULL) //have a ?
-	{
-		char* textToCompare = malloc(300 * sizeof(char));
-		if(textToCompare == (char*) NULL) //error
-		{
-			perror ("Error with memory allocation");
-			printf ("Error at line %d\n", __LINE__);
-			return;
-		}
-		for(i = 0; i < strlen(text); i++) //find where * is
-		{
-			if(text[i] == '?')
-			{
-					index = i;
-					break;
-			}
-		}
-		if(index > 0) //first character is not *
-		{
-			strncpy(textToCompare, text, index);
-		}
-		strcat(textToCompare, "[A-Za-z0-9]"); //regular expression for just one character
-		if(index + 1 != strlen(text)) //append everything afterwards
-		{
-			strcat(textToCompare, &text[index + 1]);
-		}
-		/* Compile regular expression */
-		reti = regcomp(&regex, textToCompare, 0);
-	}
-	if (reti) //error
-	{
-		perror ("Cannot compile expression");
-		printf ("Error at line %d\n", __LINE__);
-		return;
-	}
 	if ((dir = opendir (getenv("PWD"))) != NULL) 
 	{
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) 
 		{
-			printf("%s\n", ent->d_name);
-			
+			regex_t regex;
+			int reti;
+			int index = 0;
+			int index2 = 0;
+			int i;
+			if(strchr(text, '*') != NULL) //have a *
+			{
+				char* textToCompare = malloc(300 * sizeof(char));
+				if(textToCompare == (char*) NULL) //error
+				{
+					perror ("Error with memory allocation");
+					printf ("Error at line %d\n", __LINE__);
+					return;
+				}
+				for(i = 0; i < strlen(text); i++) //find where * is
+				{
+					if(text[i] == '*')
+					{
+						index = i;
+						break;
+					}
+				}
+				for(i = 0; i < strlen(text); i++) //find where . is
+				{
+					if(text[i] == '.')
+					{
+						index2 = i;
+						break;
+					}
+				}
+				if(index > 0 && index > index2) //first character is not * and * comes before .
+				{
+					strncpy(textToCompare, text, index);
+					strcat(textToCompare, "[[:alnum:]]*"); //regular expression for any character
+				}
+				else if(index == 0) //first character is *
+				{
+					strcpy(textToCompare, "[[:alnum:]]*"); //regular expression for any character
+				}
+				else //first character is not *, but . comes before *
+				{
+					strncpy(textToCompare, text, index2);
+					strcat(textToCompare, "[.]"); //add .
+					for(i = index2 + 1; i < index; i++)
+					{
+						strncpy(addedText, &text[i], 1);
+						strcat(textToCompare, addedText);
+					}
+					strcat(textToCompare, "[[:alnum:]]*"); //regular expression for at least character
+				}
+				if(index + 1 != strlen(text)) //append everything afterwards
+				{
+					if(index2 != 0) //still have to take care of .
+					{
+						for(i = index + 1; i < index2; i++)
+						{
+							strncpy(addedText, &text[i], 1);
+							strcat(textToCompare, addedText);
+						}
+						strcat(textToCompare,"[.]"); //add .
+						strcat(textToCompare, &text[index2 + 1]); //take everything afterwards
+					}
+					else
+					{
+						strcat(textToCompare, &text[index + 1]);
+					}
+				}
+				/* Compile regular expression */
+				printf("%s\n", textToCompare);
+				reti = regcomp(&regex, textToCompare, 0);
+			}
+			else if(strchr(text, '?') != NULL) //have a ?
+			{
+				char* textToCompare = malloc(300 * sizeof(char));
+				if(textToCompare == (char*) NULL) //error
+				{
+					perror ("Error with memory allocation");
+					printf ("Error at line %d\n", __LINE__);
+					return;
+				}
+				for(i = 0; i < strlen(text); i++) //find where * is
+				{
+					if(text[i] == '?')
+					{
+						index = i;
+						break;
+					}
+				}
+				for(i = 0; i < strlen(text); i++) //find where . is
+				{
+					if(text[i] == '.')
+					{
+						index2 = i;
+						break;
+					}
+				}
+				if(index > 0 && index > index2) //first character is not ? and ? comes before .
+				{
+					strncpy(textToCompare, text, index);
+					strcat(textToCompare, "[[:alnum:]]"); //regular expression for a single character
+				}
+				else if(index == 0) //first character is *
+				{
+					strcpy(textToCompare, "[[:alnum:]]"); //regular expression for a single character
+				}
+				else //first character is not *, but . comes before *
+				{
+					strncpy(textToCompare, text, index2);
+					strcat(textToCompare, "[.]"); //add .
+					for(i = index2 + 1; i < index; i++)
+					{
+						strncpy(addedText, &text[i], 1);
+						strcat(textToCompare, addedText);
+					}
+					strcat(textToCompare, "[[:alnum:]]"); //regular expression for a single character
+				}
+				if(index + 1 != strlen(text)) //append everything afterwards
+				{
+						if(index2 != 0) //still have to take care of .
+						{
+							for(i = index + 1; i < index2; i++)
+							{
+								strncpy(addedText, &text[i], 1);
+								strcat(textToCompare, addedText);
+							}
+							strcat(textToCompare,"[.]"); //add .
+							strcat(textToCompare, &text[index2 + 1]); //take everything afterwards
+						}
+						else
+						{
+							strcat(textToCompare, &text[index + 1]);
+						}
+				}
+				/* Compile regular expression */
+				reti = regcomp(&regex, textToCompare, 0);
+			}
+			if (reti) //error
+			{
+				perror ("Cannot compile expression");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
 
 			/* Execute regular expression */
 			reti = regexec(&regex, ent->d_name, 0, NULL, 0);
 			if (!reti) 
 			{
-				directories[numberOfDirectories] = ent->d_name;
-				directories[numberOfDirectories + 1] = NULL;
-				numberOfDirectories ++;
+				char * es;
+				es = malloc(strlen(ent->d_name) + 1); //allocate space for word and terminating character
+				if (es == NULL) //error
+				{
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+				strcpy(es, ent->d_name); //copy text into pointer
+				newDirectories = (char **) malloc((numberOfDirectories+2)*sizeof(char *)); //null entry and new word
+				if (newDirectories == (char **) NULL ) //no array created
+				{
+					perror("Array not created");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+				memcpy ((char *) newDirectories, (char *) directories, numberOfDirectories*sizeof(char *)); //copy all entries from textArray into newTextArray
+				newDirectories[numberOfDirectories]   = es; //word
+				newDirectories[numberOfDirectories+1] = NULL; //null entry
+				directories = newDirectories;
+				numberOfDirectories++; //increment index
 			}
 			else if (reti == REG_NOMATCH) 
 			{
-				
+				//do nothing
 			}
 			else 
 			{
@@ -744,11 +841,146 @@ char** getDirectories(char* text)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	return directories;
+	int i;
+	for(i = 0; i < numberOfDirectories; i++)
+	{
+		printf("%s\n", directories[i]);
+	}
 }
 void pipe_function(char *text)
 {
-
+	printf("Ey guy, you piped!\n");
+	int   pid_1,               /* will be process id of first child - who */
+	      pid_2,               /* will be process id of second child - wc */
+	      pfd[2];              /* pipe file descriptor table.             */
+	if (pipe(pfd) == -1 )              /* create a pipe  */
+	{                                 /* must do before a fork */
+	    perror ("Error with creating a pipe");
+		printf ("Error at line %d\n", __LINE__);
+	    return;
+	}
+	if ((pid_1 = fork ()) == -1)        /* create 1st child   */
+	{
+	    perror ("Error with forking first child");
+		printf ("Error at line %d\n", __LINE__);
+	    return;
+	}
+	if (pid_1 != 0 )                      /* in parent  */
+	{
+	    if ((pid_2 = fork ()) == -1)     /* create 2nd child  */
+	    {
+	        perror ("Error with forking second child");
+			printf ("Error at line %d\n", __LINE__);
+	        return;
+	    }
+	    if (pid_2 != 0)                   /* still in parent  */
+	    {
+	        int result = close (pfd [0]);         /* close pipe in parent */
+			if(result == -1) //error
+			{
+				perror ("Error with closing read end of pipe");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+	        result = close (pfd [1]);        /* conserve file descriptors */
+			if(result == -1) //error
+			{
+				perror ("Error with closing write end of pipe");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+	        result = wait ((int *) 0);           /* wait for children to die */
+			if(result == -1) //error
+			{
+				perror ("Error with waiting");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+	        result = wait ((int *) 0);
+			if(result == -1) //error
+			{
+				perror ("Error with waiting");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+	    }
+	    else                                /* in 2nd child   */
+	    {
+			int result = close (0);           /* close standard input */
+			if(result == -1) //error
+			{
+				perror ("Error with closing standard input");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+	        result = dup (pfd [0]);      /* read end of pipe becomes stdin */
+			if(result == -1) //error
+			{
+				perror ("Error with making read end of pipe standard input");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+	        result = close (pfd [0]);            /* close unneeded I/O  */
+			if(result == -1) //error
+			{
+				perror ("Error with closing read end of pipe");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+	        result = close (pfd [1]);           /* close unneeded I/O   */
+			if(result == -1) //error
+			{
+				perror ("Error with closing write end of pipe");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+	        result = execl ("/usr/bin/wc", "wc", "-l", (char *) NULL);
+			if(result == -1) //error
+			{
+				perror ("Error with executing");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
+	    }	
+	}
+	else                                      /* in 1st child   */
+	{
+	    int result = close (1);            /* close standard out	 */
+		if(result == -1) //error
+		{
+			perror ("Error with closing standard output");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+	    result = dup (pfd [1]);       /* write end of pipes becomes stdout */
+		if(result == -1) //error
+		{
+			perror ("Error with setting write end of pipe to standard output");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+	    result = close (pfd [0]);                 /* close unneeded I/O */
+		if(result == -1) //error
+		{
+			perror ("Error with closing read end of pipe");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+	    result = close (pfd [1]);                /* close unneeded I/O */
+		if(result == -1) //error
+		{
+			perror ("Error with closing write end of pipe");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+	    result = execl ("/usr/bin/who", "who", (char *) NULL);
+		if(result == -1) //error
+		{
+			perror ("Error with executing");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+	}
 }
 int getNumberOfDirectories()
 {
