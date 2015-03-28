@@ -178,10 +178,11 @@ error_case:
 							};
 regex_case:
 	REGEX WORD				{
-								int i = 0;
-								while(directories[i] != NULL)
+								int i;
+								char** directories2 = malloc(300 * sizeof(char *));
+								memcpy((char *)directories2, (char *)(getDirectories(yytext)), getNumberOfDirectories() * sizeof(char *));
+								for(i = 0; i < getNumberOfDirectories(); i++)
 								{
-									printf("%s\n", directories[i]);
-									i++;
+									printf("%s\n", directories2[i]);
 								}
 							};
