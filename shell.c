@@ -6,6 +6,7 @@
   char** newAliases; //copied aliases
   int aliasCount = 0; //number of aliases
   struct passwd* pwd; //contains result of getpwnam
+  int numberOfDirectores = 0;
 void unsetenv_function(char *text)
 {
 	printf("Unsetenv command entered\n");
@@ -637,23 +638,81 @@ char** getDirectories(char* text)
 	}
 	DIR *dir;
 	struct dirent *ent;
+	regex_t regex;
+	int reti;
+	int index = 0;
+	int i;
+	if(strchr(text, '*') != NULL) //have a *
+	{
+		char* textToCompare = malloc(300 * sizeof(char));
+		if(textToCompare == (char*) NULL) //error
+		{
+			perror ("Error with memory allocation");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+		for(i = 0; i < strlen(text); i++) //find where * is
+		{
+			if(text[i] == '*')
+			{
+					index = i;
+					break;
+			}
+		}
+		if(index > 0) //first character is not *
+		{
+			strncpy(textToCompare, text, index);
+		}
+		strcat(textToCompare, "[A-Za-z0-9]*"); //regular expression for at least character
+		if(index + 1 != strlen(text)) //append everything afterwards
+		{
+			strcat(textToCompare, &text[index + 1]);
+		}
+		/* Compile regular expression */
+		reti = regcomp(&regex, textToCompare, 0);
+	}
+	else if(strchr(text, '?') != NULL) //have a ?
+	{
+		char* textToCompare = malloc(300 * sizeof(char));
+		if(textToCompare == (char*) NULL) //error
+		{
+			perror ("Error with memory allocation");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+		for(i = 0; i < strlen(text); i++) //find where * is
+		{
+			if(text[i] == '?')
+			{
+					index = i;
+					break;
+			}
+		}
+		if(index > 0) //first character is not *
+		{
+			strncpy(textToCompare, text, index);
+		}
+		strcat(textToCompare, "[A-Za-z0-9]"); //regular expression for just one character
+		if(index + 1 != strlen(text)) //append everything afterwards
+		{
+			strcat(textToCompare, &text[index + 1]);
+		}
+		/* Compile regular expression */
+		reti = regcomp(&regex, textToCompare, 0);
+	}
+	if (reti) //error
+	{
+		perror ("Cannot compile expression");
+		printf ("Error at line %d\n", __LINE__);
+		return;
+	}
 	if ((dir = opendir (getenv("PWD"))) != NULL) 
 	{
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) 
 		{
-			regex_t regex;
-			int reti;
-			char msgbuf[100];
-
-			/* Compile regular expression */
-			reti = regcomp(&regex, text, 0);
-			if (reti) 
-			{
-				perror ("Cannot open directory");
-				printf ("Error at line %d\n", __LINE__);
-				return;
-			}
+			printf("%s\n", ent->d_name);
+			
 
 			/* Execute regular expression */
 			reti = regexec(&regex, ent->d_name, 0, NULL, 0);
@@ -676,7 +735,7 @@ char** getDirectories(char* text)
 			/* Free compiled regular expression if you want to use the regex_t again */
 			regfree(&regex);
 		}
-	closedir (dir);
+		closedir (dir);
 	} 
 	else 
 	{
@@ -690,4 +749,8 @@ char** getDirectories(char* text)
 void pipe_function(char *text)
 {
 
+}
+int getNumberOfDirectories()
+{
+	return numberOfDirectories;
 }
