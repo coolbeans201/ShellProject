@@ -361,7 +361,7 @@ void cd_function2(char *text)
 					}
 				}
 				char *toadd = malloc(300 * sizeof(char));
-				if(toadd == (char *) NULL)
+				if(toadd == (char *) NULL) //error
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
@@ -419,7 +419,7 @@ void cd_function2(char *text)
 					}
 				}
 				char *directory2 = malloc(300 * sizeof(char));
-				if(directory2 = (char *) NULL)
+				if(directory2 = (char *) NULL) //error
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
@@ -813,13 +813,13 @@ void getDirectories(char* text)
 					printf("Error at line %d\n", __LINE__);
 					return;
 				}
-				memcpy ((char *) newDirectories, (char *) directories, numberOfDirectories*sizeof(char *)); //copy all entries from textArray into newTextArray
+				memcpy ((char *) newDirectories, (char *) directories, numberOfDirectories*sizeof(char *)); //copy all entries from directories into newDirectories
 				newDirectories[numberOfDirectories]   = es; //word
 				newDirectories[numberOfDirectories+1] = NULL; //null entry
 				directories = newDirectories;
 				numberOfDirectories++; //increment index
 			}
-			else if (reti == REG_NOMATCH) 
+			else if (reti == REG_NOMATCH) //no match
 			{
 				//do nothing
 			}
@@ -832,7 +832,7 @@ void getDirectories(char* text)
 			/* Free compiled regular expression if you want to use the regex_t again */
 			regfree(&regex);
 		}
-		closedir (dir);
+		closedir (dir); //close directory
 	} 
 	else 
 	{
@@ -844,7 +844,7 @@ void getDirectories(char* text)
 	int i;
 	for(i = 0; i < numberOfDirectories; i++)
 	{
-		printf("%s\n", directories[i]);
+		printf("%s\n", directories[i]); //print out results
 	}
 }
 void pipe_function(char *text)
@@ -934,7 +934,7 @@ void pipe_function(char *text)
 				printf ("Error at line %d\n", __LINE__);
 				return;
 			}
-	        result = execl ("/usr/bin/wc", "wc", "-l", (char *) NULL);
+	        result = execl ("/usr/bin/wc", "wc", "-l", (char *) NULL); //execute second child
 			if(result == -1) //error
 			{
 				perror ("Error with executing");
@@ -973,7 +973,7 @@ void pipe_function(char *text)
 			printf ("Error at line %d\n", __LINE__);
 			return;
 		}
-	    result = execl ("/usr/bin/who", "who", (char *) NULL);
+	    result = execl ("/usr/bin/who", "who", (char *) NULL); //execute 1st child
 		if(result == -1) //error
 		{
 			perror ("Error with executing");
