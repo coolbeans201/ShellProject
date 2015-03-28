@@ -33,6 +33,7 @@
   void pipe_function(char *text);
   int getWords(void);
   int getAliasCount(void);
+  int getNumberOfDirectories(void);
   char** getDirectories(char *text);
   char** textArray; //words
   char** directories; //contains directories matching the pattern
