@@ -13,7 +13,7 @@
   #include <pwd.h>
   #include <fnmatch.h>
   #include <dirent.h>
-  #include <regex.h>
+  #include <glob.h>
   #define STRINGIFY(x) #x
   #define TOSTRING(x) STRINGIFY(x)
   #define AT __FILE__ ":" TOSTRING(__LINE__)
@@ -34,6 +34,7 @@
   int getWords(void);
   int getAliasCount(void);
   int getNumberOfDirectories(void);
+  int globerr(const char* path, int eerrno);
   void getDirectories(char *text);
   char** textArray; //words
   char** directories; //contains directories matching the pattern
