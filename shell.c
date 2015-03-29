@@ -627,15 +627,11 @@ int getWords()
 }
 void getDirectories(char* text)
 {
-	char** newDirectories;
+	int i;
+	int flags = 0;
+	glob_t results;
+	int ret;
 	int numberOfDirectories = 0;
-	char *addedText = malloc(300 * sizeof(char));
-	if(addedText == (char *)NULL) //error
-	{
-		perror("Error with memory allocation.");
-		printf("Error at line %d\n", __LINE__);
-		return;
-	}
 	directories = malloc(300 * sizeof(char*));
 	if(directories == (char **)NULL) //error
 	{
@@ -650,190 +646,22 @@ void getDirectories(char* text)
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) 
 		{
-			regex_t regex;
-			int reti;
-			int index = 0;
-			int index2 = 0;
-			int i;
-			if(strchr(text, '*') != NULL) //have a *
+			flags |= (i > 1 ? GLOB_APPEND : 0);
+			ret = glob(text, flags, globerr, & results);
+			if (ret != 0) 
 			{
-				char* textToCompare = malloc(300 * sizeof(char));
-				if(textToCompare == (char*) NULL) //error
-				{
-					perror ("Error with memory allocation");
-					printf ("Error at line %d\n", __LINE__);
-					return;
-				}
-				for(i = 0; i < strlen(text); i++) //find where * is
-				{
-					if(text[i] == '*')
-					{
-						index = i;
-						break;
-					}
-				}
-				for(i = 0; i < strlen(text); i++) //find where . is
-				{
-					if(text[i] == '.')
-					{
-						index2 = i;
-						break;
-					}
-				}
-				if(index > 0 && index > index2) //first character is not * and * comes before .
-				{
-					strncpy(textToCompare, text, index);
-					strcat(textToCompare, "[[:alnum:]]*"); //regular expression for any character
-				}
-				else if(index == 0) //first character is *
-				{
-					strcpy(textToCompare, "[[:alnum:]]*"); //regular expression for any character
-				}
-				else //first character is not *, but . comes before *
-				{
-					strncpy(textToCompare, text, index2);
-					strcat(textToCompare, "[.]"); //add .
-					for(i = index2 + 1; i < index; i++)
-					{
-						strncpy(addedText, &text[i], 1);
-						strcat(textToCompare, addedText);
-					}
-					strcat(textToCompare, "[[:alnum:]]*"); //regular expression for at least character
-				}
-				if(index + 1 != strlen(text)) //append everything afterwards
-				{
-					if(index2 != 0) //still have to take care of .
-					{
-						for(i = index + 1; i < index2; i++)
-						{
-							strncpy(addedText, &text[i], 1);
-							strcat(textToCompare, addedText);
-						}
-						strcat(textToCompare,"[.]"); //add .
-						strcat(textToCompare, &text[index2 + 1]); //take everything afterwards
-					}
-					else
-					{
-						strcat(textToCompare, &text[index + 1]);
-					}
-				}
-				/* Compile regular expression */
-				printf("%s\n", textToCompare);
-				reti = regcomp(&regex, textToCompare, 0);
-			}
-			else if(strchr(text, '?') != NULL) //have a ?
-			{
-				char* textToCompare = malloc(300 * sizeof(char));
-				if(textToCompare == (char*) NULL) //error
-				{
-					perror ("Error with memory allocation");
-					printf ("Error at line %d\n", __LINE__);
-					return;
-				}
-				for(i = 0; i < strlen(text); i++) //find where * is
-				{
-					if(text[i] == '?')
-					{
-						index = i;
-						break;
-					}
-				}
-				for(i = 0; i < strlen(text); i++) //find where . is
-				{
-					if(text[i] == '.')
-					{
-						index2 = i;
-						break;
-					}
-				}
-				if(index > 0 && index > index2) //first character is not ? and ? comes before .
-				{
-					strncpy(textToCompare, text, index);
-					strcat(textToCompare, "[[:alnum:]]"); //regular expression for a single character
-				}
-				else if(index == 0) //first character is *
-				{
-					strcpy(textToCompare, "[[:alnum:]]"); //regular expression for a single character
-				}
-				else //first character is not *, but . comes before *
-				{
-					strncpy(textToCompare, text, index2);
-					strcat(textToCompare, "[.]"); //add .
-					for(i = index2 + 1; i < index; i++)
-					{
-						strncpy(addedText, &text[i], 1);
-						strcat(textToCompare, addedText);
-					}
-					strcat(textToCompare, "[[:alnum:]]"); //regular expression for a single character
-				}
-				if(index + 1 != strlen(text)) //append everything afterwards
-				{
-						if(index2 != 0) //still have to take care of .
-						{
-							for(i = index + 1; i < index2; i++)
-							{
-								strncpy(addedText, &text[i], 1);
-								strcat(textToCompare, addedText);
-							}
-							strcat(textToCompare,"[.]"); //add .
-							strcat(textToCompare, &text[index2 + 1]); //take everything afterwards
-						}
-						else
-						{
-							strcat(textToCompare, &text[index + 1]);
-						}
-				}
-				/* Compile regular expression */
-				reti = regcomp(&regex, textToCompare, 0);
-			}
-			if (reti) //error
-			{
-				perror ("Cannot compile expression");
-				printf ("Error at line %d\n", __LINE__);
+				printf("Error with globbing");
+				printf("Error at line %d\n", __LINE__);
 				return;
 			}
-
-			/* Execute regular expression */
-			reti = regexec(&regex, ent->d_name, 0, NULL, 0);
-			if (!reti) 
-			{
-				char * es;
-				es = malloc(strlen(ent->d_name) + 1); //allocate space for word and terminating character
-				if (es == NULL) //error
-				{
-					perror("Error with memory allocation.");
-					printf("Error at line %d\n", __LINE__);
-					return;
-				}
-				strcpy(es, ent->d_name); //copy text into pointer
-				newDirectories = (char **) malloc((numberOfDirectories+2)*sizeof(char *)); //null entry and new word
-				if (newDirectories == (char **) NULL ) //no array created
-				{
-					perror("Array not created");
-					printf("Error at line %d\n", __LINE__);
-					return;
-				}
-				memcpy ((char *) newDirectories, (char *) directories, numberOfDirectories*sizeof(char *)); //copy all entries from directories into newDirectories
-				newDirectories[numberOfDirectories]   = es; //word
-				newDirectories[numberOfDirectories+1] = NULL; //null entry
-				directories = newDirectories;
-				numberOfDirectories++; //increment index
-			}
-			else if (reti == REG_NOMATCH) //no match
-			{
-				//do nothing
-			}
-			else 
-			{
-				perror ("Error with regular expression");
-				printf ("Error at line %d\n", __LINE__);
-				return;
-			}
-			/* Free compiled regular expression if you want to use the regex_t again */
-			regfree(&regex);
 		}
-		closedir (dir); //close directory
-	} 
+		for (i = 0; i < results.gl_pathc; i++)
+		{
+			printf("%s\n", results.gl_pathv[i]);
+		}
+		globfree(& results);
+		closedir (dir); //close directory 
+	}
 	else 
 	{
 		/* could not open directory */
@@ -841,7 +669,6 @@ void getDirectories(char* text)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	int i;
 	for(i = 0; i < numberOfDirectories; i++)
 	{
 		printf("%s\n", directories[i]); //print out results
@@ -985,4 +812,10 @@ void pipe_function(char *text)
 int getNumberOfDirectories()
 {
 	return numberOfDirectories;
+}
+int globerr(const char *path, int eerrno)
+{
+	perror("Error with globbing.");
+	printf ("Error with path %s at line %d\n", path, __LINE__);
+	return 0;	/* let glob() keep going */
 }
