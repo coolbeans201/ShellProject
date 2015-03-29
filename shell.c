@@ -647,19 +647,19 @@ void getDirectories(char* text)
 		while ((ent = readdir (dir)) != NULL) 
 		{
 			flags |= (i > 1 ? GLOB_APPEND : 0);
-			ret = glob(text, flags, globerr, & results);
-			if (ret != 0) 
+			ret = glob(text, flags, globerr, & results); //glob expression
+			if (ret != 0) //error
 			{
 				printf("Error with globbing");
 				printf("Error at line %d\n", __LINE__);
 				return;
 			}
 		}
-		for (i = 0; i < results.gl_pathc; i++)
+		for (i = 0; i < results.gl_pathc; i++) //print out results
 		{
 			printf("%s\n", results.gl_pathv[i]);
 		}
-		globfree(& results);
+		globfree(& results); //free glob expression
 		closedir (dir); //close directory 
 	}
 	else 
@@ -813,7 +813,7 @@ int getNumberOfDirectories()
 {
 	return numberOfDirectories;
 }
-int globerr(const char *path, int eerrno)
+int globerr(const char *path, int eerrno) //error
 {
 	perror("Error with globbing.");
 	printf ("Error with path %s at line %d\n", path, __LINE__);
