@@ -323,6 +323,7 @@ void cd_function2(char *text)
 			}
 			setenv_function("PWD", getenv("HOME")); //change PWD
 			printf("%s\n", getenv("PWD"));
+			return;
 		}
 		else //actual expansion
 		{
@@ -345,6 +346,7 @@ void cd_function2(char *text)
 				}
 				setenv_function("PWD", pwd->pw_dir); //change PWD
 				printf("%s\n", getenv("PWD"));
+				return;
 			}
 			else //string continues, go until /
 			{
@@ -379,6 +381,7 @@ void cd_function2(char *text)
 				}
 				setenv_function("PWD", directory); //change PWD
 				printf("%s\n", getenv("PWD"));
+				return;
 			}
 		}
 	}
@@ -419,13 +422,14 @@ void cd_function2(char *text)
 					}
 				}
 				char *directory2 = malloc(300 * sizeof(char));
-				if(directory2 = (char *) NULL) //error
+				if(directory2 == (char *) NULL) //error
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
 					return;
 				}
 				strncpy(directory2, directory, lastSlashIndex); //get everything up to the slash
+				strcpy(directory, directory2);
 				strcpy(directory, directory2);
 				if(strlen(text) > 2)
 				{
@@ -456,13 +460,13 @@ void cd_function2(char *text)
 			else
 			{
 				char* text2 = malloc(300 * sizeof(char));
-				if(text2 = (char *) NULL)
+				if(text2 == (char *) NULL)
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
 					return;
 				}
-				memcpy(text2, &text[1], strlen(&text[1]) * sizeof(char)); //copy everything after slash
+				strncpy(text2, text, strlen(text)); //copy everything after slash
 				strcpy(text, text2); //copy back into text
 			}
 		}
@@ -486,6 +490,7 @@ void cd_function2(char *text)
 			directory[strlen(directory) - 1] = '\0'; //remove slash
 			setenv_function("PWD", directory); //change PWD to absolute
 			printf("%s\n", getenv("PWD"));
+			return;
 		}
 		else
 		{
