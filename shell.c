@@ -323,7 +323,6 @@ void cd_function2(char *text)
 			}
 			setenv_function("PWD", getenv("HOME")); //change PWD
 			printf("%s\n", getenv("PWD"));
-			return;
 		}
 		else //actual expansion
 		{
@@ -346,7 +345,6 @@ void cd_function2(char *text)
 				}
 				setenv_function("PWD", pwd->pw_dir); //change PWD
 				printf("%s\n", getenv("PWD"));
-				return;
 			}
 			else //string continues, go until /
 			{
@@ -381,7 +379,6 @@ void cd_function2(char *text)
 				}
 				setenv_function("PWD", directory); //change PWD
 				printf("%s\n", getenv("PWD"));
-				return;
 			}
 		}
 	}
@@ -421,16 +418,12 @@ void cd_function2(char *text)
 						break;
 					}
 				}
-				char *directory2 = malloc(300 * sizeof(char));
-				if(directory2 == (char *) NULL) //error
-				{
-					perror("Error with memory allocation.");
-					printf("Error at line %d\n", __LINE__);
-					return;
+				if(lastSlashIndex != 0){ //if .. does not return to the root directory
+					directory[lastSlashIndex] = '\0';//sets the second to last slash to a null character
 				}
-				strncpy(directory2, directory, lastSlashIndex); //get everything up to the slash
-				strcpy(directory, directory2);
-				strcpy(directory, directory2);
+				else if(lastSlashIndex == 0){//if .. is returning up to the root directory
+					directory[1] = '\0';//sets index 1 to null so the directory sets to the root
+				}
 				if(strlen(text) > 2)
 				{
 					strcat(directory, "/"); //add slash
@@ -440,6 +433,9 @@ void cd_function2(char *text)
 				{
 					strcpy(text, ""); //blank it
 				}
+			}
+			else if(strcmp(directory, "/") == 0){//if it is in root
+				strcpy(text,""); //change text to empty string so ".." is not concatenated to the directory later on
 			}
 		}
 		if(text[0] == '/') //first character is slash
@@ -485,12 +481,11 @@ void cd_function2(char *text)
 			printf("%s\n", getenv("PWD"));
 			return;
 		}
-		if(strncmp(&directory[strlen(directory) - 1], "/", 1) == 0) //last character is a slash
+		if(strncmp(&directory[strlen(directory) - 1], "/", 1) == 0 && strlen(directory) != 1) //last character is a slash and directory isn't just "/"
 		{
 			directory[strlen(directory) - 1] = '\0'; //remove slash
 			setenv_function("PWD", directory); //change PWD to absolute
 			printf("%s\n", getenv("PWD"));
-			return;
 		}
 		else
 		{
