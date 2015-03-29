@@ -22,7 +22,7 @@ Features Implemented
 6. Error messages 
 7. Re-parsing with PATH (need to include cases of explicit matching)
 8. External matching for built-in commands
-9. Explicit matching base case (need to figure out ? case, as well as when the character is on the end of the text)
+9. Explicit matching base case
 10. Piping base case
 
 Questions
