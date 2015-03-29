@@ -178,7 +178,5 @@ error_case:
 							};
 regex_case:
 	REGEX WORD				{
-								int i;
-								char** directories2 = malloc(300 * sizeof(char *));
 								getDirectories(yytext);
 							};
