@@ -31,6 +31,7 @@
   void word_function (char *text);
   void alias_function2(void);
   void pipe_function(char *text);
+  void changeGroupedSlashesIntoOneSlash(char* string);
   int getWords(void);
   int getAliasCount(void);
   int getNumberOfDirectories(void);
