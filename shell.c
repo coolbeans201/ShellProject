@@ -308,7 +308,7 @@ void cd_function()
 }
 void cd_function2(char *text)
 {
-	changeGroupedSlashesIntoOneSlash(text); //alters the text so all grouped slashes now become one slash. eg ////home///usr -> /home/usr
+	changeGroupedSlashesIntoOneSlash(text); //alters the text so all grouped slashes now become one slash. ex. ////home///usr -> /home/usr
 	printf("CD command entered\n");
 	if(strncmp(text, "~", 1) == 0) //tilde expansion
 	{
@@ -579,6 +579,7 @@ void read_from_function (char *text)
 }
 void word_function(char *text)
 {
+	//printf("Resolved alias: %s\n",aliasResolve(text));
 	char * es;
 	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
 	if (es == NULL) //error
@@ -829,7 +830,6 @@ void changeGroupedSlashesIntoOneSlash(char* string){ //removes extra slashes in 
 		if(string[i] == '/' && string[i+1] == '/'){
 			int j = i + 1;
 			for(j = i; j <=size; j++){
-			
 				string[j] = string[j+1];
 			}
 			size--;
@@ -837,4 +837,54 @@ void changeGroupedSlashesIntoOneSlash(char* string){ //removes extra slashes in 
 		else
 			i++;
 	}
+}
+
+char* aliasResolve(char* alias){//takes in name of alias and returns the final resolved value of that alias name
+	char* name = malloc(300*sizeof(char)); //declares name and value strings used to resolve
+	char* value;
+	char* nameTracker[100]; //keeps track of alias names already encountered in order to detect infinite loops
+	int trackSize = 0; //keeps track of size of names in the tracker
+	strcpy(name, alias); //copies initial name into name string
+	nameTracker[trackSize] = name;
+	trackSize++;
+	value = getAliasValue(name);//gets initial value
+	while(value[0] != '\0'){ //loop runs until value cannot be further resolved into an additional alias
+		int i;
+		for(i = 0; i < trackSize; i++){
+			if(strcmp(value, nameTracker[i]) == 0){ //returns "<LOOP>" if the alias generates an infinite loop
+				strcpy(value, "<LOOP>");
+				return value;
+			}
+		}
+		nameTracker[trackSize] = value;//the alias value gets added to the tracking array if it's not in the array already
+		trackSize++;
+		name = value; //name now becomes the previous value
+		value = getAliasValue(name); //get alias value connected to alias name
+	}
+	strcpy(value, name);
+	free(name);
+	return value;
+}
+
+char* getAliasValue(char* aliasName){//returns the value of an alias when given the name as an argument
+	int i = 0;
+	char* value = malloc(300*sizeof(char));
+	value[0] = '\0';
+	for(i = 0; i < aliasCount; i++){//goes through aliases arary
+		int j = 0;
+		int eqindex = strlen(aliases[i]);
+		for(j = 0; j < eqindex; j++){
+			if(aliases[i][j] == '='){//finds the = character which separates name and value
+				eqindex = j;
+			}
+		}
+		char* possibleNameMatch = malloc(300*sizeof(char));
+		strncpy(possibleNameMatch, aliases[i], eqindex);//copies everything up to the = value into possibleNameMatch
+		if(strcmp(aliasName, possibleNameMatch) == 0){//if name is possibleNameMatch then copies everything after the = into the return value
+			strcpy(value, &aliases[i][eqindex+1]);
+			return value;
+		}
+		free(possibleNameMatch); //frees memory
+	}
+	return value; //returns null (value[0] = '\0') if the alias name does not exist
 }
