@@ -464,6 +464,7 @@ void cd_function2(char *text)
 				}
 				strncpy(text2, text, strlen(text)); //copy everything after slash
 				strcpy(text, text2); //copy back into text
+				strcpy(directory, "");
 			}
 		}
 		strcat(directory, text); //check if relative
