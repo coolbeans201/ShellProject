@@ -837,5 +837,4 @@ void changeGroupedSlashesIntoOneSlash(char* string){ //removes extra slashes in 
 		else
 			i++;
 	}
-	printf("%s\n", string);
 }
