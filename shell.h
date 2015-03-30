@@ -17,6 +17,8 @@
   #define STRINGIFY(x) #x
   #define TOSTRING(x) STRINGIFY(x)
   #define AT __FILE__ ":" TOSTRING(__LINE__)
+  #define TRUE 1
+  #define FALSE 0
   void unsetenv_function(char *text);
   void unalias_function (char *text);
   void setenv_function (char *text, char *text2);
@@ -31,12 +33,14 @@
   void word_function (char *text);
   void alias_function2(void);
   void pipe_function(char *text);
-  void changeGroupedSlashesIntoOneSlash(char* string);
   int getWords(void);
   int getAliasCount(void);
   int getNumberOfDirectories(void);
   int globerr(const char* path, int eerrno);
   void getDirectories(char *text);
+  void changeGroupedSlashesIntoOneSlash(char* string);
+  char* aliasResolve(char* string);
+  char* getAliasValue(char* aliasName);
   char** textArray; //words
   char** directories; //contains directories matching the pattern
   #endif
