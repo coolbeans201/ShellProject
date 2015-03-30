@@ -308,6 +308,7 @@ void cd_function()
 }
 void cd_function2(char *text)
 {
+	changeGroupedSlashesIntoOneSlash(text); //alters the text so all grouped slashes now become one slash. eg ////home///usr -> /home/usr
 	printf("CD command entered\n");
 	if(strncmp(text, "~", 1) == 0) //tilde expansion
 	{
@@ -819,4 +820,22 @@ int globerr(const char *path, int eerrno) //error
 	perror("Error with globbing.");
 	printf ("Error with path %s at line %d\n", path, __LINE__);
 	return 0;	/* let glob() keep going */
+}
+
+void changeGroupedSlashesIntoOneSlash(char* string){ //removes extra slashes in the beginning of a string so ////home -> /home, ./////home -> ./home
+	int i = 0;
+	int size = strlen(string);
+	for(i = 0; i < size;){
+		if(string[i] == '/' && string[i+1] == '/'){
+			int j = i + 1;
+			for(j = i; j <=size; j++){
+			
+				string[j] = string[j+1];
+			}
+			size--;
+		}
+		else
+			i++;
+	}
+	printf("%s\n", string);
 }
