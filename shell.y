@@ -11,10 +11,10 @@
   }
   main()
   {
-		 yyparse();
+	yyparse();
   }
 %}
-%token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTSTART ENVIRONMENTEND SLASH READFROM WRITETO PIPE AMPERSAND REGEX
+%token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTVARIABLE SLASH READFROM WRITETO PIPE AMPERSAND REGEX
 %%
 commands: 
 		| commands command NEWLINE;
@@ -28,7 +28,6 @@ command:
 		|alias_case
 		|unalias_case
 		|bye_case
-		|quote_case
 		|word_case
 		|slash_case
 		|read_from_case
@@ -46,25 +45,17 @@ cd2_case:
 								cd_function();
 							};
 cd_case:
-	    CD WORD 
-							{
-								cd_function2(yytext);
-							}
-	|	CD ENVIRONMENTSTART word_case ENVIRONMENTEND
+	    CD word_case 
 							{
 								cd_function2(textArray[getWords() - 1]);
-							};
+							}
 printenv_case:
 	    PRINTENV 
 							{
 								printenv_function();
 							};
 unsetenv_case:
-		UNSETENV WORD 
-							{
-								unsetenv_function(yytext);
-							}
-	|	UNSETENV ENVIRONMENTSTART word_case ENVIRONMENTEND
+		UNSETENV word_case 
 							{
 								unsetenv_function(textArray[getWords() - 1]);
 							};
@@ -72,18 +63,6 @@ setenv_case:
 		SETENV word_case word_case   
 							{
 								setenv_function(textArray[getWords() - 2], textArray [getWords() - 1]);		
-							}
-	|	SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								setenv_function(textArray[getWords() - 2], textArray[getWords() - 1]);
-							}
-	|	SETENV word_case ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								setenv_function(textArray[getWords() - 2], textArray[getWords() - 1]);
-							}
-	|	SETENV ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
-							{
-								setenv_function(textArray[getWords() - 2], textArray[getWords() - 1]);
 							};
 alias2_case:
 		ALIAS	
@@ -94,43 +73,43 @@ alias_case:
 		ALIAS  word_case  word_case    
 							{
 								alias_function(textArray[getWords() - 2], textArray[getWords() - 1]);
-							}
-	|	ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								alias_function(textArray[getWords() - 2], textArray[getWords() - 1]);
-							}
-	|	ALIAS word_case ENVIRONMENTSTART word_case ENVIRONMENTEND
-							{
-								alias_function(textArray[getWords() - 2], textArray[getWords() - 1]);
-							}
-	|	ALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND word_case
-							{
-								alias_function(textArray[getWords() - 2], textArray[getWords() - 1]);
 							};
 unalias_case:
-		UNALIAS WORD       
-							{
-								unalias_function(yytext);
-							}
-	|	UNALIAS ENVIRONMENTSTART word_case ENVIRONMENTEND
+		UNALIAS word_case       
 							{
 								unalias_function(textArray[getWords() - 1]);
-							};
+							}
 bye_case:
 		BYE				   
 							{
 								printf("Bye command entered\n"); 
 								exit(0); //exit shell
 							};
-quote_case:
-		QUOTES				
-							{
-								printf("Quotes entered\n");
-							};
 word_case:
 		WORD				
 							{
 								word_function(yytext);
+							}
+	|	ENVIRONMENTVARIABLE
+							{
+								char* actualText = malloc(300 * sizeof(char));
+								if(actualText == (char*) NULL) //error
+								{
+										perror("Error with memory allocation.");
+										printf ("Error with at line %d\n", __LINE__);
+								}
+								strncpy(actualText, &yytext[2], strlen(yytext) - 3);
+								word_function(actualText);
+							}
+	|	QUOTES				{
+								char* actualText = malloc(300 * sizeof(char));
+								if(actualText == (char*) NULL) //error
+								{
+										perror("Error with memory allocation.");
+										printf ("Error with at line %d\n", __LINE__);
+								}
+								strncpy(actualText, &yytext[1], strlen(yytext) - 2);
+								word_function(actualText);
 							};
 slash_case:
 		SLASH				
@@ -159,7 +138,7 @@ ampersand_case:
 matcher_case:
 		MATCHER				
 							{
-								printf("Matcher entered\n");
+								 printf("Matcher entered\n");
 							};
 standard_error_redirect_case:
 			word_case WRITETO AMPERSAND word_case
@@ -180,3 +159,4 @@ regex_case:
 	REGEX WORD				{
 								getDirectories(yytext);
 							};
+%%
