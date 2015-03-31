@@ -28,3 +28,11 @@ Features Implemented
 
 Questions
 1. Executing other commands
+2. What do we do with explicit matching?
+3. Is explicit matching part of any built-in commands?
+4. Tilde expansion with other commands?
+5. Metacharacters and \
+6. External matching with other commands?
+7. How can we perform file name completion?
+8. What does input redirection do with commands?
+9. How can we prevent the shell from fully crashing?
