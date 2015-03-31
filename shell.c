@@ -6,7 +6,6 @@ char** aliases; //alias names and values
 char** newAliases; //copied aliases
 int aliasCount = 0; //number of aliases
 struct passwd* pwd; //contains result of getpwnam
-int numberOfDirectories = 0;
 void unsetenv_function(char *text)
 {
 	printf("Unsetenv command entered\n");
@@ -310,190 +309,125 @@ void cd_function2(char *text)
 {
 	changeGroupedSlashesIntoOneSlash(text); //alters the text so all grouped slashes now become one slash. ex. ////home///usr -> /home/usr
 	printf("CD command entered\n");
-	if(strncmp(text, "~", 1) == 0) //tilde expansion
+	char *directory = malloc(300 * sizeof(char));
+	if (directory == (char *) NULL) //error
 	{
-		int length = strlen(&text[1]); 
-		if(length == 0) //empty afterwards, so get home directory
-		{
-			int result = chdir(getenv("HOME")); //get home directory and move to it
-			if(result == -1) //error
-			{
-				perror("Directory not changed");
-				printf("Error at line %d\n", __LINE__);
-				return;
-			}
-			setenv_function("PWD", getenv("HOME")); //change PWD
-			printf("%s\n", getenv("PWD"));
-		}
-		else //actual expansion
-		{
-			char *result = strchr(&text[1], '/');
-			if (result == NULL) //end of string, so must be username
-			{
-				pwd = getpwnam(&text[1]); //gets user info
-				if (pwd == NULL) //error
-				{
-					perror("Error with getting struct.");
-					printf("Error at line %d\n", __LINE__);
-					return;
-				}
-				int result = chdir(pwd->pw_dir); //get home directory and move to it
-				if(result == -1) //error
-				{
-					perror("Directory not changed");
-					printf("Error at line %d\n", __LINE__);
-					return;
-				}
-				setenv_function("PWD", pwd->pw_dir); //change PWD
-				printf("%s\n", getenv("PWD"));
-			}
-			else //string continues, go until /
-			{
-				char *directory = malloc(300 * sizeof(char));
-				strcpy(directory, getenv("HOME")); //start with home directory
-				int index = length - 1;
-				int i;
-				for(i = 0; i < length; i++)
-				{
-					if(text[i] == '/') //find slash
-					{
-						index = i;
-						break;
-					}
-				}
-				char *toadd = malloc(300 * sizeof(char));
-				if(toadd == (char *) NULL) //error
-				{
-					perror("Error with memory allocation.");
-					printf("Error at line %d\n", __LINE__);
-					return;
-				}
-				strncpy(toadd, &text[1], index - 1); //copy everything up until slash
-				strcat(toadd, "/");
-				strcat(directory, toadd);
-				int result = chdir(directory); //move to it
-				if(result == -1) //error
-				{
-					perror("Directory not changed");
-					printf("Error at line %d\n", __LINE__);
-					return;
-				}
-				setenv_function("PWD", directory); //change PWD
-				printf("%s\n", getenv("PWD"));
-			}
-		}
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
-	else //no tilde
+	strcpy(directory, getenv("PWD")); //start with current directory and see if it's relative or absolute
+	if(directory[strlen(directory) - 1] != '/') //last character is not a slash
 	{
-		char *directory = malloc(300 * sizeof(char));
-		if(directory == (char *) NULL)
+		strcat(directory, "/"); //adds a slash
+	}
+	if(text[0] == '.')
+	{
+		if(strlen(text) == 1) //just a dot
 		{
-			perror("Error with memory allocation.");
-			printf("Error at line %d\n", __LINE__);
-			return;
+			strcpy(text, ""); //blank it
 		}
-		strcpy(directory, getenv("PWD")); //start with current directory and see if it's relative or absolute
-		if(directory[strlen(directory) - 1] != '/') //last character is not a slash
+		else if(strlen(text) == 2 && text[1] == '/') //just a dot-slash
 		{
-			strcat(directory, "/"); //adds a slash
+			strcpy(text, ""); //blank it
 		}
-		if(text[0] == '.')
+		else if(strlen(text) > 2 && text[1] == '/')
 		{
-			if(strlen(text) == 1 || (strlen(text) == 2 && text[1] == '/')) //just a dot or dot-slash
+			strcpy(text, &text[2]);
+		}
+		else if(text[1] != '.') //append text after dot
+		{
+			strcpy(text, &text[1]);
+		}
+		else if(text[1] == '.' && strcmp(directory, "/") != 0)//go up a level (not in the root)
+		{
+			int i;
+			int lastSlashIndex = 1;
+			for(i = strlen(directory) - 2; i >= 0; i--) //find occurence of last slash
+			{
+				if(directory[i] == '/')
+				{
+					lastSlashIndex = i; //found last slash
+					break;
+				}
+			}
+			if(lastSlashIndex != 0)
+			{ //if .. does not return to the root directory
+				directory[lastSlashIndex] = '\0';//sets the second to last slash to a null character
+			}
+			else if(lastSlashIndex == 0)
+			{//if .. is returning up to the root directory
+				directory[1] = '\0';//sets index 1 to null so the directory sets to the root
+			}
+			if(strlen(text) > 2)
+			{
+				strcat(directory, "/"); //add slash
+				strcpy(text, &text[3]); //take everything after the slash
+			}
+			else //nothing
 			{
 				strcpy(text, ""); //blank it
 			}
-			else if(text[1] != '.') //append text after dot
-			{
-				strcpy(text, &text[1]);
-			}
-			else if(text[1] == '.' && strcmp(directory, "/") != 0)//go up a level (not in the root)
-			{
-				int i;
-				int lastSlashIndex = 1;
-				for(i = strlen(directory) - 2; i >= 0; i--) //find occurence of last slash
-				{
-					if(directory[i] == '/')
-					{
-						lastSlashIndex = i; //found last slash
-						break;
-					}
-				}
-				if(lastSlashIndex != 0){ //if .. does not return to the root directory
-					directory[lastSlashIndex] = '\0';//sets the second to last slash to a null character
-				}
-				else if(lastSlashIndex == 0){//if .. is returning up to the root directory
-					directory[1] = '\0';//sets index 1 to null so the directory sets to the root
-				}
-				if(strlen(text) > 2)
-				{
-					strcat(directory, "/"); //add slash
-					strcpy(text, &text[3]); //take everything after the slash
-				}
-				else //nothing
-				{
-					strcpy(text, ""); //blank it
-				}
-			}
-			else if(strcmp(directory, "/") == 0){//if it is in root
-				strcpy(text,""); //change text to empty string so ".." is not concatenated to the directory later on
-			}
 		}
-		if(text[0] == '/') //first character is slash
-		{
-			if(strlen(text) == 1 || (strlen(text) == 2 && text[1] == '.')) //just a slash or slash-dot
-			{
-				int result = chdir("/"); //move to slash directory
-				if(result == -1)
-				{
-					perror("Directory not changed");
-					printf("Error at line %d\n", __LINE__);
-					return;
-				}
-				setenv_function("PWD", "/"); //set to slash
-				printf("%s\n", getenv("PWD"));
-				return;
-			}
-			else
-			{
-				char* text2 = malloc(300 * sizeof(char));
-				if(text2 == (char *) NULL)
-				{
-					perror("Error with memory allocation.");
-					printf("Error at line %d\n", __LINE__);
-					return;
-				}
-				strncpy(text2, text, strlen(text)); //copy everything after slash
-				strcpy(text, text2); //copy back into text
-				strcpy(directory, "");
-			}
+		else if(strcmp(directory, "/") == 0)
+		{//if it is in root
+			strcpy(text,""); //change text to empty string so ".." is not concatenated to the directory later on
 		}
-		strcat(directory, text); //check if relative
-		int result = chdir(directory); //move directory
-		if (result == -1) //error, could be absolute, could be actual error
+	}
+	if(text[0] == '/') //first character is slash
+	{
+		if(strlen(text) == 1 || (strlen(text) == 2 && text[1] == '.')) //just a slash or slash-dot
 		{
-			int result2 = chdir(text); //absolute
-			if (result2 == -1) //error
+			int result = chdir("/"); //move to slash directory
+			if(result == -1)
 			{
 				perror("Directory not changed");
 				printf("Error at line %d\n", __LINE__);
 				return;
 			}
-			setenv_function("PWD", text); //change PWD to absolute
+			setenv_function("PWD", "/"); //set to slash
 			printf("%s\n", getenv("PWD"));
 			return;
 		}
-		if(strncmp(&directory[strlen(directory) - 1], "/", 1) == 0 && strlen(directory) != 1) //last character is a slash and directory isn't just "/"
-		{
-			directory[strlen(directory) - 1] = '\0'; //remove slash
-			setenv_function("PWD", directory); //change PWD to absolute
-			printf("%s\n", getenv("PWD"));
-		}
 		else
 		{
-			setenv_function("PWD", directory); //change PWD to absolute
-			printf("%s\n", getenv("PWD"));
+			char* text2 = malloc(300 * sizeof(char));
+			if(text2 == (char *) NULL)
+			{
+				perror("Error with memory allocation.");
+				printf("Error at line %d\n", __LINE__);
+				return;
+			}
+			strncpy(text2, text, strlen(text)); //copy everything after slash
+			strcpy(text, text2); //copy back into text
+			strcpy(directory, "");
 		}
+	}
+	strcat(directory, text); //check if relative
+	int result = chdir(directory); //move directory
+	if (result == -1) //error, could be absolute, could be actual error
+	{
+		int result2 = chdir(text); //absolute
+		if (result2 == -1) //error
+		{
+			perror("Directory not changed");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		setenv_function("PWD", text); //change PWD to absolute
+		printf("%s\n", getenv("PWD"));
+		return;
+	}
+	if(strncmp(&directory[strlen(directory) - 1], "/", 1) == 0 && strlen(directory) != 1) //last character is a slash and directory isn't just "/"
+	{
+		directory[strlen(directory) - 1] = '\0'; //remove slash
+		setenv_function("PWD", directory); //change PWD to absolute
+		printf("%s\n", getenv("PWD"));
+	}
+	else
+	{
+		setenv_function("PWD", directory); //change PWD to absolute
+		printf("%s\n", getenv("PWD"));
 	}
 }
 void standard_error_redirect_function(char *text, char *text2)
@@ -634,14 +568,6 @@ void getDirectories(char* text)
 	int flags = 0;
 	glob_t results;
 	int ret;
-	int numberOfDirectories = 0;
-	directories = malloc(300 * sizeof(char*));
-	if(directories == (char **)NULL) //error
-	{
-		perror("Error with memory allocation.");
-		printf("Error at line %d\n", __LINE__);
-		return;
-	}
 	DIR *dir;
 	struct dirent *ent;
 	if ((dir = opendir (getenv("PWD"))) != NULL) 
@@ -671,10 +597,6 @@ void getDirectories(char* text)
 		perror ("Cannot open directory");
 		printf("Error at line %d\n", __LINE__);
 		return;
-	}
-	for(i = 0; i < numberOfDirectories; i++)
-	{
-		printf("%s\n", directories[i]); //print out results
 	}
 }
 void pipe_function(char *text)
@@ -811,10 +733,6 @@ void pipe_function(char *text)
 			return;
 		}
 	}
-}
-int getNumberOfDirectories()
-{
-	return numberOfDirectories;
 }
 int globerr(const char *path, int eerrno) //error
 {
@@ -1008,5 +926,87 @@ void quoteFunction(char* text)
 		{
 			word_function(result);
 		}
+	}
+}
+void word2Function(char* text)
+{
+	char* result = malloc(300 * sizeof(char));
+	if(result == (char*) NULL) //error with memory allocation
+	{
+		perror ("Entered an invalid environment variable.");
+		printf ("Error at line %d\n", __LINE__);
+		return;
+	}
+	strcpy(result, tildeExpansion(text)); //get result of tilde expansion and reset
+	word_function(result);
+}
+char* tildeExpansion(char* text)
+{
+	if(strncmp(text, "~", 1) == 0) //tilde expansion
+	{
+		int length = strlen(&text[1]); 
+		if(length == 0) //empty afterwards, so get home directory
+		{
+			int result = chdir(getenv("HOME")); //get home directory and move to it
+			if(result == -1) //error
+			{
+				perror("Directory not changed");
+				printf("Error at line %d\n", __LINE__);
+				return;
+			}
+			return getenv("HOME");
+		}
+		else //actual expansion
+		{
+			char *result = strchr(&text[1], '/');
+			if (result == NULL) //end of string, so must be username
+			{
+				pwd = getpwnam(&text[1]); //gets user info
+				if (pwd == NULL) //error
+				{
+					perror("Error with getting struct.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+				int result = chdir(pwd->pw_dir); //get home directory and move to it
+				if(result == -1) //error
+				{
+					perror("Directory not changed");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+				return pwd->pw_dir; //username
+			}
+			else //string continues
+			{
+				char *directory = malloc(300 * sizeof(char));
+				strcpy(directory, getenv("HOME")); //start with home directory
+				int index = length - 1;
+				int i;
+				for(i = 0; i < length; i++)
+				{
+					if(text[i] == '/') //find slash
+					{
+						index = i;
+						break;
+					}
+				}
+				char *toadd = malloc(300 * sizeof(char));
+				if(toadd == (char *) NULL)
+				{
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+				strcpy(toadd, &text[index + 1]); //add everything after /
+				strcat(directory, "/"); //add slash
+				strcat(directory, toadd); //append
+				return directory;
+			}
+		}
+	}
+	else //no tilde
+	{
+		return text;
 	}
 }
