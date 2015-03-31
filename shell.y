@@ -87,7 +87,7 @@ bye_case:
 word_case:
 		WORD				
 							{
-								word_function(yytext);
+								word2Function(yytext);
 							}
 	|	ENVIRONMENTVARIABLE
 							{
@@ -156,7 +156,7 @@ matcher_case:
 standard_error_redirect_case:
 			word_case WRITETO AMPERSAND word_case
 							{
-							standard_error_redirect_function(textArray[getWords() - 2], textArray[getWords() - 1]);
+								standard_error_redirect_function(textArray[getWords() - 2], textArray[getWords() - 1]);
 							};
 standard_error_redirect_case2:
 		word_case WRITETO word_case
