@@ -39,6 +39,7 @@
   int globerr(const char* path, int eerrno);
   void getDirectories(char *text);
   void changeGroupedSlashesIntoOneSlash(char* string);
+  void quoteFunction(char* text);
   char* aliasResolve(char* string);
   char* getAliasValue(char* aliasName);
   char** textArray; //words
