@@ -14,7 +14,7 @@
 	yyparse();
   }
 %}
-%token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTVARIABLE SLASH READFROM WRITETO PIPE AMPERSAND REGEX
+%token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTVARIABLE SLASH READFROM WRITETO PIPE AMPERSAND
 %%
 commands: 
 		| commands command NEWLINE;
@@ -37,8 +37,7 @@ command:
 		|matcher_case
 		|standard_error_redirect_case
 		|standard_error_redirect_case2
-		|error_case
-		|regex_case;
+		|error_case;
 cd2_case:
 		CD 
 							{
@@ -82,7 +81,7 @@ unalias_case:
 bye_case:
 		BYE				   
 							{
-								printf("Bye command entered\n"); 
+								printf ("Bye command entered\n"); 
 								exit(0); //exit shell
 							};
 word_case:
@@ -95,21 +94,35 @@ word_case:
 								char* actualText = malloc(300 * sizeof(char));
 								if(actualText == (char*) NULL) //error
 								{
-										perror("Error with memory allocation.");
-										printf ("Error with at line %d\n", __LINE__);
+										perror ("Error with memory allocation.");
+										printf ("Error at line %d\n", __LINE__);
 								}
-								strncpy(actualText, &yytext[2], strlen(yytext) - 3);
-								word_function(actualText);
+								else
+								{
+									strncpy(actualText, &yytext[2], strlen(yytext) - 3); //take everything between ${ and }
+									char* result = malloc(300 * sizeof(char));
+									if(result == (char*) NULL) //error
+									{
+										perror ("Error with memory allocation.");
+										printf ("Error at line %d\n", __LINE__);
+									}
+									else
+									{
+										if(getenv(actualText) == NULL) //invalid environment variable
+										{
+											perror ("Entered an invalid environment variable.");
+											printf ("Error at line %d\n", __LINE__);
+										}
+										else
+										{
+											strcpy(result, getenv(actualText)); //get value, if any
+											word_function(result);
+										}
+									}
+								}		
 							}
 	|	QUOTES				{
-								char* actualText = malloc(300 * sizeof(char));
-								if(actualText == (char*) NULL) //error
-								{
-										perror("Error with memory allocation.");
-										printf ("Error with at line %d\n", __LINE__);
-								}
-								strncpy(actualText, &yytext[1], strlen(yytext) - 2);
-								word_function(actualText);
+								quoteFunction(yytext);
 							};
 slash_case:
 		SLASH				
@@ -133,17 +146,17 @@ pipe_case:
 ampersand_case:
 		AMPERSAND			
 							{
-								printf("Ampersand entered\n");
+								printf ("Ampersand entered\n");
 							};
 matcher_case:
 		MATCHER				
 							{
-								 printf("Matcher entered\n");
+								printf ("Matcher entered\n");
 							};
 standard_error_redirect_case:
 			word_case WRITETO AMPERSAND word_case
 							{
-								standard_error_redirect_function(textArray[getWords() - 2], textArray[getWords() - 1]);
+							standard_error_redirect_function(textArray[getWords() - 2], textArray[getWords() - 1]);
 							};
 standard_error_redirect_case2:
 		word_case WRITETO word_case
@@ -153,10 +166,6 @@ standard_error_redirect_case2:
 error_case:
 	error
 							{
-								printf("Syntax error.\n");
-							};
-regex_case:
-	REGEX WORD				{
-								getDirectories(yytext);
+								printf ("Syntax error.\n");
 							};
 %%
