@@ -35,13 +35,14 @@
   void pipe_function(char *text);
   int getWords(void);
   int getAliasCount(void);
-  int getNumberOfDirectories(void);
   int globerr(const char* path, int eerrno);
   void getDirectories(char *text);
   void changeGroupedSlashesIntoOneSlash(char* string);
   void quoteFunction(char* text);
+  void word2Function(char* text);
+  char* tildeExpansion(char* text);
   char* aliasResolve(char* string);
   char* getAliasValue(char* aliasName);
   char** textArray; //words
-  char** directories; //contains directories matching the pattern
+  void escapeCharacter();
   #endif
