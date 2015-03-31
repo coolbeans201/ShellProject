@@ -818,7 +818,7 @@ int getNumberOfDirectories()
 }
 int globerr(const char *path, int eerrno) //error
 {
-	perror("Error with globbing.");
+	perror ("Error with globbing.");
 	printf ("Error with path %s at line %d\n", path, __LINE__);
 	return 0;	/* let glob() keep going */
 }
@@ -887,4 +887,122 @@ char* getAliasValue(char* aliasName){//returns the value of an alias when given 
 		free(possibleNameMatch); //frees memory
 	}
 	return value; //returns null (value[0] = '\0') if the alias name does not exist
+}
+void quoteFunction(char* text)
+{
+	char* actualText = malloc(300 * sizeof(char));
+	if(actualText == (char*) NULL) //error
+	{
+		perror ("Error with memory allocation.");
+		printf ("Error at line %d\n", __LINE__);
+		return;
+	}
+	strncpy(actualText, &text[1], strlen(text) - 2); //everything between quotes
+	int index = 0;
+	int i;
+	int* results = malloc(300 * sizeof(int));
+	int resultCount = 0;
+	int opens = 0;
+	int ends = 0;
+	if (results == (int*) NULL) //error
+	{
+		perror ("Error with memory allocation.");
+		printf ("Error at line %d\n", __LINE__);
+		return;
+	}
+	for(i = 0; i < strlen(actualText); i ++)
+	{
+		if(actualText[i] == '$' && actualText[i + 1] == '{') //opener
+		{
+			index = i;
+			results[resultCount] = index;
+			resultCount++;
+			opens++;
+		}
+		if(actualText[i] == '}') //closer
+		{
+			index = i;
+			results[resultCount] = index;
+			resultCount++;
+			ends++;
+		}
+		if(ends > opens) //incorrect input
+		{
+			perror ("Error with input.");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+	}
+	if(opens != ends) //not balanced
+	{
+		perror ("Syntax error");
+		printf ("Error at line %d\n", __LINE__);
+		return;
+	}
+	char *result = malloc(300 * sizeof(char));
+	if(result == (char*) NULL) //error
+	{
+		perror ("Error with memory allocation.");
+		printf ("Error at line %d\n", __LINE__);
+		return;
+	}
+	if(resultCount == 0) //no opens or ends
+	{
+		word_function(actualText);
+	}
+	else //opens and ends
+	{
+		strcpy(result, "");
+		char* result2 = malloc(300 * sizeof(char));
+		if(result2 == (char*) NULL) //error
+		{
+			perror ("Error with memory allocation.");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+		for(i = 0; i < resultCount; i++)
+		{
+			if(i == 0) //first open
+			{
+				strncat(result, &actualText[0], results[0]); //add the beginning
+				memcpy(result2, &actualText[results[0] + 2], (results[1] - results[0] - 2) * sizeof(char));
+				if(getenv(result2) == NULL) //invalid environment variable
+				{
+					perror ("Entered an invalid environment variable.");
+					printf ("Error at line %d\n", __LINE__);
+					return;
+				}
+				strcpy(result2, getenv(result2));
+				strcat(result, result2);
+				memset(result2, 0, sizeof(result2)); //clear buffer
+			}
+			else if(i % 2 == 0 && i != 0) //other opens
+			{
+				strncat(result, &actualText[results[i - 1] + 1], results[i] - results[i - 1] - 1);
+				strncpy(result2, &actualText[results[i] + 2], (results[i + 1] - results[i] - 2) * sizeof(char));
+				if(getenv(result2) == NULL)
+				{
+					perror ("Entered an invalid environment variable.");
+					printf ("Error at line %d\n", __LINE__);
+					return;
+				}
+				strcpy(result2,getenv(result2));
+				strcat(result, result2);
+				memset(result2, 0, sizeof(result2)); //clear buffer
+			}
+			else
+			{
+				//do nothing
+			}
+		}
+		if(results[resultCount - 1] != strlen(actualText) - 1) //more left
+		{
+			strcat(result, &actualText[results[resultCount - 1] + 1]); //add all the leftovers
+			word_function(result);
+		}
+		else
+		{
+			word_function(result);
+		}
+	}
 }
