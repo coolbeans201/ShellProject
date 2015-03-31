@@ -839,7 +839,8 @@ void changeGroupedSlashesIntoOneSlash(char* string){ //removes extra slashes in 
 	}
 }
 
-char* aliasResolve(char* alias){//takes in name of alias and returns the final resolved value of that alias name
+char* aliasResolve(char* alias){//takes in name of alias and returns the final resolved value of that alias name or <LOOP> if it loops infinitely,
+	//if string passed in argument is not an alias then it returns empty string
 	char* name = malloc(300*sizeof(char)); //declares name and value strings used to resolve
 	char* value;
 	char* nameTracker[100]; //keeps track of alias names already encountered in order to detect infinite loops
@@ -848,6 +849,8 @@ char* aliasResolve(char* alias){//takes in name of alias and returns the final r
 	nameTracker[trackSize] = name;
 	trackSize++;
 	value = getAliasValue(name);//gets initial value
+	if(strcmp(value, "") == 0)//if initial alias name does not resolve to anything(resolves to empty string), return empty string
+		return value;
 	while(value[0] != '\0'){ //loop runs until value cannot be further resolved into an additional alias
 		int i;
 		for(i = 0; i < trackSize; i++){
@@ -866,7 +869,7 @@ char* aliasResolve(char* alias){//takes in name of alias and returns the final r
 	return value;
 }
 
-char* getAliasValue(char* aliasName){//returns the value of an alias when given the name as an argument
+char* getAliasValue(char* aliasName){//returns the value of an alias when given the name as an argument,returns empty string if the alias name does not exist
 	int i = 0;
 	char* value = malloc(300*sizeof(char));
 	value[0] = '\0';
@@ -886,8 +889,9 @@ char* getAliasValue(char* aliasName){//returns the value of an alias when given 
 		}
 		free(possibleNameMatch); //frees memory
 	}
-	return value; //returns null (value[0] = '\0') if the alias name does not exist
+	return value;
 }
+
 void quoteFunction(char* text)
 {
 	char* actualText = malloc(300 * sizeof(char));
