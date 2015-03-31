@@ -5,24 +5,23 @@
 	#include "y.tab.h"
 %}
 %%
-cd	return CD;
+cd return CD;
 printenv return PRINTENV;
 unsetenv return UNSETENV;
 setenv return SETENV;
-regex return REGEX;
 alias return ALIAS;
 unalias return UNALIAS;
 bye return BYE;
 [*?@!#%'=~.:/:A-Za-z0-9]* return WORD;
-"\""[*? <>|&\"@!#%'=~.:/:A-Za-z0-9]*"\"" return QUOTES;
+"\""[*? ${}<>|&\"@!#%'=~.:/:A-Za-z0-9]*"\"" return QUOTES;
 \n return NEWLINE;
 [ \t]+ /* ignore end of line */;
 "${"[*? @!#%'=~.:/:A-Za-z0-9]*"}" return ENVIRONMENTVARIABLE; 
-\\+ return SLASH;
-"<"+ return READFROM;
-">"+ return WRITETO;
-"|"+ return PIPE;
-"&"+ return AMPERSAND;
+\\ return SLASH;
+"<" return READFROM;
+">" return WRITETO;
+"|" return PIPE;
+"&" return AMPERSAND;
 <<EOF>>	{exit(0);}
 . {yyerror("Unrecognized character");}
 %%
