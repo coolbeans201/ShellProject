@@ -77,175 +77,50 @@ void setenv_function (char *text, char *text2)
 	{
 		char *pch = strtok(text2, ":"); //split on colons
 		char *path = malloc(500 * sizeof(char));
-		if(path == (char *) NULL)
+		if(path == (char *) NULL) //error
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			return;
 		}
+		strcpy(path, "");
 		while (pch != NULL) //still have tokens
 		{
-				if(strncmp(pch, ".", 1) == 0) //first character is a dot, so explicitly match
+			if(strncmp(pch, ".", 1) == 0) //first character is a dot, so explicitly match
+			{
+				char *directory = malloc(300 * sizeof(char));
+				if(directory == (char *) NULL)
 				{
-						char *directory = malloc(300 * sizeof(char));
-						if(directory == (char *) NULL)
-						{
-							perror("Error with memory allocation.");
-							printf("Error at line %d\n", __LINE__);
-							return;
-						}
-						strcpy(directory, getenv("PWD")); //get current directory
-						strcat(directory, &pch[1]); //take everything after dot
-						strcat(path, directory);
-						strcat(path, ":"); //colon-separate
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					return;
 				}
-				else if(strncmp(pch, "/.", 2) == 0) //first two characters are /., so get root
-				{
-					strcpy(path, "/"); //root directory
-					strcat(path, &pch[2]); //take everything after dot
-					strcat(path, ":"); //colon-separate
-				}
-				else if (strncmp(pch, "/", 1) == 0) //also the root directory
-				{
-					strcpy(path, "/"); //root directory
-					strcat(path, &pch[1]); //take everything after slash
-					strcat(path, ":"); //colon-separate
-				}
-				else if(strncmp(pch, "~", 1) == 0) //tilde
-				{
-					int length = strlen(&pch[1]); 
-					if(length == 0) //empty afterwards, so get home directory
-					{
-						char *directory = malloc(300 * sizeof(char));
-						if(directory == (char *) NULL)
-						{
-							perror("Error with memory allocation.");
-							printf("Error at line %d\n", __LINE__);
-							return;
-						}
-						strcpy(directory, getenv("HOME")); //get home directory
-						strcat(path, directory); //set to home directory
-						strcat(path, ":"); //colon-separate
-					}
-					else //actual expansion
-					{
-						char *result = strchr(&pch[1], '/');
-						if (result == NULL) //end of string, so can only be username
-						{
-							pwd = getpwnam(&pch[1]); //gets user info
-							if (pwd == NULL) //error
-							{
-								perror("Error with getting struct.\n");
-								printf("Error at line %d\n", __LINE__);
-								return;
-							}
-							char *directory = malloc(300 * sizeof(char));
-							if(directory == (char *) NULL)
-							{
-								perror("Error with memory allocation.");
-								printf("Error at line %d\n", __LINE__);
-								return;
-							}
-							strcpy(directory, pwd->pw_dir); 
-							strcat(path, directory); //set to home directory
-							strcat(path, ":"); //colon-separate
-						}
-						else //string continues, go up until /
-						{
-							char *directory = malloc(300 * sizeof(char));
-							if(directory == (char *) NULL)
-							{
-								perror("Error with memory allocation.");
-								printf("Error at line %d\n", __LINE__);
-								return;
-							}
-							strcpy(directory, "/home/"); //start with home directory
-							int index = length - 1;
-							int i;
-							for(i = 0; i < strlen(pch); i++)
-							{
-								if(pch[i] == '/') //get everything to slash
-								{
-									index = i;
-									break;
-								}
-							}
-							char *toadd = malloc(300 * sizeof(char));
-							if(toadd == (char *) NULL)
-							{
-								perror("Error with memory allocation.");
-								printf("Error at line %d\n", __LINE__);
-								return;
-							}
-							strncpy(toadd, &pch[1], index - 1);
-							strcat(toadd, "/"); //slash at end
-							strcat(directory, toadd); //copy over
-							strcat(path, directory); //copy over
-							strcat(path, ":"); //colon-separate
-						}
-					}
-				}
-				else
-				{
-					strcat(path, pch); //no tilde
-					strcat(path, ":"); //colon-separate
-				}
-				pch = strtok(NULL, ":"); //keep parsing
+				strcpy(directory, getenv("PWD")); //get current directory
+				strcat(directory, &pch[1]); //take everything after dot
+				strcat(path, directory);
+				strcat(path, ":"); //colon-separate
+			}
+			else if(strncmp(pch, "/.", 2) == 0) //first two characters are /., so get root
+			{
+				strcat(path, "/"); //root directory
+				strcat(path, &pch[2]); //take everything after dot
+				strcat(path, ":"); //colon-separate
+			}
+			else if (strncmp(pch, "/", 1) == 0) //also the root directory
+			{
+				strcat(path, "/"); //root directory
+				strcat(path, &pch[1]); //take everything after slash
+				strcat(path, ":"); //colon-separate
+			}
+			else
+			{
+				strcat(path, pch); //no tilde
+				strcat(path, ":"); //colon-separate
+			}
+			pch = strtok(NULL, ":"); //keep parsing
 		}
 		path[strlen(path) - 1] = '\0'; //get rid of colon at the end
 		strcpy(text2, path);
-	}
-	else
-	{
-			if(strncmp(text2, "~", 1) == 0) //tilde expansion
-			{
-				int length = strlen(&text2[1]); 
-				if(length == 0) //empty afterwards, so get home directory
-				{
-					strcpy(text2, getenv("HOME")); //get home directory and move to it
-				}
-				else //actual expansion
-				{
-					char *result = strchr(&text2[1], '/');
-					if (result == NULL) //end of string, so has to be a username
-					{
-						pwd = getpwnam(&text2[1]); //gets user info
-						if (pwd == NULL) //error
-						{
-							perror("Error with getting struct.\n");
-							printf("Error at line %d\n", __LINE__);
-							return;
-						}
-						strcpy(text2, pwd->pw_dir); //set to home directory
-					}
-					else //string continues, go until slash
-					{
-						char *directory = malloc(300 * sizeof(char));
-						strcpy(directory, "/home/"); //start with home
-						int index = length - 1;
-						int i;
-						for(i = 0; i < length; i++)
-						{
-							if(text2[i] == '/') //find slash
-							{
-								index = i;
-								break;
-							}
-						}
-						char *toadd = malloc(300 * sizeof(char));
-						if(toadd == (char *) NULL)
-						{
-							perror("Error with memory allocation.");
-							printf("Error at line %d\n", __LINE__);
-							return;
-						}
-						strncpy(toadd, &text2[1], index - 1); //copy over
-						strcat(toadd, "/"); //add slash
-						strcat(directory, toadd); //copy over
-						strcpy(text2, directory); //copy over
-					}
-				}
-			}
 	}
 	strcpy(es, text); //copy variable
 	strcat(es, "="); //copy =
@@ -1004,15 +879,31 @@ void quoteFunction(char* text)
 }
 void word2Function(char* text)
 {
-	char* result = malloc(300 * sizeof(char));
-	if(result == (char*) NULL) //error with memory allocation
+	char* result2 = malloc(300 * sizeof(char));
+	if(result2 == (char*) NULL) //error with memory allocation
 	{
-		perror ("Entered an invalid environment variable.");
+		perror ("Error with memory allocation.");
 		printf ("Error at line %d\n", __LINE__);
 		return;
 	}
-	strcpy(result, tildeExpansion(text)); //get result of tilde expansion and reset
-	word_function(result);
+	char* pch = strtok(text, ":"); //colon-separate
+	strcpy(result2, "");
+	while(pch != NULL) 
+	{
+		char* result = malloc(300 * sizeof(char));
+		if(result == (char*) NULL) //error with memory allocation
+		{
+			perror ("Error with memory allocation.");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+		strcpy(result, tildeExpansion(pch)); //get result of tilde expansion and reset
+		strcat(result2, result);
+		strcat(result2, ":"); //add colon
+		pch = strtok(NULL, ":");
+	}
+	result2[strlen(result2) - 1] = '\0'; //remove last colon
+	word_function(result2);
 }
 char* tildeExpansion(char* text)
 {
