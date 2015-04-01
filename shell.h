@@ -26,8 +26,8 @@
   void cd_function(void);
   void printenv_function(void);
   void cd_function2(char *text);
-  void standard_error_redirect_function (char *text, char *text2);
-  void standard_error_redirect_function2 (char *text, char *text2);
+  void standard_error_redirect_function ();
+  void standard_error_redirect_function2 (char *text);
   void write_to_function (char *text);
   void read_from_function (char *text);
   void word_function (char *text);
@@ -36,14 +36,15 @@
   int getWords(void);
   int getAliasCount(void);
   int globerr(const char* path, int eerrno);
-  void getDirectories(char *text);
+  char* getDirectories(char *text, char* text2);
   void changeGroupedSlashesIntoOneSlash(char* string);
-  void changeGroupedSpacesIntoOneSpace(char* string);
   void quoteFunction(char* text);
   void word2Function(char* text);
   char* tildeExpansion(char* text);
   char* aliasResolve(char* string);
   char* getAliasValue(char* aliasName);
   char** textArray; //words
-  void escapeCharacter();
+  int checkForExecutableOrAlias(char* string);
+  void shell_init(void);
+  void changeGroupedSpacesIntoOneSpace(char* string);
   #endif
