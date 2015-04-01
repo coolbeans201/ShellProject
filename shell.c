@@ -369,6 +369,7 @@ void read_from_function (char *text)
 }
 void word_function(char *text)
 {
+	//printf("%s\n", getDirectories("*", "/usr/local/sbin"));
 	int result = checkForExecutableOrAlias(text);
 	if(result)
 	{
@@ -423,7 +424,7 @@ int getWords()
 {
 	return words;
 }
-char* getDirectories(char* text, char* text2)
+char* getDirectories(char* textmatch, char* directory)
 {
 	int i;
 	int flags = 0;
@@ -431,49 +432,41 @@ char* getDirectories(char* text, char* text2)
 	int ret;
 	DIR *dir;
 	struct dirent *ent;
-	char* result = malloc(5000 * sizeof(char));
-	if(result == (char*) NULL) //error
+	char* result;
+	result = malloc(500 *sizeof(char));
+	strcpy(result,"");
+	
+	if ((dir = opendir (directory)) != NULL) 
 	{
-		perror ("Error with memory allocation.");
-		printf ("Error at line %d\n", __LINE__);
-		return "";
-	}
-	strcpy(result, "");
-	if ((dir = opendir(text2)) != NULL) 
-	{
+		printf("Opening %s\n", directory);
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) 
 		{
 			flags |= (i > 1 ? GLOB_APPEND : 0);
-			ret = glob(text, flags, globerr, & results); //glob expression
+			ret = glob(textmatch, flags, globerr, & results); //glob expression
 			if (ret != 0) //error
 			{
-				printf("Error with globbing");
+				printf("Error with globbing\n");
 				printf("Error at line %d\n", __LINE__);
-				return "";
+				return;
 			}
 		}
 		for (i = 0; i < results.gl_pathc; i++) //print out results
 		{
-			if(access(results.gl_pathv[i], F_OK|X_OK) == 0) //we can execute this file
-			{
-				printf("%s\n", results.gl_pathv[i]);
-				strcat(result, results.gl_pathv[i]);
-				strcat(result, "$");
-			}
+			strcat(result, results.gl_pathv[i]);
+			strcat(result, "$");
 		}
-		result[strlen(result) - 1] = '\0'; //get rid of last space
 		globfree(& results); //free glob expression
 		closedir (dir); //close directory 
-		return result;
 	}
 	else 
 	{
 		/* could not open directory */
 		perror ("Cannot open directory");
 		printf("Error at line %d\n", __LINE__);
-		return "";
-	} 
+		return;
+	}
+	return result;
 }
 void pipe_function(char *text)
 {
@@ -612,7 +605,7 @@ void pipe_function(char *text)
 }
 int globerr(const char *path, int eerrno) //error
 {
-	perror ("Error with globbing.");
+	perror ("Error with globbing\n");
 	printf ("Error with path %s at line %d\n", path, __LINE__);
 	return 0;	/* let glob() keep going */
 }
