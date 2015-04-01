@@ -38,6 +38,7 @@
   int globerr(const char* path, int eerrno);
   void getDirectories(char *text);
   void changeGroupedSlashesIntoOneSlash(char* string);
+  void changeGroupedSpacesIntoOneSpace(char* string);
   void quoteFunction(char* text);
   void word2Function(char* text);
   char* tildeExpansion(char* text);
