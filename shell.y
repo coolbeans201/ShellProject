@@ -11,10 +11,11 @@
   }
   main()
   {
+	shell_init();
 	yyparse();
   }
 %}
-%token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTVARIABLE SLASH READFROM WRITETO PIPE AMPERSAND
+%token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTVARIABLE SLASH READFROM WRITETO PIPE AMPERSAND APPEND STANDARDERROR1 STANDARDERROR2	COMMANDNAME
 %%
 commands: 
 		| commands command NEWLINE;
@@ -34,10 +35,11 @@ command:
 		|write_to_case
 		|pipe_case
 		|ampersand_case
-		|matcher_case
+		|append_case
 		|standard_error_redirect_case
 		|standard_error_redirect_case2
-		|error_case;
+		|error_case
+		|words;
 cd2_case:
 		CD 
 							{
@@ -127,16 +129,16 @@ word_case:
 slash_case:
 		SLASH				
 							{
-								printf("Slash entered\n");
+								printf ("Slash entered\n");
 							};
 read_from_case:
-		READFROM WORD			
+		READFROM word_case			
 							{
-								read_from_function(yytext);
+								read_from_function(textArray[getWords() - 1]);
 							};
 write_to_case:
-		WRITETO	WORD		{
-								write_to_function(yytext);
+		WRITETO	word_case	{
+								write_to_function(textArray[getWords() - 1]);
 							};
 pipe_case:
 		PIPE word_case			
@@ -148,24 +150,33 @@ ampersand_case:
 							{
 								printf ("Ampersand entered\n");
 							};
-matcher_case:
-		MATCHER				
-							{
-								printf ("Matcher entered\n");
-							};
 standard_error_redirect_case:
-			word_case WRITETO AMPERSAND word_case
+		STANDARDERROR1
 							{
-								standard_error_redirect_function(textArray[getWords() - 2], textArray[getWords() - 1]);
+								standard_error_redirect_function();
 							};
 standard_error_redirect_case2:
-		word_case WRITETO word_case
+		STANDARDERROR2		
 							{
-								standard_error_redirect_function2(textArray[getWords() - 2], textArray[getWords() - 1]);
+								standard_error_redirect_function2(yytext);
 							};
 error_case:
-	error
+		error
 							{
 								printf ("Syntax error.\n");
+							};
+append_case:
+		APPEND	word_case
+							{
+							
+							};
+words:
+		word_case word_case
+							{
+								printf("Dank\n");
+							}
+	|	words	word_case
+							{
+							printf("Meme\n");
 							};
 %%
