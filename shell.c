@@ -818,6 +818,7 @@ char* getAliasValue(char* aliasName){//returns the value of an alias when given 
 
 void quoteFunction(char* text)
 {
+	changeGroupedSpacesIntoOneSpace(text);
 	char* actualText = malloc(300 * sizeof(char));
 	if(actualText == (char*) NULL) //error
 	{
@@ -1081,5 +1082,20 @@ char* tildeExpansion(char* text)
 	else //no tilde
 	{
 		return text;
+	}
+}
+void changeGroupedSpacesIntoOneSpace(char* string){ //removes extra spaces in the word so that each word has one space between it
+	int i = 0;
+	int size = strlen(string);
+	for(i = 0; i < size;){
+		if(string[i] == ' ' && string[i+1] == ' '){
+			int j = i + 1;
+			for(j = i; j <=size; j++){
+				string[j] = string[j+1];
+			}
+			size--;
+		}
+		else
+			i++;
 	}
 }
