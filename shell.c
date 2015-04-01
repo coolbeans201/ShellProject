@@ -17,7 +17,7 @@ void shell_init()
 		return;
 	}
 	strcpy(myPath, getenv("PATH"));
-	printf("%s\n", myPath);
+	//printf("%s\n", myPath);
 }
 void unsetenv_function(char *text)
 {
@@ -369,12 +369,12 @@ void read_from_function (char *text)
 }
 void word_function(char *text)
 {
-	//printf("%s\n", getDirectories("*", "/usr/local/sbin"));
-	int result = checkForExecutableOrAlias(text);
+	printf("%s\n", getDirectories("*", "/usr/local/sbin"));
+	/*int result = checkForExecutableOrAlias(text);
 	if(result)
 	{
 		printf("Executable\n");
-	}
+	}*/
 	//printf("Resolved alias: %s\n",aliasResolve(text));
 	char * es;
 	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
@@ -428,35 +428,42 @@ char* getDirectories(char* textmatch, char* directory)
 {
 	int i;
 	int flags = 0;
-	glob_t results;
+	glob_t* results;
 	int ret;
 	DIR *dir;
 	struct dirent *ent;
 	char* result;
-	result = malloc(500 *sizeof(char));
-	strcpy(result,"");
+	char* olddirectory;
+	results = malloc(sizeof(glob_t));
+	result = malloc(5000 *sizeof(char));
+	if (result == NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
 	
 	if ((dir = opendir (directory)) != NULL) 
 	{
-		printf("Opening %s\n", directory);
+		//printf("Opening %s\n", directory);
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) 
 		{
 			flags |= (i > 1 ? GLOB_APPEND : 0);
-			ret = glob(textmatch, flags, globerr, & results); //glob expression
+			ret = glob(textmatch, flags, globerr, results); //glob expression
 			if (ret != 0) //error
 			{
 				printf("Error with globbing\n");
 				printf("Error at line %d\n", __LINE__);
-				return;
+				return result;
 			}
 		}
-		for (i = 0; i < results.gl_pathc; i++) //print out results
+		for (i = 0; i < results->gl_pathc; i++) //print out results
 		{
-			strcat(result, results.gl_pathv[i]);
+			strcat(result, results->gl_pathv[i]);
 			strcat(result, "$");
 		}
-		globfree(& results); //free glob expression
+		globfree(results); //free glob expression
 		closedir (dir); //close directory 
 	}
 	else 
@@ -464,7 +471,7 @@ char* getDirectories(char* textmatch, char* directory)
 		/* could not open directory */
 		perror ("Cannot open directory");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return result;
 	}
 	return result;
 }
@@ -1000,7 +1007,10 @@ int checkForExecutableOrAlias(char* string)
 				printf("Error at line %d\n", __LINE__);
 				return;
 			}
-			strcpy(result2, getDirectories("*", pch));
+			char*files = malloc(500*sizeof(char));
+			files = getDirectories("*", pch);
+			printf("Test: %s\n", files);
+			strcpy(result2, files);
 			printf("%s\n", result2);
 			char* pch2 = strtok(result2, "$");
 			while(pch2 != NULL)
