@@ -369,12 +369,12 @@ void read_from_function (char *text)
 }
 void word_function(char *text)
 {
-	printf("%s\n", getDirectories("*", "/usr/local/sbin"));
-	/*int result = checkForExecutableOrAlias(text);
+	//printf("%s\n", getDirectories("*", "/usr/local/sbin"));
+	int result = checkForExecutableOrAlias(text);
 	if(result)
 	{
 		printf("Executable\n");
-	}*/
+	}
 	//printf("Resolved alias: %s\n",aliasResolve(text));
 	char * es;
 	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
@@ -433,19 +433,19 @@ char* getDirectories(char* textmatch, char* directory)
 	DIR *dir;
 	struct dirent *ent;
 	char* result;
-	char* olddirectory;
-	results = malloc(sizeof(glob_t));
 	result = malloc(5000 *sizeof(char));
-	if (result == NULL) //error
+	if (result == (char *) NULL) //error
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	results = malloc(sizeof(glob_t));
+	strcpy(result,"");
 	
 	if ((dir = opendir (directory)) != NULL) 
 	{
-		//printf("Opening %s\n", directory);
+		printf("Opening %s\n", directory);
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) 
 		{
@@ -460,8 +460,11 @@ char* getDirectories(char* textmatch, char* directory)
 		}
 		for (i = 0; i < results->gl_pathc; i++) //print out results
 		{
-			strcat(result, results->gl_pathv[i]);
-			strcat(result, "$");
+		if(access(results->gl_pathv[i], F_OK|X_OK) == 0) //we can execute this file
+			{
+				strcat(result, results->gl_pathv[i]);
+				strcat(result, "$");
+			}
 		}
 		globfree(results); //free glob expression
 		closedir (dir); //close directory 
@@ -1009,7 +1012,6 @@ int checkForExecutableOrAlias(char* string)
 			}
 			char*files = malloc(500*sizeof(char));
 			files = getDirectories("*", pch);
-			printf("Test: %s\n", files);
 			strcpy(result2, files);
 			printf("%s\n", result2);
 			char* pch2 = strtok(result2, "$");
