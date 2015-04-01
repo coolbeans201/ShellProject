@@ -268,6 +268,12 @@ void alias_function(char *text, char *text2)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	if(strcmp(text, "cd") == 0 || strcmp(text, "alias") == 0 || strcmp(text, "unalias") == 0 || strcmp(text, "setenv") == 0 || strcmp(text, "printenv") == 0 || strcmp(text, "unsetenv") == 0) //error
+	{
+		perror("Trying to make an alias out of a built-in command");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
 	unalias_function(text);             /* Remove all occurrences */
 	es = malloc(strlen(text) + strlen(text2) + 2);
 	if (es == NULL) //error
@@ -820,6 +826,73 @@ void quoteFunction(char* text)
 		return;
 	}
 	strncpy(actualText, &text[1], strlen(text) - 2); //everything between quotes
+	char* actualText2 = malloc(300 * sizeof(char));
+	if(actualText2 == (char*) NULL) //error
+	{
+		perror ("Error with memory allocation.");
+		printf ("Error at line %d\n", __LINE__);
+		return;
+	}
+	char* result = malloc(300 * sizeof(char));
+	if (result == (char*) NULL) //error
+	{
+		perror ("Error with memory allocation.");
+		printf ("Error at line %d\n", __LINE__);
+		return;
+	}
+	strcpy(actualText2, "");
+	char* pch = strtok(actualText, " "); //parse by space to analyze each "word" for presence of alias
+	while(pch != NULL)
+	{
+		int i;
+		int j;
+		int index = 0;
+		int match = 0;
+		for(i = 0; i < aliasCount; i++) //iterate over alias table
+		{
+			for(j = 0; j < strlen(aliases[i]); j++) //get name
+			{
+				if(aliases[i][j] == '=') //everything beforehand is a name
+				{
+					index = j;
+					break;
+				}
+			}
+			if(index == 0)
+			{
+				//do nothing
+			}
+			else if(strncmp(pch, aliases[i], index) == 0 && index > 0) //equal to an alias name
+			{
+				match = 1;
+				strcpy(result, aliasResolve(pch)); //get result of alias detection
+				if(strcmp(result, "<LOOP>") == 0) //infinite loop
+				{
+					perror ("Attempting to perform infinite alias expansion.");
+					printf ("Error at line %d\n", __LINE__);
+					return;
+				}
+				break;
+			}
+			else
+			{
+				//do nothing
+			}
+		}
+		if(match) //have a match
+		{
+			strcat(actualText2, result); 
+			strcat(actualText2, " "); //convert back to original text
+		}
+		else //no match
+		{
+			strcat(actualText2, pch);
+			strcat(actualText2, " "); //convert back to original text
+		}
+		pch = strtok(NULL, " ");
+	}
+	actualText2[strlen(actualText2) - 1] = '\0'; //null terminate and remove last space
+	strcpy(actualText, actualText2);
 	int index = 0;
 	int i;
 	int* results = malloc(300 * sizeof(int));
@@ -861,8 +934,8 @@ void quoteFunction(char* text)
 		printf ("Error at line %d\n", __LINE__);
 		return;
 	}
-	char *result = malloc(300 * sizeof(char));
-	if(result == (char*) NULL) //error
+	char *result2 = malloc(300 * sizeof(char));
+	if(result2 == (char*) NULL) //error
 	{
 		perror ("Error with memory allocation.");
 		printf ("Error at line %d\n", __LINE__);
@@ -874,9 +947,9 @@ void quoteFunction(char* text)
 	}
 	else //opens and ends
 	{
-		strcpy(result, "");
-		char* result2 = malloc(300 * sizeof(char));
-		if(result2 == (char*) NULL) //error
+		strcpy(result2, "");
+		char* result3 = malloc(300 * sizeof(char));
+		if(result3 == (char*) NULL) //error
 		{
 			perror ("Error with memory allocation.");
 			printf ("Error at line %d\n", __LINE__);
@@ -886,31 +959,31 @@ void quoteFunction(char* text)
 		{
 			if(i == 0) //first open
 			{
-				strncat(result, &actualText[0], results[0]); //add the beginning
-				memcpy(result2, &actualText[results[0] + 2], (results[1] - results[0] - 2) * sizeof(char));
-				if(getenv(result2) == NULL) //invalid environment variable
+				strncat(result2, &actualText[0], results[0]); //add the beginning
+				memcpy(result3, &actualText[results[0] + 2], (results[1] - results[0] - 2) * sizeof(char));
+				if(getenv(result3) == NULL) //invalid environment variable
 				{
 					perror ("Entered an invalid environment variable.");
 					printf ("Error at line %d\n", __LINE__);
 					return;
 				}
-				strcpy(result2, getenv(result2));
-				strcat(result, result2);
-				memset(result2, 0, sizeof(result2)); //clear buffer
+				strcpy(result3, getenv(result3));
+				strcat(result2, result3);
+				memset(result3, 0, sizeof(result3)); //clear buffer
 			}
 			else if(i % 2 == 0 && i != 0) //other opens
 			{
-				strncat(result, &actualText[results[i - 1] + 1], results[i] - results[i - 1] - 1);
-				strncpy(result2, &actualText[results[i] + 2], (results[i + 1] - results[i] - 2) * sizeof(char));
-				if(getenv(result2) == NULL)
+				strncat(result2, &actualText[results[i - 1] + 1], results[i] - results[i - 1] - 1);
+				strncpy(result3, &actualText[results[i] + 2], (results[i + 1] - results[i] - 2) * sizeof(char));
+				if(getenv(result3) == NULL)
 				{
 					perror ("Entered an invalid environment variable.");
 					printf ("Error at line %d\n", __LINE__);
 					return;
 				}
-				strcpy(result2,getenv(result2));
-				strcat(result, result2);
-				memset(result2, 0, sizeof(result2)); //clear buffer
+				strcpy(result3,getenv(result3));
+				strcat(result2, result3);
+				memset(result3, 0, sizeof(result3)); //clear buffer
 			}
 			else
 			{
@@ -919,12 +992,12 @@ void quoteFunction(char* text)
 		}
 		if(results[resultCount - 1] != strlen(actualText) - 1) //more left
 		{
-			strcat(result, &actualText[results[resultCount - 1] + 1]); //add all the leftovers
-			word_function(result);
+			strcat(result2, &actualText[results[resultCount - 1] + 1]); //add all the leftovers
+			word_function(result2);
 		}
 		else
 		{
-			word_function(result);
+			word_function(result2);
 		}
 	}
 }
