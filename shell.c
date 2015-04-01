@@ -6,6 +6,19 @@ char** aliases; //alias names and values
 char** newAliases; //copied aliases
 int aliasCount = 0; //number of aliases
 struct passwd* pwd; //contains result of getpwnam
+char* myPath;
+void shell_init()
+{
+	myPath = malloc(500 * sizeof(char));
+	if(myPath == (char *) NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	strcpy(myPath, getenv("PATH"));
+	printf("%s\n", myPath);
+}
 void unsetenv_function(char *text)
 {
 	printf("Unsetenv command entered\n");
@@ -57,6 +70,7 @@ void unalias_function(char *text)
 void setenv_function (char *text, char *text2)
 {
 	printf("Setenv command entered\n");
+	changeGroupedSlashesIntoOneSlash(text2); //switch it to actual correct text
 	char *es;
 	if (text == NULL || text[0] == '\0' || strchr(text, '=') != NULL || text2 == NULL) //check to see if valid
 	{
@@ -86,37 +100,8 @@ void setenv_function (char *text, char *text2)
 		strcpy(path, "");
 		while (pch != NULL) //still have tokens
 		{
-			if(strncmp(pch, ".", 1) == 0) //first character is a dot, so explicitly match
-			{
-				char *directory = malloc(300 * sizeof(char));
-				if(directory == (char *) NULL)
-				{
-					perror("Error with memory allocation.");
-					printf("Error at line %d\n", __LINE__);
-					return;
-				}
-				strcpy(directory, getenv("PWD")); //get current directory
-				strcat(directory, &pch[1]); //take everything after dot
-				strcat(path, directory);
-				strcat(path, ":"); //colon-separate
-			}
-			else if(strncmp(pch, "/.", 2) == 0) //first two characters are /., so get root
-			{
-				strcat(path, "/"); //root directory
-				strcat(path, &pch[2]); //take everything after dot
-				strcat(path, ":"); //colon-separate
-			}
-			else if (strncmp(pch, "/", 1) == 0) //also the root directory
-			{
-				strcat(path, "/"); //root directory
-				strcat(path, &pch[1]); //take everything after slash
-				strcat(path, ":"); //colon-separate
-			}
-			else
-			{
-				strcat(path, pch); //no tilde
-				strcat(path, ":"); //colon-separate
-			}
+			strcat(path, pch); //no tilde
+			strcat(path, ":"); //colon-separate
 			pch = strtok(NULL, ":"); //keep parsing
 		}
 		path[strlen(path) - 1] = '\0'; //get rid of colon at the end
@@ -311,49 +296,39 @@ void cd_function2(char *text)
 		printf("%s\n", getenv("PWD"));
 	}
 }
-void standard_error_redirect_function(char *text, char *text2)
+void standard_error_redirect_function()
 {
-	if(strcmp(text, "2") != 0 || strcmp(text2, "1") != 0) //error
+	int result = dup2(1, 2); //redirect output to standard error
+	if (result == -1) //error
 	{
-		perror("Invalid input");
+		perror("Standard error not redirected to output");
 		printf("Error at line %d\n", __LINE__);
 		return;
-	}
-	else
-	{
-		int result = dup2(1, 2); //redirect output to standard error
-		if (result == -1) //error
-		{
-			perror("Standard error not redirected to output");
-			printf("Error at line %d\n", __LINE__);
-			return;
-		}
 	}
 }
-void standard_error_redirect_function2(char *text, char *text2)
+void standard_error_redirect_function2(char *text)
 {
-	if(strcmp(text, "2") != 0) //error
+	char* text2 = malloc(300 * sizeof(char));
+	if (text2 == (char *)NULL) //error
 	{
-		perror("Invalid input");
+		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	else
+	strcpy(text2, &text[2]); //get everything after >
+	int out = open(text2, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
+	if(out == -1) //error
 	{
-		int out = open(text2, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
-		if(out == -1) //error
-		{
-			perror("File not created");
-			printf("Error at line %d\n", __LINE__);
-			return;
-		}
-		int result = dup2(out, 2); //redirect standard error to output file
-		if (result == -1) //error
-		{
-			perror("Standard error not redirected");
-			printf("Error at line %d\n", __LINE__);
-			return;
-		}
+		perror("File not created");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	int result = dup2(out, 2); //redirect standard error to output file
+	if (result == -1) //error
+	{
+		perror("Standard error not redirected");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
 }
 void write_to_function(char *text)
@@ -394,6 +369,11 @@ void read_from_function (char *text)
 }
 void word_function(char *text)
 {
+	int result = checkForExecutableOrAlias(text);
+	if(result)
+	{
+		printf("Executable\n");
+	}
 	//printf("Resolved alias: %s\n",aliasResolve(text));
 	char * es;
 	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
@@ -443,7 +423,7 @@ int getWords()
 {
 	return words;
 }
-void getDirectories(char* text)
+char* getDirectories(char* text, char* text2)
 {
 	int i;
 	int flags = 0;
@@ -451,7 +431,15 @@ void getDirectories(char* text)
 	int ret;
 	DIR *dir;
 	struct dirent *ent;
-	if ((dir = opendir (getenv("PWD"))) != NULL) 
+	char* result = malloc(5000 * sizeof(char));
+	if(result == (char*) NULL) //error
+	{
+		perror ("Error with memory allocation.");
+		printf ("Error at line %d\n", __LINE__);
+		return "";
+	}
+	strcpy(result, "");
+	if ((dir = opendir(text2)) != NULL) 
 	{
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) 
@@ -462,23 +450,30 @@ void getDirectories(char* text)
 			{
 				printf("Error with globbing");
 				printf("Error at line %d\n", __LINE__);
-				return;
+				return "";
 			}
 		}
 		for (i = 0; i < results.gl_pathc; i++) //print out results
 		{
-			printf("%s\n", results.gl_pathv[i]);
+			if(access(results.gl_pathv[i], F_OK|X_OK) == 0) //we can execute this file
+			{
+				printf("%s\n", results.gl_pathv[i]);
+				strcat(result, results.gl_pathv[i]);
+				strcat(result, "$");
+			}
 		}
+		result[strlen(result) - 1] = '\0'; //get rid of last space
 		globfree(& results); //free glob expression
 		closedir (dir); //close directory 
+		return result;
 	}
 	else 
 	{
 		/* could not open directory */
 		perror ("Cannot open directory");
 		printf("Error at line %d\n", __LINE__);
-		return;
-	}
+		return "";
+	} 
 }
 void pipe_function(char *text)
 {
@@ -988,5 +983,47 @@ void changeGroupedSpacesIntoOneSpace(char* string){ //removes extra spaces in th
 		}
 		else
 			i++;
+	}
+}
+int checkForExecutableOrAlias(char* string)
+{
+	char* result = malloc(300 * sizeof(char));
+	if(result == (char *) NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	if(strcmp(getAliasValue(string), "") == 0) //does it have an alias?
+	{
+		printf("You don't have an alias.\n");
+		char* pch = strtok(myPath, ":");
+		while(pch != NULL)
+		{
+			char* result2 = malloc(500 * sizeof(char));
+			if(result2 == (char *) NULL) //error
+			{
+				perror("Error with memory allocation.");
+				printf("Error at line %d\n", __LINE__);
+				return;
+			}
+			strcpy(result2, getDirectories("*", pch));
+			printf("%s\n", result2);
+			char* pch2 = strtok(result2, "$");
+			while(pch2 != NULL)
+			{
+				if(strcmp(string, pch2) == 0) //they are the same
+				{
+					return 1;
+				}
+				pch2 = strtok(NULL, "$");
+			}
+			pch = strtok(NULL, ":");
+		}
+		return 0;
+	}
+	else
+	{
+		return 1;
 	}
 }
