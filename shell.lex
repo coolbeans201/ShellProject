@@ -16,12 +16,15 @@ bye return BYE;
 "\""[*? ${},<>|&\"@!#%'=~.:/:A-Za-z0-9]+"\"" return QUOTES;
 \n return NEWLINE;
 [ \t]+ /* ignore end of line */;
-"${"[*?@!#%,'=~.:/:A-Za-z0-9]+"}" return ENVIRONMENTVARIABLE; 
+"${"[*?@!#%,'=~.:/:AAN-Za-z0-9]+"}" return ENVIRONMENTVARIABLE; 
 \\ return SLASH;
 "<" return READFROM;
 ">" return WRITETO;
 "|" return PIPE;
 "&" return AMPERSAND;
+">>" return APPEND;
+"2>"[*?@!#%',=~.:/:A-Za-z0-9]+ return STANDARDERROR1;
+"2>&1" return STANDARDERROR2;
 <<EOF>>	{exit(0);}
 . {yyerror("Unrecognized character");}
 %%
