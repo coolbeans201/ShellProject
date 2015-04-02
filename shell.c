@@ -100,9 +100,99 @@ void setenv_function (char *text, char *text2)
 		strcpy(path, "");
 		while (pch != NULL) //still have tokens
 		{
-			strcat(path, pch); //no tilde
-			strcat(path, ":"); //colon-separate
-			pch = strtok(NULL, ":"); //keep parsing
+			char* directory = malloc(300 * sizeof(char));
+			if(directory == (char*) NULL) //error
+			{
+				perror("Error with memory allocation.");
+				printf("Error at line %d\n", __LINE__);
+				return;
+			}
+			strcpy(directory, getenv("PWD"));
+			if(pch[0] == '.')
+			{
+				if(strlen(pch) == 1) //just a dot
+				{
+					strcat(path, directory); //get current directory
+					strcat(path, ":");
+				}
+				else if(strlen(pch) == 2 && pch[1] == '/') //just a dot-slash
+				{
+					strcat(path, directory); //get current directory
+					strcat(path, ":");
+				}
+				else if(strlen(pch) > 2 && pch[1] == '/')
+				{
+					strcat(path, directory);
+					strcat(path, &pch[2]);
+					strcat(path, ":");
+				}
+				else if(pch[1] != '.') //append text after dot
+				{
+					strcat(path, directory);
+					strcat(path, &pch[1]);
+					strcat(path, ":");
+				}
+				else if(pch[1] == '.' && strcmp(directory, "/") != 0)//go up a level (not in the root)
+				{
+					int i;
+					int lastSlashIndex = 1;
+					for(i = strlen(directory) - 2; i >= 0; i--) //find occurence of last slash
+					{
+						if(directory[i] == '/')
+						{
+							lastSlashIndex = i; //found last slash
+							break;
+						}
+					}
+					if(lastSlashIndex != 0)
+					{ //if .. does not return to the root directory
+						directory[lastSlashIndex] = '\0';//sets the second to last slash to a null character
+						strncat(path, directory, lastSlashIndex);
+					}
+					else if(lastSlashIndex == 0)
+					{//if .. is returning up to the root directory
+						directory[1] = '\0';//sets index 1 to null so the directory sets to the root
+						strcat(path, "/");
+					}
+					if(strlen(pch) > 2)
+					{
+						strcat(path, "/"); //add slash
+						strcat(path, &pch[3]); //take everything after the slash
+						strcat(path, ":");
+					}
+					else //nothing
+					{
+						strcat(path, "/"); //blank it
+						strcat(path, ":");
+					}
+				}
+				else if(strcmp(directory, "/") == 0)
+				{//if it is in root
+					strcat(path,"/"); //change text to empty string so ".." is not concatenated to the directory later on
+					strcat(path, ":");
+				}
+			}
+			if(pch[0] == '/') //first character is slash
+			{
+				if(strlen(pch) == 1 || (strlen(pch) == 2 && pch[1] == '.')) //just a slash or slash-dot
+				{
+					strcat(path, "/");
+					strcat(path, ":");
+				}
+				else
+				{
+					char* text2 = malloc(300 * sizeof(char));
+					if(text2 == (char *) NULL)
+					{
+						perror("Error with memory allocation.");
+						printf("Error at line %d\n", __LINE__);
+						return;
+					}
+					strcat(path, &pch[1]);
+					strcat(path, ":");
+				}
+			}
+			pch = strtok(NULL, ":");
 		}
 		path[strlen(path) - 1] = '\0'; //get rid of colon at the end
 		strcpy(text2, path);
@@ -370,11 +460,11 @@ void read_from_function (char *text)
 void word_function(char *text)
 {
 	//printf("%s\n", getDirectories("*", "/usr/local/sbin"));
-	int result = checkForExecutableOrAlias(text);
-	if(result)
-	{
-		printf("Executable\n");
-	}
+	//int result = checkForExecutableOrAlias(text);
+	//if(result)
+	//{
+		//printf("Executable\n");
+	//}
 	//printf("Resolved alias: %s\n",aliasResolve(text));
 	char * es;
 	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
@@ -1013,7 +1103,7 @@ int checkForExecutableOrAlias(char* string)
 			char*files = malloc(500*sizeof(char));
 			files = getDirectories("*", pch);
 			strcpy(result2, files);
-			printf("%s\n", result2);
+			//printf("%s\n", result2);
 			char* pch2 = strtok(result2, "$");
 			while(pch2 != NULL)
 			{
