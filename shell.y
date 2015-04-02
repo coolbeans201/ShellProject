@@ -198,7 +198,7 @@ pipes:
 command:
 		word_case words pipes read_from_case write_to_case standard_error_redirect_case ampersand_case
 		{
-
+			
 		}
 	|	word_case words pipes read_from_case write_to_case standard_error_redirect_case
 		{
@@ -771,7 +771,7 @@ command:
 		}
 	|	word_case word_case pipes read_from_case write_to_case standard_error_redirect_case ampersand_case
 		{
-			printf("word_case word_case pipes read_from_case write_to_case standard_error_redirect_case ampersand_case\n");
+			
 		}
 	|	word_case word_case pipes read_from_case write_to_case standard_error_redirect_case
 		{
@@ -1053,5 +1053,440 @@ command:
 	|	word_case word_case append_case standard_error_redirect_case2
 		{
 		
+		}
+	|	word_case words pipe_case read_from_case write_to_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case read_from_case write_to_case standard_error_redirect_case
+		{
+
+		}
+	|	word_case words pipe_case read_from_case write_to_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case read_from_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case write_to_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case write_to_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case read_from_case write_to_case
+		{
+		
+		}
+	|	word_case words pipe_case read_from_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case words pipe_case read_from_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case write_to_case standard_error_redirect_case
+		{
+
+		}
+	|	word_case words pipe_case write_to_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case write_to_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case write_to_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case write_to_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case read_from_case
+		{
+		
+		}
+	|	word_case words pipe_case write_to_case
+		{
+		
+		}
+	|	word_case words pipe_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case words pipe_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case write_to_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case write_to_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case pipe_case write_to_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case
+		{
+		
+		}
+	|	word_case pipe_case write_to_case
+		{
+		
+		}
+	|	word_case pipe_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case pipe_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case
+		{
+		
+		}
+	|	word_case words pipe_case read_from_case write_to_case standard_error_redirect_case2 ampersand_case
+		{
+
+		}
+	|	word_case words pipe_case read_from_case write_to_case standard_error_redirect_case2
+		{
+
+		}
+	|	word_case words pipe_case read_from_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case write_to_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case write_to_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+
+	|	word_case words pipe_case read_from_case standard_error_redirect_case2
+		{
+		
+		}
+
+	|	word_case words pipe_case write_to_case standard_error_redirect_case2
+		{
+
+		}
+	|	word_case words pipe_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case write_to_case standard_error_redirect_case2
+		{
+		
+		}
+	|	word_case pipe_case read_from_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case write_to_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case standard_error_redirect_case2
+		{
+		
+		}
+	|	word_case pipe_case read_from_case standard_error_redirect_case2
+		{
+		
+		}
+	|	word_case pipe_case write_to_case standard_error_redirect_case2
+		{
+		
+		}
+	|	word_case pipe_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case standard_error_redirect_case2
+		{
+		
+		}
+	|	word_case words pipe_case read_from_case append_case standard_error_redirect_case ampersand_case
+		{
+
+		}
+	|	word_case words pipe_case read_from_case append_case standard_error_redirect_case
+		{
+
+		}
+	|	word_case words pipe_case read_from_case append_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case append_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case append_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case read_from_case append_case
+		{
+		
+		}
+	|	word_case words pipe_case append_case standard_error_redirect_case
+		{
+
+		}
+	|	word_case words pipe_case append_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case append_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case append_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case append_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case append_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case append_case
+		{
+		
+		}
+	|	word_case pipe_case append_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case pipe_case append_case ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case append_case
+		{
+		
+		}
+	|	word_case words pipe_case read_from_case append_case standard_error_redirect_case2 ampersand_case
+		{
+
+		}
+	|	word_case words pipe_case read_from_case append_case standard_error_redirect_case2
+		{
+
+		}
+	|	word_case words pipe_case append_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case read_from_case append_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case words pipe_case append_case standard_error_redirect_case2
+		{
+
+		}
+	|	word_case pipe_case read_from_case append_case standard_error_redirect_case2
+		{
+		
+		}
+	|	word_case pipe_case append_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case pipe_case append_case standard_error_redirect_case2
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case write_to_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case write_to_case standard_error_redirect_case
+		{
+
+		}
+	|	word_case word_case pipe_case read_from_case write_to_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case write_to_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case write_to_case
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case write_to_case standard_error_redirect_case
+		{
+
+		}
+	|	word_case word_case pipe_case write_to_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case
+		{
+		
+		}
+	|	word_case word_case pipe_case write_to_case
+		{
+		
+		}
+	|	word_case word_case pipe_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case word_case pipe_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case write_to_case standard_error_redirect_case2 ampersand_case
+		{
+
+		}
+	|	word_case word_case pipe_case read_from_case write_to_case standard_error_redirect_case2
+		{
+
+		}
+	|	word_case word_case pipe_case read_from_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case write_to_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case standard_error_redirect_case2
+		{
+		
+		}
+
+	|	word_case word_case pipe_case write_to_case standard_error_redirect_case2
+		{
+
+		}
+	|	word_case word_case pipe_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case standard_error_redirect_case2
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case append_case standard_error_redirect_case ampersand_case
+		{
+
+		}
+	|	word_case word_case pipe_case read_from_case append_case standard_error_redirect_case
+		{
+
+		}
+	|	word_case word_case pipe_case read_from_case append_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case append_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case append_case
+		{
+		
+		}
+	|	word_case word_case pipe_case append_case standard_error_redirect_case
+		{
+
+		}
+	|	word_case word_case pipe_case append_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case append_case
+		{
+		
+		}
+	|	word_case word_case pipe_case read_from_case append_case standard_error_redirect_case2 ampersand_case
+		{
+
+		}
+	|	word_case word_case pipe_case read_from_case append_case standard_error_redirect_case2
+		{
+
+		}
+	|	word_case word_case pipe_case append_case standard_error_redirect_case2 ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipe_case append_case standard_error_redirect_case2
+		{
+
 		};
 %%
