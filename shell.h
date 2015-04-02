@@ -36,7 +36,7 @@
   int getWords(void);
   int getAliasCount(void);
   int globerr(const char* path, int eerrno);
-  char* getDirectories(char *text, char* text2);
+  char* getDirectories(char *textmatch);
   void changeGroupedSlashesIntoOneSlash(char* string);
   void quoteFunction(char* text);
   void word2Function(char* text);
@@ -44,7 +44,14 @@
   char* aliasResolve(char* string);
   char* getAliasValue(char* aliasName);
   char** textArray; //words
+  int readFlag; //is read from present?
+  int writeFlag; //is write to present?
+  int pipeFlag; //are pipes present?
+  int appendFlag; //is append present?
+  int ampersandFlag; //is ampersand present?
+  int standardErrorFlag; //is standard error present?
   int checkForExecutableOrAlias(char* string);
   void shell_init(void);
   void changeGroupedSpacesIntoOneSpace(char* string);
+  void append_function(char* text);
   #endif
