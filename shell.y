@@ -31,13 +31,10 @@ command:
 		|bye_case
 		|word_case
 		|slash_case
-		|read_from_case
-		|write_to_case
+		|io_redirect_case
 		|pipe_case
 		|ampersand_case
-		|append_case
 		|standard_error_redirect_case
-		|standard_error_redirect_case2
 		|error_case
 		|words
 		|pipes;
@@ -132,14 +129,26 @@ slash_case:
 							{
 								printf ("Slash entered\n");
 							};
-read_from_case:
-		READFROM word_case			
+io_redirect_case:
+		READFROM word_case	
 							{
-								read_from_function(textArray[getWords() - 1]);
-							};
-write_to_case:
-		WRITETO	word_case	{
-								write_to_function(textArray[getWords() - 1]);
+								printf("Reading\n");
+							}
+	|	WRITETO	word_case	
+							{
+								printf("Writing\n");
+							}
+	|	APPEND	word_case
+							{
+								printf("Appending\n");
+							}
+	|	READFROM	word_case	WRITETO	word_case
+							{
+								printf("Reading and writing\n");
+							}
+	|	READFROM	word_case	APPEND	word_case
+							{
+							printf("Reading and appending\n");
 							};
 pipe_case:
 		PIPE word_case words			
@@ -162,9 +171,8 @@ standard_error_redirect_case:
 		STANDARDERROR1
 							{
 								standard_error_redirect_function();
-							};
-standard_error_redirect_case2:
-		STANDARDERROR2		
+							}
+	|	STANDARDERROR2
 							{
 								standard_error_redirect_function2(yytext);
 							};
@@ -172,11 +180,6 @@ error_case:
 		error
 							{
 								printf ("Syntax error.\n");
-							};
-append_case:
-		APPEND	word_case
-							{
-							
 							};
 words:
 		word_case word_case
