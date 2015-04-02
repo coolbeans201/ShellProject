@@ -197,5 +197,252 @@ pipes:
 								printf("Pipes for days\n");
 							};
 command:
+		word_case words pipes io_redirect_case standard_error_redirect_case ampersand_case
+		{
 		
+		}
+	|	word_case words pipes io_redirect_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case words pipes io_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipes standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words io_redirect_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case pipes io_redirect_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipes io_redirect_case
+		{
+		
+		}
+	|	word_case words pipes standard_error_redirect_case
+		{
+		
+		}
+	|	word_case words pipes ampersand_case
+		{
+		
+		}
+	|	word_case words io_redirect_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case words io_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case pipes io_redirect_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case pipes io_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case pipes standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case io_redirect_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words pipes
+		{
+		
+		}
+	|	word_case words io_redirect_case
+		{
+		
+		}
+	|	word_case words standard_error_redirect_case
+		{
+		
+		}
+	|	word_case words ampersand_case
+		{
+		
+		}
+	|	word_case pipes io_redirect_case
+		{
+		
+		}
+	|	word_case pipes standard_error_redirect_case
+		{
+		
+		}
+	|	word_case pipes ampersand_case
+		{
+		
+		}
+	|	word_case io_redirect_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case io_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case words
+		{
+		
+		}
+	|	word_case pipes
+		{
+		
+		}
+	|	word_case io_redirect_case
+		{
+		
+		}
+	|	word_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipes io_redirect_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipes io_redirect_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case word_case pipes io_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipes standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case io_redirect_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case pipes io_redirect_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipes io_redirect_case
+		{
+		
+		}
+	|	word_case word_case pipes standard_error_redirect_case
+		{
+		
+		}
+	|	word_case word_case pipes ampersand_case
+		{
+		
+		}
+	|	word_case word_case io_redirect_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case word_case io_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case pipes io_redirect_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case pipes io_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case pipes standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case io_redirect_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case pipes
+		{
+		
+		}
+	|	word_case word_case io_redirect_case
+		{
+		
+		}
+	|	word_case word_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case word_case ampersand_case
+		{
+		
+		}
+	|	word_case pipes io_redirect_case
+		{
+		
+		}
+	|	word_case pipes standard_error_redirect_case
+		{
+		
+		}
+	|	word_case pipes ampersand_case
+		{
+		
+		}
+	|	word_case io_redirect_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case io_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case standard_error_redirect_case ampersand_case
+		{
+		
+		}
+	|	word_case word_case
+		{
+		
+		}
+	|	word_case pipes
+		{
+		
+		}
+	|	word_case io_redirect_case
+		{
+		
+		}
+	|	word_case standard_error_redirect_case
+		{
+		
+		}
+	|	word_case ampersand_case
+		{
+		
+		};
 %%
