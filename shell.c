@@ -8,6 +8,15 @@ int aliasCount = 0; //number of aliases
 struct passwd* pwd; //contains result of getpwnam
 char* myPath;
 char* myHome;
+int readFlag; //is read from present?
+int writeFlag; //is write to present?
+int pipeFlag; //are pipes present?
+int appendFlag; //is append present?
+int ampersandFlag; //is ampersand present?
+int standardErrorFlag; //is standard error present?
+int savedOutput; //output channel
+int savedInput; //input channel
+int savedError; //error channel
 void shell_init()
 {
 	myPath = malloc(500 * sizeof(char));
@@ -27,7 +36,12 @@ void shell_init()
 		return;
 	}
 	strcpy(myHome, getenv("HOME")); //get home directory so that it stays constant
-	printf("%d\n", readFlag);
+	readFlag = 0;
+	writeFlag = 0;
+	appendFlag = 0;
+	ampersandFlag = 0;
+	standardErrorFlag = 0;
+	pipeFlag = 0;
 }
 void unsetenv_function(char *text)
 {
@@ -398,6 +412,7 @@ void cd_function2(char *text)
 }
 void standard_error_redirect_function()
 {
+	savedError = dup(2);
 	int result = dup2(1, 2); //redirect output to standard error
 	if (result == -1) //error
 	{
@@ -423,6 +438,7 @@ void standard_error_redirect_function2(char *text)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	savedError = dup(2);
 	int result = dup2(out, 2); //redirect standard error to output file
 	if (result == -1) //error
 	{
@@ -441,6 +457,7 @@ void write_to_function(char *text)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	savedOutput = dup(1);
 	int result = dup2(out, 1); //redirect output to file
 	if (result == -1) //error
 	{
@@ -451,6 +468,7 @@ void write_to_function(char *text)
 }
 void read_from_function (char *text)
 {
+		
 		printf("Read from entered\n");
 		int in = open(text, O_RDONLY); //open file
 		if(in == -1) //error
@@ -459,6 +477,7 @@ void read_from_function (char *text)
 			printf("Error at line %d\n", __LINE__);
 			return;
 		}
+		savedInput = dup(0);
 		int result = dup2(in, 0); //redirect input from file
 		if (result == -1) //error
 		{
@@ -1156,6 +1175,7 @@ void append_function(char* text)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	savedOutput = dup(1);
 	int result = dup2(out, 1); //redirect output to file
 	if (result == -1) //error
 	{
@@ -1164,4 +1184,58 @@ void append_function(char* text)
 		return;
 	}
 	lseek(out, 1, SEEK_END); //append by using lseek to go to the end of the file
+}
+void reset()
+{
+	readFlag = 0;
+	writeFlag = 0;
+	appendFlag = 0;
+	standardErrorFlag = 0;
+	pipeFlag = 0;
+	ampersandFlag = 0;
+	int result = dup2(savedInput, 0);
+	if(result == -1) //error
+	{
+		perror("Input not redirected");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	result = dup2(savedOutput, 1);
+	if(result == -1) //error
+	{
+		perror("Output not redirected");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	result = dup2(savedError, 2);
+	if(result == -1) //error
+	{
+		perror("Error not redirected");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+}
+void setReadFlag(int flag)
+{
+	readFlag = flag;
+}
+void setWriteFlag(int flag)
+{
+	writeFlag = flag;
+}
+void setAppendFlag(int flag)
+{
+	appendFlag = flag;
+}
+void setStandardErrorFlag(int flag)
+{
+	standardErrorFlag = flag;
+}
+void setPipeFlag(int flag)
+{
+	pipeFlag = flag;
+}
+void setAmpersandFlag(int flag)
+{
+	ampersandFlag = flag;
 }
