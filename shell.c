@@ -7,6 +7,7 @@ char** newAliases; //copied aliases
 int aliasCount = 0; //number of aliases
 struct passwd* pwd; //contains result of getpwnam
 char* myPath;
+char* myHome;
 void shell_init()
 {
 	myPath = malloc(500 * sizeof(char));
@@ -16,8 +17,17 @@ void shell_init()
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	strcpy(myPath, getenv("PATH"));
+	strcpy(myPath, getenv("PATH")); //get path directory so it stays constant
 	//printf("%s\n", myPath);
+	myHome = malloc(500 * sizeof(char));
+	if(myHome == (char *) NULL) //error
+	{
+		perror("Error with 																																																														memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	strcpy(myHome, getenv("HOME")); //get home directory so that it stays constant
+	printf("%d\n", readFlag);
 }
 void unsetenv_function(char *text)
 {
@@ -251,14 +261,14 @@ void alias_function(char *text, char *text2)
 void cd_function()
 {
 	printf("Second CD command entered\n");
-	int result = chdir(getenv("HOME")); //get home directory and move to it
+	int result = chdir(myHome); //get home directory and move to it
 	if(result == -1) //error
 	{
 		perror("Directory not changed");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	setenv_function("PWD", getenv("HOME")); //change PWD
+	setenv_function("PWD", myHome); //change PWD
 	printf("%s\n", getenv("PWD"));
 }
 void cd_function2(char *text)
@@ -463,7 +473,7 @@ void word_function(char *text)
 	//int result = checkForExecutableOrAlias(text);
 	//if(result)
 	//{
-		//printf("Executable\n");
+	//	printf("Executable\n");
 	//}
 	//printf("Resolved alias: %s\n",aliasResolve(text));
 	char * es;
@@ -514,7 +524,7 @@ int getWords()
 {
 	return words;
 }
-char* getDirectories(char* textmatch, char* directory)
+char* getDirectories(char* textmatch)
 {
 	int i;
 	int flags = 0;
@@ -530,12 +540,11 @@ char* getDirectories(char* textmatch, char* directory)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	results = malloc(sizeof(glob_t));
+	results = malloc(500 * sizeof(glob_t));
 	strcpy(result,"");
-	
-	if ((dir = opendir (directory)) != NULL) 
+	if ((dir = opendir(getenv("PWD"))) != NULL) 
 	{
-		printf("Opening %s\n", directory);
+		printf("Opening %s\n", getenv("PWD"));
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) 
 		{
@@ -550,7 +559,7 @@ char* getDirectories(char* textmatch, char* directory)
 		}
 		for (i = 0; i < results->gl_pathc; i++) //print out results
 		{
-		if(access(results->gl_pathv[i], F_OK|X_OK) == 0) //we can execute this file
+			if(access(results->gl_pathv[i], F_OK|X_OK) == 0) //we can execute this file
 			{
 				strcat(result, results->gl_pathv[i]);
 				strcat(result, "$");
@@ -1000,14 +1009,14 @@ char* tildeExpansion(char* text)
 		int length = strlen(&text[1]); 
 		if(length == 0) //empty afterwards, so get home directory
 		{
-			int result = chdir(getenv("HOME")); //get home directory and move to it
+			int result = chdir(myHome); //get home directory and move to it
 			if(result == -1) //error
 			{
 				perror("Directory not changed");
 				printf("Error at line %d\n", __LINE__);
 				return;
 			}
-			return getenv("HOME");
+			return myHome;
 		}
 		else //actual expansion
 		{
@@ -1033,7 +1042,7 @@ char* tildeExpansion(char* text)
 			else //string continues
 			{
 				char *directory = malloc(300 * sizeof(char));
-				strcpy(directory, getenv("HOME")); //start with home directory
+				strcpy(directory, myHome); //start with home directory
 				int index = length - 1;
 				int i;
 				for(i = 0; i < length; i++)
@@ -1090,9 +1099,20 @@ int checkForExecutableOrAlias(char* string)
 	if(strcmp(getAliasValue(string), "") == 0) //does it have an alias?
 	{
 		printf("You don't have an alias.\n");
-		char* pch = strtok(myPath, ":");
+		printf("%s\n", myPath);
+		char* saved;
+		char* pch = strtok_r(myPath, ":", &saved);
+		char* directory = malloc(300 * sizeof(char));
+		if(directory == (char *) NULL) //error
+		{
+			perror("Error with memory allocation.");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		strcpy(directory, getenv("PWD"));
 		while(pch != NULL)
 		{
+			printf("%s\n", pch);
 			char* result2 = malloc(500 * sizeof(char));
 			if(result2 == (char *) NULL) //error
 			{
@@ -1100,20 +1120,24 @@ int checkForExecutableOrAlias(char* string)
 				printf("Error at line %d\n", __LINE__);
 				return;
 			}
-			char*files = malloc(500*sizeof(char));
-			files = getDirectories("*", pch);
+			char* files = malloc(500*sizeof(char));
+			cd_function2(pch);
+			strcpy(files, getDirectories("*"));
 			strcpy(result2, files);
-			//printf("%s\n", result2);
-			char* pch2 = strtok(result2, "$");
+			cd_function2(directory);
+			printf("%s\n", result2);
+			char* saved2;
+			char* pch2 = strtok_r(result2, "$", &saved2);
 			while(pch2 != NULL)
 			{
+				printf("%s\n", pch2);
 				if(strcmp(string, pch2) == 0) //they are the same
 				{
 					return 1;
 				}
-				pch2 = strtok(NULL, "$");
+				pch2 = strtok_r(NULL, "$", &saved2);
 			}
-			pch = strtok(NULL, ":");
+			pch = strtok_r(NULL, ":", &saved);
 		}
 		return 0;
 	}
@@ -1121,4 +1145,23 @@ int checkForExecutableOrAlias(char* string)
 	{
 		return 1;
 	}
+}
+void append_function(char* text)
+{
+	printf("Append entered\n");
+	int out = open(text, O_WRONLY | O_APPEND | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
+	if(out == -1) //error
+	{
+		perror("File not created");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	int result = dup2(out, 1); //redirect output to file
+	if (result == -1) //error
+	{
+		perror("Output not redirected");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	lseek(out, 1, SEEK_END); //append by using lseek to go to the end of the file
 }
