@@ -44,14 +44,15 @@
   char* aliasResolve(char* string);
   char* getAliasValue(char* aliasName);
   char** textArray; //words
-  int readFlag; //is read from present?
-  int writeFlag; //is write to present?
-  int pipeFlag; //are pipes present?
-  int appendFlag; //is append present?
-  int ampersandFlag; //is ampersand present?
-  int standardErrorFlag; //is standard error present?
   int checkForExecutableOrAlias(char* string);
   void shell_init(void);
   void changeGroupedSpacesIntoOneSpace(char* string);
   void append_function(char* text);
+  void reset(void);
+  void setReadFlag(int flag);
+  void setWriteFlag(int flag);
+  void setAppendFlag(int flag);
+  void setStandardErrorFlag(int flag);
+  void setPipeFlag(int flag);
+  void setAmpersandFlag(int flag);
   #endif
