@@ -39,7 +39,8 @@ command:
 		|standard_error_redirect_case
 		|standard_error_redirect_case2
 		|error_case
-		|words;
+		|words
+		|pipes;
 cd2_case:
 		CD 
 							{
@@ -141,9 +142,16 @@ write_to_case:
 								write_to_function(textArray[getWords() - 1]);
 							};
 pipe_case:
-		PIPE word_case			
+		PIPE word_case words			
 							{
-								pipe_function(textArray[getWords() - 1]);
+								//pipe with a command name and more than one argument
+							}
+	|	PIPE word_case		{
+								//pipe with a command name and no arguments
+							}
+	|	PIPE word_case word_case
+							{
+								//pipe with a command name and only one argument
 							};
 ampersand_case:
 		AMPERSAND			
@@ -177,6 +185,14 @@ words:
 							}
 	|	words	word_case
 							{
-							printf("Meme\n");
+								printf("Meme\n");
 							};
+pipes:
+		pipe_case	pipe_case
+	|	pipes 		pipe_case
+							{
+								printf("Pipes for days\n");
+							};
+command:
+		
 %%
