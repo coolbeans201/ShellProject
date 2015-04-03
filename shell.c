@@ -31,7 +31,7 @@ void shell_init()
 	myHome = malloc(500 * sizeof(char));
 	if(myHome == (char *) NULL) //error
 	{
-		perror("Error with memory allocation.");
+		perror("Error with 																																																														memory allocation.");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
@@ -497,13 +497,6 @@ void read_from_function (char *text)
 }
 void word_function(char *text)
 {
-	//printf("%s\n", getDirectories("*", "/usr/local/sbin"));
-	//int result = checkForExecutableOrAlias(text);
-	//if(result)
-	//{
-	//	printf("Executable\n");
-	//}
-	//printf("Resolved alias: %s\n",aliasResolve(text));
 	char * es;
 	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
 	if (es == NULL) //error
@@ -1252,33 +1245,39 @@ void setAmpersandFlag(int flag)
 }
 void execute()
 {
-	if(readFlag == 1)
+	int numberOfPipes;
+	int numberOfCommands;
+	int i;
+	for(i = 0; i < words; i++)
 	{
-	
+		if(strcmp(textArray[i], "|") == 0) //it's a pipe
+		{
+			numberOfPipes++;
+		}
+		printf("%s\n", textArray[i]);
 	}
-	if(writeFlag == 1)
+	numberOfCommands = numberOfPipes + 1;
+	int child;
+	if((child = fork()) == -1) //error
 	{
-	
+		perror("Error forking");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}	
+	if(child != 0) //in parent
+	{
+		wait((int *) 0);
 	}
-	if(appendFlag == 1)
+	else
 	{
-	
-	}
-	if(standardErrorFlag == 1)
-	{
-	
-	}
-	if(standardErrorFlag == 2)
-	{
-	
-	}
-	if(pipeFlag == 1)
-	{
-	
-	}
-	if(ampersandFlag == 1)
-	{
-	
+		char *arguments[2];
+		arguments[0] = "ls";
+		arguments[1] = (char *) 0;
+		int result = execvp("ls", arguments);
+		if(result == -1)
+		{
+			printf("Nice going fuckwad\n");
+		}
 	}
 	reset();
 }
