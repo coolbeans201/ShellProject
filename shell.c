@@ -67,6 +67,7 @@ void unsetenv_function(char *text)
 				envVariableNames++; //keep moving
 		}
 	}
+	reset();
 }
 void unalias_function(char *text)
 {
@@ -90,6 +91,7 @@ void unalias_function(char *text)
 			aliasCount--; //decrement count
 		} 
 	}
+	reset();
 }
 void setenv_function (char *text, char *text2)
 {
@@ -231,6 +233,7 @@ void setenv_function (char *text, char *text2)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	reset();
 }
 void alias_function(char *text, char *text2)
 {
@@ -271,6 +274,7 @@ void alias_function(char *text, char *text2)
 	newAliases[aliasCount + 1] = NULL; //null entry
 	aliases = newAliases;
 	aliasCount++; //increment index
+	reset();
 }
 void cd_function()
 {
@@ -284,6 +288,7 @@ void cd_function()
 	}
 	setenv_function("PWD", myHome); //change PWD
 	printf("%s\n", getenv("PWD"));
+	reset();
 }
 void cd_function2(char *text)
 {
@@ -409,6 +414,7 @@ void cd_function2(char *text)
 		setenv_function("PWD", directory); //change PWD to absolute
 		printf("%s\n", getenv("PWD"));
 	}
+	reset();
 }
 void standard_error_redirect_function()
 {
@@ -525,6 +531,7 @@ void printenv_function()
 	{
 		printf("%s\n", *ep); //print everything line by line
 	}
+	reset();
 }
 void alias_function2()
 {
@@ -534,6 +541,7 @@ void alias_function2()
 	{
 		printf("%s\n", aliases[i]); //print each alias line by line
 	}
+	reset();
 }
 int getAliasCount()
 {
@@ -1238,4 +1246,45 @@ void setPipeFlag(int flag)
 void setAmpersandFlag(int flag)
 {
 	ampersandFlag = flag;
+}
+void execute(char* text)
+{
+	char* pch = strtok(text, " ");
+	while(pch != NULL)
+	{
+		if(strcmp(pch, "|") != 0 && strcmp(pch, "<") != 0 && strcmp(pch, ">") != 0 && strcmp(pch, "&") != 0)
+		{
+			
+		}
+		pch = strtok(NULL, " ");
+	}
+	if(readFlag == 1)
+	{
+	
+	}
+	if(writeFlag == 1)
+	{
+	
+	}
+	if(appendFlag == 1)
+	{
+	
+	}
+	if(standardErrorFlag == 1)
+	{
+	
+	}
+	if(standardErrorFlag == 2)
+	{
+	
+	}
+	if(pipeFlag == 1)
+	{
+	
+	}
+	if(ampersandFlag == 1)
+	{
+	
+	}
+	reset();
 }
