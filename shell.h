@@ -55,4 +55,5 @@
   void setStandardErrorFlag(int flag);
   void setPipeFlag(int flag);
   void setAmpersandFlag(int flag);
+  void execute(char* text);
   #endif
