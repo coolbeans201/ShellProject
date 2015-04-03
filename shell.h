@@ -52,8 +52,8 @@
   void setReadFlag(int flag);
   void setWriteFlag(int flag);
   void setAppendFlag(int flag);
-  void setStandardErrorFlag(int flag);
+  void setErrorFlag(int flag);
   void setPipeFlag(int flag);
   void setAmpersandFlag(int flag);
-  void execute(char* text);
+  void execute(void);
   #endif
