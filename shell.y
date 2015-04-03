@@ -136,11 +136,11 @@ slash_case:
 read_from_case:
 		READFROM word_case			
 							{
-								read_from_function(textArray[getWords() - 1]);
+								//read from
 							};
 write_to_case:
 		WRITETO	word_case	{
-								write_to_function(textArray[getWords() - 1]);
+								//write to
 							};
 pipe_case:
 		PIPE words			
@@ -160,12 +160,12 @@ ampersand_case:
 standard_error_redirect_case:
 		STANDARDERROR1
 							{
-								standard_error_redirect_function();
+								//standard error redirect 1
 							};
 standard_error_redirect_case2:
 		STANDARDERROR2		
 							{
-								standard_error_redirect_function2(yytext);
+								//standard error redirect 2
 							};
 error_case:
 		error
@@ -198,7 +198,7 @@ pipes:
 command:
 		word_case words pipes read_from_case write_to_case standard_error_redirect_case ampersand_case
 		{
-			
+			printf("%s\n", yytext);
 		}
 	|	word_case words pipes read_from_case write_to_case standard_error_redirect_case
 		{
