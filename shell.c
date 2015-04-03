@@ -31,7 +31,7 @@ void shell_init()
 	myHome = malloc(500 * sizeof(char));
 	if(myHome == (char *) NULL) //error
 	{
-		perror("Error with 																																																														memory allocation.");
+		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
