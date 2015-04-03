@@ -18,7 +18,8 @@
 %token CD PRINTENV UNSETENV SETENV NEWLINE ALIAS UNALIAS BYE WORD MATCHER QUOTES ENVIRONMENTVARIABLE SLASH READFROM WRITETO PIPE AMPERSAND APPEND STANDARDERROR1 STANDARDERROR2	COMMANDNAME
 %%
 commands: 
-		| commands command NEWLINE;
+		| commands command NEWLINE
+		| commands command3;
 command:
 		cd2_case
 		|cd_case
@@ -40,7 +41,11 @@ command:
 		|standard_error_redirect_case2
 		|error_case
 		|words
-		|pipes;
+		|pipes
+		|pipe2_case
+		|command2
+		|read_from_case2
+		|write_to_case2;
 cd2_case:
 		CD 
 							{
@@ -133,41 +138,57 @@ slash_case:
 							{
 								printf ("Slash entered\n");
 							};
-read_from_case:
-		READFROM word_case			
+read_from_case2:
+		READFROM
 							{
-								//read from
+								word_function("<");
+							};
+write_to_case2:
+		WRITETO
+							{
+								word_function(">");
+							};
+read_from_case:
+		read_from_case2 word_case			
+							{
+								
 							};
 write_to_case:
-		WRITETO	word_case	{
-								//write to
+		write_to_case2	word_case	
+							{
+								
 							};
-pipe_case:
-		PIPE words			
+pipe2_case:
+		PIPE
 							{
 								word_function("|");
+							};
+pipe_case:
+		pipe2_case words			
+							{
 								printf("PIPE words\n");
 								//pipe with a command name and more than one argument
 							}
-	|	PIPE word_case		{
-								word_function("|");
+	|	pipe2_case word_case
+							{
 								printf("PIPE word_case\n");
 								//pipe with a command name and no arguments
 							};
 ampersand_case:
 		AMPERSAND			
 							{
+								word_function("&");
 								printf ("Ampersand entered\n");
 							};
 standard_error_redirect_case:
 		STANDARDERROR1
 							{
-								//standard error redirect 1
+								word_function("2>&1");
 							};
 standard_error_redirect_case2:
 		STANDARDERROR2		
 							{
-								//standard error redirect 2
+								word_function(yytext);
 							};
 error_case:
 		error
@@ -177,7 +198,7 @@ error_case:
 append_case:
 		APPEND	word_case
 							{
-							
+								word_function(">>");
 							};
 words:
 		word_case word_case
@@ -197,7 +218,7 @@ pipes:
 							{
 								printf("pipes pipe_case\n");
 							};
-command:
+command2:
 		word_case words pipes read_from_case write_to_case standard_error_redirect_case ampersand_case
 		{
 			setReadFlag(1);
@@ -3418,5 +3439,16 @@ command:
 			setAmpersandFlag(0);
 			setAppendFlag(1);
 			execute();
+		};
+command3:
+	word_case	word_case	NEWLINE
+		{
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+		execute();
 		};
 %%
