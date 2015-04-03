@@ -42,6 +42,9 @@ void shell_init()
 	ampersandFlag = 0;
 	standardErrorFlag = 0;
 	pipeFlag = 0;
+	signal(SIGINT, SIG_IGN); //prevent crash from ctrl-c
+	signal(SIGTSTP, SIG_IGN); //prevent crash from ctrl-z
+	signal(SIGQUIT, SIG_IGN); //prevent crash from ctrl-/
 }
 void unsetenv_function(char *text)
 {
@@ -1235,7 +1238,7 @@ void setAppendFlag(int flag)
 {
 	appendFlag = flag;
 }
-void setStandardErrorFlag(int flag)
+void setErrorFlag(int flag)
 {
 	standardErrorFlag = flag;
 }
@@ -1247,17 +1250,8 @@ void setAmpersandFlag(int flag)
 {
 	ampersandFlag = flag;
 }
-void execute(char* text)
+void execute()
 {
-	char* pch = strtok(text, " ");
-	while(pch != NULL)
-	{
-		if(strcmp(pch, "|") != 0 && strcmp(pch, "<") != 0 && strcmp(pch, ">") != 0 && strcmp(pch, "&") != 0)
-		{
-			
-		}
-		pch = strtok(NULL, " ");
-	}
 	if(readFlag == 1)
 	{
 	
