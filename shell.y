@@ -1691,698 +1691,1732 @@ command:
 		}
 	|	word_case word_case pipes read_from_case write_to_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case standard_error_redirect_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes write_to_case standard_error_redirect_case
 		{
-
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes write_to_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case write_to_case standard_error_redirect_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case write_to_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case write_to_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes write_to_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes standard_error_redirect_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case write_to_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case standard_error_redirect_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case write_to_case standard_error_redirect_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case write_to_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case write_to_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case standard_error_redirect_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		} 
 	|	word_case word_case pipes read_from_case write_to_case standard_error_redirect_case2 ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case write_to_case standard_error_redirect_case2
 		{
-
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes write_to_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case write_to_case standard_error_redirect_case2 ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
-
 	|	word_case word_case pipes write_to_case standard_error_redirect_case2
 		{
-
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case write_to_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case write_to_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes standard_error_redirect_case2
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case read_from_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case write_to_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case append_case standard_error_redirect_case ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case append_case standard_error_redirect_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case append_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes append_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case read_from_case append_case standard_error_redirect_case ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case append_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes append_case standard_error_redirect_case
 		{
-
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes append_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case read_from_case append_case standard_error_redirect_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case read_from_case append_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case append_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes append_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case read_from_case append_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case append_case standard_error_redirect_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case append_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case append_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case append_case standard_error_redirect_case2 ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes read_from_case append_case standard_error_redirect_case2
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes append_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case read_from_case append_case standard_error_redirect_case2 ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipes append_case standard_error_redirect_case2
 		{
-
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case read_from_case append_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case append_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case append_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(0);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case write_to_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case write_to_case standard_error_redirect_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case write_to_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case write_to_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case write_to_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case write_to_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case standard_error_redirect_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case write_to_case standard_error_redirect_case
 		{
-
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case write_to_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case write_to_case standard_error_redirect_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case write_to_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case write_to_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case write_to_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case standard_error_redirect_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case write_to_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case standard_error_redirect_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case write_to_case standard_error_redirect_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case write_to_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case write_to_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case standard_error_redirect_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case write_to_case standard_error_redirect_case2 ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case write_to_case standard_error_redirect_case2
 		{
-
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case write_to_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case write_to_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
-
 	|	word_case words pipe_case read_from_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
-
 	|	word_case words pipe_case write_to_case standard_error_redirect_case2
 		{
-
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case write_to_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case write_to_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case read_from_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case write_to_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case pipe_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case append_case standard_error_redirect_case ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case append_case standard_error_redirect_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case append_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case append_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case read_from_case append_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case append_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case append_case standard_error_redirect_case
 		{
-
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case append_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case read_from_case append_case standard_error_redirect_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case read_from_case append_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case append_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case append_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case read_from_case append_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case append_case standard_error_redirect_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case append_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case append_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case append_case standard_error_redirect_case2 ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case read_from_case append_case standard_error_redirect_case2
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case append_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case read_from_case append_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case words pipe_case append_case standard_error_redirect_case2
 		{
-
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case read_from_case append_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case append_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case pipe_case append_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case write_to_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case write_to_case standard_error_redirect_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case write_to_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case write_to_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case write_to_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case standard_error_redirect_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case write_to_case standard_error_redirect_case
 		{
-
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case write_to_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case write_to_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case standard_error_redirect_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case write_to_case standard_error_redirect_case2 ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case write_to_case standard_error_redirect_case2
 		{
-
+			setReadFlag(1);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case write_to_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
-
 	|	word_case word_case pipe_case write_to_case standard_error_redirect_case2
 		{
-
+			setReadFlag(0);
+			setWriteFlag(1);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case standard_error_redirect_case2
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(0);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case append_case standard_error_redirect_case ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case append_case standard_error_redirect_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case append_case ampersand_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case append_case standard_error_redirect_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case append_case
 		{
-		
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case append_case standard_error_redirect_case
 		{
-
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(1);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case append_case ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case append_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(0);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case append_case standard_error_redirect_case2 ampersand_case
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case read_from_case append_case standard_error_redirect_case2
 		{
-
+			setReadFlag(1);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case append_case standard_error_redirect_case2 ampersand_case
 		{
-		
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(1);
+			setAppendFlag(1);
+			execute();
 		}
 	|	word_case word_case pipe_case append_case standard_error_redirect_case2
 		{
-
+			setReadFlag(0);
+			setWriteFlag(0);
+			setErrorFlag(2);
+			setPipeFlag(1);
+			setAmpersandFlag(0);
+			setAppendFlag(1);
+			execute();
 		};
 %%
