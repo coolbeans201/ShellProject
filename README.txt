@@ -24,8 +24,6 @@ Features Implemented
 13. Metacharacters
 
 Questions
-1. Executing other commands
-2. Metacharacters and \
-3. How can we perform file name completion? Don't know, need to ask
-4. What does input redirection do with commands? Not a part of built-in, replaces arguments with < and passes output with >. >> is appending to a file
-5. How can we prevent the shell from fully crashing?
+1. Metacharacters and \
+2. What does input redirection do with commands? Not a part of built-in, replaces arguments with < and passes output with >. >> is appending to a file
+3. How can we prevent the shell from fully crashing?
