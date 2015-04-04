@@ -1331,19 +1331,64 @@ void execute()
 			{ 
 				endOfCommand = words;
 			}
-			char* arguments[endOfCommand + 1];
-			int i;
-			for(i = 0; i < endOfCommand; i++)
+			char* result = malloc(300 * sizeof(char));
+			if(result == (char*) NULL)
 			{
-				arguments[i] = textArray[i];
-			}
-			arguments[endOfCommand] = (char *)0;
-			int result = execvp(textArray[0], arguments);
-			if(result == -1)
-			{
-				perror("Error executing.");
+				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
 				return;
+			}
+			if(strcmp(aliasResolve(textArray[0]), "") != 0 || strcmp(aliasResolve(textArray[0], "<LOOP>") != 0) //alias value associated with command name
+			{
+				int numberOfSpaces = 0;
+				strcpy(result, aliasResolve(textArray[0])); //replace command name with alias value
+				char* saved;
+				char * pch = strtok_r(result, " ", &saved); //parse by spaces for arguments
+				while(pch != NULL)
+				{
+					numberOfSpaces++; //increment number of spaces
+					pch = strtok_r(NULL, " ", &saved); 
+				}
+				char* arguments[endOfCommand + numberOfSpaces + 1];
+				int i = 0;
+				char* saved2;
+				char * pch = strtok_r(result, " ", &saved2); //parse by spaces for arguments
+				while(pch != NULL)
+				{
+					arguments[i] = pch; //set argument equal to token
+					i++;
+					pch = strtok_r(NULL, " ", &saved2); 
+				}
+				int j;
+				for(j = i; j < endOfCommand + numberOfSpaces; j++)
+				{
+					arguments[j] = textArray[j]; //take rest normally
+				}
+				arguments[endOfCommand + numberOfSpaces] = (char *)0; //null terminator
+				int result = execvp(arguments[0], arguments); //execute
+				if(result == -1) //error
+				{
+					perror("Error executing.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+			}
+			else //no alias, so proceed as normal
+			{
+				char* arguments[endOfCommand + 1];
+				int i;
+				for(i = 0; i < endOfCommand; i++)
+				{
+					arguments[i] = textArray[i]; //copy arguments
+				}
+				arguments[endOfCommand] = (char *)0;
+				int result = execvp(textArray[0], arguments);
+				if(result == -1) //error
+				{
+					perror("Error executing.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
 			}
 		}
 		else //perform piping
