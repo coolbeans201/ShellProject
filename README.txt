@@ -4,7 +4,7 @@ README
 -------------------
 Features NOT Implemented
 1. File name completion    
-2. Other commands (recirsive YACC, with I/O redirection and piping)
+2. Other commands (piping)
 3. Alias commands (more YACC handling)
 4. Tilde expansion, external matching, and explicit matching for other commands
 
@@ -22,8 +22,8 @@ Features Implemented
 11. Infinite alias expansion detection
 12. Quotes being interpreted as one word
 13. Metacharacters
+14. Shell never crashes
+15. I/O redirection with other commands
 
 Questions
 1. Metacharacters and \
-2. What does input redirection do with commands? Not a part of built-in, replaces arguments with < and passes output with >. >> is appending to a file
-3. How can we prevent the shell from fully crashing?
