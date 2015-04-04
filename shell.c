@@ -48,7 +48,7 @@ void shell_init()
 }
 void unsetenv_function(char *text)
 {
-	printf("Unsetenv command entered\n");
+	//printf("Unsetenv command entered\n");
 	char **envVariableNames, **rightEnvVariableNames;
 	size_t length;
 	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) { //error
@@ -74,7 +74,7 @@ void unsetenv_function(char *text)
 }
 void unalias_function(char *text)
 {
-	printf("Unalias command entered\n");
+	//printf("Unalias command entered\n");
 	size_t length;
 	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) { //invalid
 		perror("Entered an invalid alias");
@@ -98,7 +98,7 @@ void unalias_function(char *text)
 }
 void setenv_function (char *text, char *text2)
 {
-	printf("Setenv command entered\n");
+	//printf("Setenv command entered\n");
 	changeGroupedSlashesIntoOneSlash(text2); //switch it to actual correct text
 	char *es;
 	if (text == NULL || text[0] == '\0' || strchr(text, '=') != NULL || text2 == NULL) //check to see if valid
@@ -240,7 +240,7 @@ void setenv_function (char *text, char *text2)
 }
 void alias_function(char *text, char *text2)
 {
-	printf("Alias command entered\n");
+	//printf("Alias command entered\n");
 	char *es;
 	if (text == NULL || text[0] == '\0' || strchr(text, '=') != NULL || text2 == NULL) //check to see if valid
 	{
@@ -281,7 +281,7 @@ void alias_function(char *text, char *text2)
 }
 void cd_function()
 {
-	printf("Second CD command entered\n");
+	//printf("Second CD command entered\n");
 	int result = chdir(myHome); //get home directory and move to it
 	if(result == -1) //error
 	{
@@ -290,13 +290,13 @@ void cd_function()
 		return;
 	}
 	setenv_function("PWD", myHome); //change PWD
-	printf("%s\n", getenv("PWD"));
+	//printf("%s\n", getenv("PWD"));
 	reset();
 }
 void cd_function2(char *text)
 {
 	changeGroupedSlashesIntoOneSlash(text); //alters the text so all grouped slashes now become one slash. ex. ////home///usr -> /home/usr
-	printf("CD command entered\n");
+	//printf("CD command entered\n");
 	char *directory = malloc(300 * sizeof(char));
 	if (directory == (char *) NULL) //error
 	{
@@ -374,7 +374,7 @@ void cd_function2(char *text)
 				return;
 			}
 			setenv_function("PWD", "/"); //set to slash
-			printf("%s\n", getenv("PWD"));
+			//printf("%s\n", getenv("PWD"));
 			return;
 		}
 		else
@@ -403,19 +403,19 @@ void cd_function2(char *text)
 			return;
 		}
 		setenv_function("PWD", text); //change PWD to absolute
-		printf("%s\n", getenv("PWD"));
+		//printf("%s\n", getenv("PWD"));
 		return;
 	}
 	if(strncmp(&directory[strlen(directory) - 1], "/", 1) == 0 && strlen(directory) != 1) //last character is a slash and directory isn't just "/"
 	{
 		directory[strlen(directory) - 1] = '\0'; //remove slash
 		setenv_function("PWD", directory); //change PWD to absolute
-		printf("%s\n", getenv("PWD"));
+		//printf("%s\n", getenv("PWD"));
 	}
 	else
 	{
 		setenv_function("PWD", directory); //change PWD to absolute
-		printf("%s\n", getenv("PWD"));
+		//printf("%s\n", getenv("PWD"));
 	}
 	reset();
 }
@@ -458,7 +458,7 @@ void standard_error_redirect_function2(char *text)
 }
 void write_to_function(char *text)
 {
-	printf("Write to entered\n");
+	//printf("Write to entered\n");
 	int out = open(text, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
 	if(out == -1) //error
 	{
@@ -477,23 +477,22 @@ void write_to_function(char *text)
 }
 void read_from_function (char *text)
 {
-		
-		printf("Read from entered\n");
-		int in = open(text, O_RDONLY); //open file
-		if(in == -1) //error
-		{
-			perror("File not opened");
-			printf("Error at line %d\n", __LINE__);
-			return;
-		}
-		savedInput = dup(0);
-		int result = dup2(in, 0); //redirect input from file
-		if (result == -1) //error
-		{
-			perror("Input not redirected");
-			printf("Error at line %d\n", __LINE__);
-			return;
-		}
+	//printf("Read from entered\n");
+	int in = open(text, O_RDONLY); //open file
+	if(in == -1) //error
+	{
+		perror("File not opened");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	savedInput = dup(0);
+	int result = dup2(in, 0); //redirect input from file
+	if (result == -1) //error
+	{
+		perror("Input not redirected");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
 }
 void word_function(char *text)
 {
@@ -521,7 +520,7 @@ void word_function(char *text)
 }
 void printenv_function()
 {
-	printf("Printenv command entered\n");
+	//printf("Printenv command entered\n");
 	char ** ep;
 	for(ep = environ; *ep!= NULL; ep++)
 	{
@@ -531,7 +530,7 @@ void printenv_function()
 }
 void alias_function2()
 {
-	printf("Second alias command entered\n");
+	//printf("Second alias command entered\n");
 	int i;
 	for(i = 0; i < aliasCount; i++)
 	{
@@ -602,7 +601,7 @@ char* getDirectories(char* textmatch)
 }
 void pipe_function(char *text)
 {
-	printf("Ey guy, you piped!\n");
+	//printf("Ey guy, you piped!\n");
 	int   pid_1,               /* will be process id of first child - who */
 	      pid_2,               /* will be process id of second child - wc */
 	      pfd[2];              /* pipe file descriptor table.             */
@@ -1171,7 +1170,7 @@ int checkForExecutableOrAlias(char* string)
 }
 void append_function(char* text)
 {
-	printf("Append entered\n");
+	//printf("Append entered\n");
 	int out = open(text, O_WRONLY | O_APPEND | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
 	if(out == -1) //error
 	{
@@ -1219,40 +1218,54 @@ void reset()
 		return;
 	}
 }
-void setReadFlag(int flag)
-{
-	readFlag = flag;
-}
-void setWriteFlag(int flag)
-{
-	writeFlag = flag;
-}
-void setAppendFlag(int flag)
-{
-	appendFlag = flag;
-}
-void setErrorFlag(int flag)
-{
-	standardErrorFlag = flag;
-}
-void setPipeFlag(int flag)
-{
-	pipeFlag = flag;
-}
-void setAmpersandFlag(int flag)
-{
-	ampersandFlag = flag;
-}
 void execute()
 {
 	int numberOfPipes;
 	int numberOfCommands;
 	int i;
+	int indexOfRead = 0;
+	int indexOfWrite = 0;
+	int indexOfAppend = 0;
+	int indexOfStandardError1 = 0;
+	int indexOfStandardError2 = 0;
+	int indexOfAmpersand = 0;
+	int* pipes = malloc(300 * sizeof(int));
+	if(pipes == (int*) NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
 	for(i = 0; i < words; i++)
 	{
 		if(strcmp(textArray[i], "|") == 0) //it's a pipe
 		{
+			pipes[numberOfPipes] = i;
 			numberOfPipes++;
+		}
+		if(strcmp(textArray[i], "<") == 0) //read in
+		{
+			indexOfRead = i;
+		}
+		if(strcmp(textArray[i], ">") == 0) //write to
+		{
+			indexOfWrite = i;
+		}
+		if(strcmp(textArray[i], ">>") == 0) //append
+		{
+			indexOfAppend = i;
+		}
+		if(strcmp(textArray[i], "2>&1") == 0) //standard error redirect 2
+		{
+			indexOfStandardError2 = i;
+		}
+		else if(strcmp(textArray[i], "2>") == 0) //standard error redirect 1
+		{
+			indexOfStandardError1 = i;
+		}
+		if(strcmp(textArray[i], "&") == 0)
+		{
+			indexOfAmpersand = i;
 		}
 		printf("%s\n", textArray[i]);
 	}
