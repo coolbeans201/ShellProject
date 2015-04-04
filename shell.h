@@ -49,11 +49,5 @@
   void changeGroupedSpacesIntoOneSpace(char* string);
   void append_function(char* text);
   void reset(void);
-  void setReadFlag(int flag);
-  void setWriteFlag(int flag);
-  void setAppendFlag(int flag);
-  void setErrorFlag(int flag);
-  void setPipeFlag(int flag);
-  void setAmpersandFlag(int flag);
   void execute(void);
   #endif
