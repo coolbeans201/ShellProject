@@ -8,12 +8,6 @@ int aliasCount = 0; //number of aliases
 struct passwd* pwd; //contains result of getpwnam
 char* myPath;
 char* myHome;
-int readFlag; //is read from present?
-int writeFlag; //is write to present?
-int pipeFlag; //are pipes present?
-int appendFlag; //is append present?
-int ampersandFlag; //is ampersand present?
-int standardErrorFlag; //is standard error present?
 int savedOutput; //output channel
 int savedInput; //input channel
 int savedError; //error channel
@@ -36,12 +30,6 @@ void shell_init()
 		return;
 	}
 	strcpy(myHome, getenv("HOME")); //get home directory so that it stays constant
-	readFlag = 0;
-	writeFlag = 0;
-	appendFlag = 0;
-	ampersandFlag = 0;
-	standardErrorFlag = 0;
-	pipeFlag = 0;
 	signal(SIGINT, SIG_IGN); //prevent crash from ctrl-c
 	signal(SIGTSTP, SIG_IGN); //prevent crash from ctrl-z
 	signal(SIGQUIT, SIG_IGN); //prevent crash from ctrl-/
@@ -581,14 +569,12 @@ char* getDirectories(char* textmatch)
 		}
 		for (i = 0; i < results->gl_pathc; i++) //print out results
 		{
-			if(access(results->gl_pathv[i], F_OK|X_OK) == 0) //we can execute this file
-			{
-				strcat(result, results->gl_pathv[i]);
-				strcat(result, "$");
-			}
+			strcat(result, results->gl_pathv[i]);
+			strcat(result, "$");
 		}
 		globfree(results); //free glob expression
 		closedir (dir); //close directory 
+		return result;
 	}
 	else 
 	{
@@ -602,8 +588,8 @@ char* getDirectories(char* textmatch)
 void pipe_function(char *text)
 {
 	//printf("Ey guy, you piped!\n");
-	int   pid_1,               /* will be process id of first child - who */
-	      pid_2,               /* will be process id of second child - wc */
+	int   pid_1,               /* will be process id of first child */
+	      pid_2,               /* will be process id of second child  */
 	      pfd[2];              /* pipe file descriptor table.             */
 	if (pipe(pfd) == -1 )              /* create a pipe  */
 	{                                 /* must do before a fork */
@@ -1190,12 +1176,6 @@ void append_function(char* text)
 }
 void reset()
 {
-	readFlag = 0;
-	writeFlag = 0;
-	appendFlag = 0;
-	standardErrorFlag = 0;
-	pipeFlag = 0;
-	ampersandFlag = 0;
 	int result = dup2(savedInput, 0);
 	if(result == -1) //error
 	{
@@ -1217,6 +1197,8 @@ void reset()
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	words = 0;
+	memset(textArray, 0, sizeof(textArray));
 }
 void execute()
 {
@@ -1228,7 +1210,9 @@ void execute()
 	int indexOfAppend = 0;
 	int indexOfStandardError1 = 0;
 	int indexOfStandardError2 = 0;
-	int indexOfAmpersand = 0;
+	int indexOfAmpersand = 0; 
+	int endOfCommand = 0;
+	int numberOfGlobs = 0;
 	int* pipes = malloc(300 * sizeof(int));
 	if(pipes == (int*) NULL) //error
 	{
@@ -1236,8 +1220,20 @@ void execute()
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	int* globs = malloc(300 * sizeof(int));
+	if(globs == (int*) NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
 	for(i = 0; i < words; i++)
 	{
+		if(strncmp(textArray[i], "*", 1) == 0 || strncmp(textArray[i], "?", 1) == 0) //begins with an * or ?
+		{
+			globs[numberOfGlobs] = i;
+			numberOfGlobs++;
+		}
 		if(strcmp(textArray[i], "|") == 0) //it's a pipe
 		{
 			pipes[numberOfPipes] = i;
@@ -1267,7 +1263,6 @@ void execute()
 		{
 			indexOfAmpersand = i;
 		}
-		printf("%s\n", textArray[i]);
 	}
 	numberOfCommands = numberOfPipes + 1;
 	int child;
@@ -1279,17 +1274,107 @@ void execute()
 	}	
 	if(child != 0) //in parent
 	{
-		wait((int *) 0);
-	}
-	else
-	{
-		char *arguments[2];
-		arguments[0] = "ls";
-		arguments[1] = (char *) 0;
-		int result = execvp("ls", arguments);
-		if(result == -1)
+		if(indexOfAmpersand != 0) //there's an ampersand present
 		{
-			printf("Nice going fuckwad\n");
+			wait((int *) 0);
+		}
+	}
+	else //in child
+	{
+		if(indexOfRead != 0) //there's a read present
+		{
+			read_from_function(textArray[indexOfRead + 1]); 
+		}
+		if(indexOfWrite != 0) //there's a write to present
+		{
+			write_to_function(textArray[indexOfWrite + 1]);
+		}
+		if (indexOfAppend != 0) //there's an append present
+		{
+			append_function(textArray[indexOfAppend + 1]);
+		}
+		if(indexOfStandardError2 != 0) //second standard error case present
+		{
+			standard_error_redirect_function();
+		}
+		if(indexOfStandardError1 != 0) //first standard error case present
+		{
+			standard_error_redirect_function2(textArray[indexOfStandardError2]);
+		}
+		if(numberOfPipes == 0) //no pipes, just this command
+		{
+			if(indexOfRead != 0) //take everything up until this 
+			{
+				endOfCommand = indexOfRead;
+			}
+			else if(indexOfWrite != 0) //no read from
+			{
+				endOfCommand = indexOfWrite;
+			}
+			else if(indexOfAppend != 0) //no read from
+			{
+				endOfCommand = indexOfAppend;
+			}
+			else if(indexOfStandardError2 != 0) //no other I/O redirection
+			{
+				endOfCommand = indexOfStandardError2;
+			}
+			else if(indexOfStandardError1 != 0) //no other I/O redirection
+			{
+				endOfCommand = indexOfStandardError1;
+			}
+			else if(indexOfAmpersand != 0) //no I/O redirection
+			{
+				endOfCommand = indexOfAmpersand;
+			}
+			else //just a command with no special components
+			{ 
+				endOfCommand = words;
+			}
+			char* arguments[endOfCommand + 1];
+			int i;
+			for(i = 0; i < endOfCommand; i++)
+			{
+				arguments[i] = textArray[i];
+			}
+			arguments[endOfCommand] = (char *)0;
+			int result = execvp(textArray[0], arguments);
+			if(result == -1)
+			{
+				perror("Error executing.");
+				printf("Error at line %d\n", __LINE__);
+				return;
+			}
+		}
+		else //perform piping
+		{
+			int i;
+			for(i = 0; i < numberOfPipes; i++)
+			{
+				if(i == 0) //initial case
+				{
+					if(close(1) == -1)
+					{
+						perror("Error closing standard output.");
+						printf("Error at line %d\n", __LINE__);
+						return;
+					}
+					
+				}
+				else if(i == numberOfPipes - 1) //final case
+				{
+					if(close(0) == -1)
+					{
+						perror("Error closing standard input.");
+						printf("Error at line %d\n", __LINE__);
+						return;
+					}
+				}
+				else //default case
+				{
+				
+				}
+			}
 		}
 	}
 	reset();
