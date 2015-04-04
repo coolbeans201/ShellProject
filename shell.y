@@ -19,8 +19,7 @@
 %%
 commands: 
 		| commands command NEWLINE
-		| commands command3
-		| commands command4;
+		| commands command3;
 command:
 		cd2_case
 		|cd_case
@@ -46,7 +45,8 @@ command:
 		|pipe2_case
 		|command2
 		|read_from_case2
-		|write_to_case2;
+		|write_to_case2
+		|append_case2;
 cd2_case:
 		CD 
 							{
@@ -191,10 +191,14 @@ error_case:
 							{
 								printf ("Syntax error.\n");
 							};
-append_case:
-		APPEND	word_case
-							{
+append_case2:
+		APPEND				{
 								word_function(">>");
+							};
+append_case:
+		append_case2	word_case
+							{
+								
 							};
 words:
 		word_case word_case
@@ -1505,11 +1509,6 @@ command2:
 		};
 command3:
 	word_case	word_case	NEWLINE
-		{
-			execute();
-		};
-command4:
-	word_case	NEWLINE
 		{
 			execute();
 		};
