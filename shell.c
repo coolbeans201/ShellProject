@@ -21,7 +21,6 @@ void shell_init()
 		return;
 	}
 	strcpy(myPath, getenv("PATH")); //get path directory so it stays constant
-	//printf("%s\n", myPath);
 	myHome = malloc(500 * sizeof(char));
 	if(myHome == (char *) NULL) //error
 	{
@@ -36,7 +35,6 @@ void shell_init()
 }
 void unsetenv_function(char *text)
 {
-	//printf("Unsetenv command entered\n");
 	char **envVariableNames, **rightEnvVariableNames;
 	size_t length;
 	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) { //error
@@ -62,7 +60,6 @@ void unsetenv_function(char *text)
 }
 void unalias_function(char *text)
 {
-	//printf("Unalias command entered\n");
 	size_t length;
 	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) { //invalid
 		perror("Entered an invalid alias");
@@ -86,7 +83,6 @@ void unalias_function(char *text)
 }
 void setenv_function (char *text, char *text2)
 {
-	//printf("Setenv command entered\n");
 	changeGroupedSlashesIntoOneSlash(text2); //switch it to actual correct text
 	char *es;
 	if (text == NULL || text[0] == '\0' || strchr(text, '=') != NULL || text2 == NULL) //check to see if valid
@@ -228,7 +224,6 @@ void setenv_function (char *text, char *text2)
 }
 void alias_function(char *text, char *text2)
 {
-	//printf("Alias command entered\n");
 	char *es;
 	if (text == NULL || text[0] == '\0' || strchr(text, '=') != NULL || text2 == NULL) //check to see if valid
 	{
@@ -269,7 +264,6 @@ void alias_function(char *text, char *text2)
 }
 void cd_function()
 {
-	//printf("Second CD command entered\n");
 	int result = chdir(myHome); //get home directory and move to it
 	if(result == -1) //error
 	{
@@ -278,13 +272,11 @@ void cd_function()
 		return;
 	}
 	setenv_function("PWD", myHome); //change PWD
-	//printf("%s\n", getenv("PWD"));
 	reset();
 }
 void cd_function2(char *text)
 {
 	changeGroupedSlashesIntoOneSlash(text); //alters the text so all grouped slashes now become one slash. ex. ////home///usr -> /home/usr
-	//printf("CD command entered\n");
 	char *directory = malloc(300 * sizeof(char));
 	if (directory == (char *) NULL) //error
 	{
@@ -391,19 +383,16 @@ void cd_function2(char *text)
 			return;
 		}
 		setenv_function("PWD", text); //change PWD to absolute
-		//printf("%s\n", getenv("PWD"));
 		return;
 	}
 	if(strncmp(&directory[strlen(directory) - 1], "/", 1) == 0 && strlen(directory) != 1) //last character is a slash and directory isn't just "/"
 	{
 		directory[strlen(directory) - 1] = '\0'; //remove slash
 		setenv_function("PWD", directory); //change PWD to absolute
-		//printf("%s\n", getenv("PWD"));
 	}
 	else
 	{
 		setenv_function("PWD", directory); //change PWD to absolute
-		//printf("%s\n", getenv("PWD"));
 	}
 	reset();
 }
@@ -446,7 +435,6 @@ void standard_error_redirect_function2(char *text)
 }
 void write_to_function(char *text)
 {
-	//printf("Write to entered\n");
 	int out = open(text, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
 	if(out == -1) //error
 	{
@@ -465,7 +453,6 @@ void write_to_function(char *text)
 }
 void read_from_function (char *text)
 {
-	//printf("Read from entered\n");
 	int in = open(text, O_RDONLY); //open file
 	if(in == -1) //error
 	{
@@ -508,7 +495,6 @@ void word_function(char *text)
 }
 void printenv_function()
 {
-	//printf("Printenv command entered\n");
 	char ** ep;
 	for(ep = environ; *ep!= NULL; ep++)
 	{
@@ -518,7 +504,6 @@ void printenv_function()
 }
 void alias_function2()
 {
-	//printf("Second alias command entered\n");
 	int i;
 	for(i = 0; i < aliasCount; i++)
 	{
@@ -599,7 +584,6 @@ char* getDirectories(char* textmatch)
 }
 void pipe_function(char *text)
 {
-	//printf("Ey guy, you piped!\n");
 	int   pid_1,               /* will be process id of first child */
 	      pid_2,               /* will be process id of second child  */
 	      pfd[2];              /* pipe file descriptor table.             */
@@ -1108,7 +1092,6 @@ int checkForExecutableOrAlias(char* string)
 }
 void append_function(char* text)
 {
-	//printf("Append entered\n");
 	int out = open(text, O_WRONLY | O_APPEND | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
 	if(out == -1) //error
 	{
