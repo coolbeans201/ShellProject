@@ -6,6 +6,7 @@ Features NOT Implemented
 1. File name completion    
 2. Other commands (piping)
 3. Alias commands (more YACC handling)
+4. External matching (more than one case)
 
 Features Implemented
 1. Built-in commands
@@ -25,3 +26,6 @@ Features Implemented
 
 Questions
 1. Metacharacters and \
+2. Glibc detection
+3. Segmentation fault with multiple external matchings
+4. Connecting pipes together
