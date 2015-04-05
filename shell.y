@@ -19,7 +19,8 @@
 %%
 commands: 
 		| commands command NEWLINE
-		| commands command3;
+		| commands command3
+		| commands command4;
 command:
 		cd2_case
 		|cd_case
@@ -30,7 +31,6 @@ command:
 		|alias_case
 		|unalias_case
 		|bye_case
-		|word_case
 		|slash_case
 		|read_from_case
 		|write_to_case
@@ -91,46 +91,6 @@ bye_case:
 		BYE				   
 							{ 
 								exit(0); //exit shell
-							};
-word_case:
-		WORD				
-							{
-								word2Function(yytext);
-							}
-	|	ENVIRONMENTVARIABLE
-							{
-								char* actualText = malloc(300 * sizeof(char));
-								if(actualText == (char*) NULL) //error
-								{
-										perror ("Error with memory allocation.");
-										printf ("Error at line %d\n", __LINE__);
-								}
-								else
-								{
-									strncpy(actualText, &yytext[2], strlen(yytext) - 3); //take everything between ${ and }
-									char* result = malloc(300 * sizeof(char));
-									if(result == (char*) NULL) //error
-									{
-										perror ("Error with memory allocation.");
-										printf ("Error at line %d\n", __LINE__);
-									}
-									else
-									{
-										if(getenv(actualText) == NULL) //invalid environment variable
-										{
-											perror ("Entered an invalid environment variable.");
-											printf ("Error at line %d\n", __LINE__);
-										}
-										else
-										{
-											strcpy(result, getenv(actualText)); //get value, if any
-											word_function(result);
-										}
-									}
-								}		
-							}
-	|	QUOTES				{
-								quoteFunction(yytext);
 							};
 slash_case:
 		SLASH				
@@ -1509,6 +1469,51 @@ command2:
 		};
 command3:
 	word_case	word_case	NEWLINE
+		{
+			execute();
+		};
+word_case:
+		WORD				
+							{
+								word2Function(yytext);
+							}
+	|	ENVIRONMENTVARIABLE
+							{
+								char* actualText = malloc(300 * sizeof(char));
+								if(actualText == (char*) NULL) //error
+								{
+										perror ("Error with memory allocation.");
+										printf ("Error at line %d\n", __LINE__);
+								}
+								else
+								{
+									strncpy(actualText, &yytext[2], strlen(yytext) - 3); //take everything between ${ and }
+									char* result = malloc(300 * sizeof(char));
+									if(result == (char*) NULL) //error
+									{
+										perror ("Error with memory allocation.");
+										printf ("Error at line %d\n", __LINE__);
+									}
+									else
+									{
+										if(getenv(actualText) == NULL) //invalid environment variable
+										{
+											perror ("Entered an invalid environment variable.");
+											printf ("Error at line %d\n", __LINE__);
+										}
+										else
+										{
+											strcpy(result, getenv(actualText)); //get value, if any
+											word_function(result);
+										}
+									}
+								}		
+							}
+	|	QUOTES				{
+								quoteFunction(yytext);
+							};
+command4:
+	word_case	NEWLINE
 		{
 			execute();
 		};
