@@ -43,11 +43,12 @@
   char* tildeExpansion(char* text);
   char* aliasResolve(char* string);
   char* getAliasValue(char* aliasName);
-  char** textArray; //words
   int checkForExecutableOrAlias(char* string);
   void shell_init(void);
   void changeGroupedSpacesIntoOneSpace(char* string);
   void append_function(char* text);
   void reset(void);
   void execute(void);
+  void word3_function(char* text, int position);
+  char** textArray; //words
   #endif
