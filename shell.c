@@ -550,9 +550,10 @@ char* getDirectories(char* textmatch)
 			}
 		}
 		int size = 0;
+		//printf("%d\n", results->gl_pathc);
 		for(i = 0; i < results->gl_pathc; i++)
 		{
-			printf("%s\n", results->gl_pathv[i]);
+			//printf("%s\n", results->gl_pathv[i]);
 			size += strlen(results->gl_pathv[i]) + 1;
 		}
 		char* result = malloc(size * sizeof(char));
@@ -1209,18 +1210,16 @@ void execute()
 			return;
 		}
 		strcpy(result, getDirectories(textArray[globs[i]]));
-		textArray[globs[i]] = malloc(strlen(result) + 1);
 		char* saved3;
 		char* pch = strtok_r(result, "$", &saved3); //parse to get each indiviual file
-		strcpy(textArray[globs[i]], "");
+		int j = 0;
 		while(pch != NULL)
 		{
-			strcat(textArray[globs[i]], pch);
-			strcat(textArray[globs[i]], " "); //add space
+			word3_function(pch, globs[i] + j); //insert it a specified position
+			//printf("%s\n", textArray[globs[i] + j]);
+			j++; //increment to move to next position in array
 			pch = strtok_r(NULL, "$", &saved3);
 		}
-		textArray[globs[i]][strlen(textArray[globs[i]]) - 1] = '\0'; //null-terminate
-		printf("%s\n", textArray[globs[i]]);
 	}
 	numberOfCommands = numberOfPipes + 1;
 	int child;
@@ -1261,7 +1260,6 @@ void execute()
 		}
 		if(numberOfPipes == 0) //no pipes, just this command
 		{
-			printf("Here\n");
 			if(indexOfRead != 0) //take everything up until this 
 			{
 				endOfCommand = indexOfRead;
@@ -1301,6 +1299,7 @@ void execute()
 			{
 				int numberOfSpaces = 0;
 				strcpy(result, aliasResolve(textArray[0])); //replace command name with alias value
+				printf("%s\n", result);
 				char* saved;
 				char * pch = strtok_r(result, " ", &saved); //parse by spaces for arguments
 				while(pch != NULL)
@@ -1311,7 +1310,7 @@ void execute()
 				char* arguments[endOfCommand + numberOfSpaces + 1];
 				int i = 0;
 				char* saved2;
-				char * pch2 = strtok_r(result, " ", &saved2); //parse by spaces for arguments
+				char* pch2 = strtok_r(result, " ", &saved2); //parse by spaces for arguments
 				while(pch2 != NULL)
 				{
 					arguments[i] = pch; //set argument equal to token
@@ -1382,4 +1381,33 @@ void execute()
 		}
 	}
 	reset();
+}
+void word3_function(char* text, int position)
+{
+	char * es;
+	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
+	if (es == NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	strcpy(es, text); //copy text into pointer
+	newTextArray = (char **) malloc((words+2)*sizeof(char *)); //null entry and new word
+	if ( newTextArray == (char **) NULL ) //no array created
+	{
+		perror("Array not created");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *)); //copy all entries from textArray into newTextArray
+	int i;
+	for(i = position; i < words - 1; i++) //shift everything afterwards to the right
+	{
+		strcpy(newTextArray[i + 1], newTextArray[i]);
+	}
+	newTextArray[position] = es; //word
+	newTextArray[words+1] = NULL; //null entry
+	textArray = newTextArray;
+	words++; //increment index
 }
