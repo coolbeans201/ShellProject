@@ -65,12 +65,12 @@ printenv_case:
 unsetenv_case:
 		UNSETENV word_case 
 							{
-								unsetenv_function(textArray[getWords() - 1]);
+								unsetenv_function(textArray[getWords() - 1], 1);
 							};
 setenv_case:
 		SETENV word_case word_case   
 							{
-								setenv_function(textArray[getWords() - 2], textArray [getWords() - 1]);		
+								setenv_function(textArray[getWords() - 2], textArray [getWords() - 1], 1);		
 							};
 alias2_case:
 		ALIAS	
