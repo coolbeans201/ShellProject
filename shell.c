@@ -542,24 +542,16 @@ char* getDirectories(char* textmatch)
 	int ret;
 	DIR *dir;
 	struct dirent *ent;
-	results = malloc(5000 * sizeof(glob_t));
+	results = malloc(sizeof(glob_t));
 	if(results == (glob_t*) NULL) //error
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	char* result = malloc(5000 * sizeof(char));
-	if(result == (char*) NULL) //error
-	{
-		perror("Error with memory allocation.");
-		printf("Error at line %d\n", __LINE__);
-		return;
-	}
-	strcpy(result, "");
 	if ((dir = opendir(getenv("PWD"))) != NULL) 
 	{
-		printf("Opening %s\n", getenv("PWD"));
+		//printf("Opening %s\n", getenv("PWD"));
 		/* print all the files and directories within directory */
 		while ((ent = readdir (dir)) != NULL) 
 		{
@@ -572,12 +564,25 @@ char* getDirectories(char* textmatch)
 				return "";
 			}
 		}
+		int size = 0;
+		for(i = 0; i < results->gl_pathc; i++)
+		{
+			printf("%s\n", results->gl_pathv[i]);
+			size += strlen(results->gl_pathv[i]) + 1;
+		}
+		char* result = malloc(size * sizeof(char));
+		if(result == (char*) NULL) //error
+		{
+			perror("Error with memory allocation.");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		strcpy(result, "");
 		for(i = 0; i < results->gl_pathc; i++)
 		{
 			strcat(result, results->gl_pathv[i]);
 			strcat(result, "$");
 		}
-		printf("Here\n");
 		result[strlen(result) - 1] = '\0'; //null terminate
 		globfree(results); //free glob expression
 		closedir(dir); //close directory 
@@ -1149,8 +1154,8 @@ void reset()
 }
 void execute()
 {
-	int numberOfPipes;
-	int numberOfCommands;
+	int numberOfPipes = 0;
+	int numberOfCommands = 0;
 	int i;
 	int indexOfRead = 0;
 	int indexOfWrite = 0;
@@ -1211,15 +1216,15 @@ void execute()
 			indexOfAmpersand = i;
 		}
 	}
-	char* result = malloc(5000 * sizeof(char));
-	if(result == (char*) NULL) //error
-	{
-		perror("Error with memory allocation.");
-		printf("Error at line %d\n", __LINE__);
-		return;
-	}
 	for(i = 0; i < numberOfGlobs; i++)
 	{
+		char* result = malloc(strlen(getDirectories(textArray[globs[i]])) * sizeof(char));
+		if(result == (char*) NULL) //error
+		{
+			perror("Error with memory allocation.");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
 		strcpy(result, getDirectories(textArray[globs[i]]));
 		textArray[globs[i]] = malloc(strlen(result) + 1);
 		char* saved3;
@@ -1228,10 +1233,10 @@ void execute()
 		while(pch != NULL)
 		{
 			strcat(textArray[globs[i]], pch);
-			strcat(textArray[globs[i]], " ");
+			strcat(textArray[globs[i]], " "); //add space
 			pch = strtok_r(NULL, "$", &saved3);
 		}
-		textArray[globs[i]][strlen(textArray[globs[i]]) - 1] = '\0';
+		textArray[globs[i]][strlen(textArray[globs[i]]) - 1] = '\0'; //null-terminate
 		printf("%s\n", textArray[globs[i]]);
 	}
 	numberOfCommands = numberOfPipes + 1;
@@ -1273,6 +1278,7 @@ void execute()
 		}
 		if(numberOfPipes == 0) //no pipes, just this command
 		{
+			printf("Here\n");
 			if(indexOfRead != 0) //take everything up until this 
 			{
 				endOfCommand = indexOfRead;
