@@ -29,11 +29,12 @@ void shell_init()
 		return;
 	}
 	strcpy(myHome, getenv("HOME")); //get home directory so that it stays constant
+	//printf("%s\n", myHome);
 	signal(SIGINT, SIG_IGN); //prevent crash from ctrl-c
 	signal(SIGTSTP, SIG_IGN); //prevent crash from ctrl-z
 	signal(SIGQUIT, SIG_IGN); //prevent crash from ctrl-/
 }
-void unsetenv_function(char *text)
+void unsetenv_function(char *text, int flag)
 {
 	char **envVariableNames, **rightEnvVariableNames;
 	size_t length;
@@ -56,7 +57,10 @@ void unsetenv_function(char *text)
 				envVariableNames++; //keep moving
 		}
 	}
-	reset();
+	if(flag)
+	{
+		reset();
+	}
 }
 void unalias_function(char *text)
 {
@@ -81,7 +85,7 @@ void unalias_function(char *text)
 	}
 	reset();
 }
-void setenv_function (char *text, char *text2)
+void setenv_function (char *text, char *text2, int flag)
 {
 	changeGroupedSlashesIntoOneSlash(text2); //switch it to actual correct text
 	char *es;
@@ -91,7 +95,8 @@ void setenv_function (char *text, char *text2)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	unsetenv_function(text);             /* Remove all occurrences */
+	//printf("Here\n");
+	unsetenv_function(text, 0);             /* Remove all occurrences */
 	es = malloc(strlen(text) + strlen(text2) + 2);
 	/* +2 for '=' and null terminator */
 	if (es == NULL) //error
@@ -100,6 +105,7 @@ void setenv_function (char *text, char *text2)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	//printf("There\n");
 	if(strcmp(text, "PATH") == 0 || strcmp(text, "ARGPATH") == 0) //setting path
 	{
 		char *pch = strtok(text2, ":"); //split on colons
@@ -213,14 +219,19 @@ void setenv_function (char *text, char *text2)
 	strcpy(es, text); //copy variable
 	strcat(es, "="); //copy =
 	strcat(es, text2); //copy value
+	//printf("Here2\n");
 	int result = putenv(es); //put into array
+	//printf("There2\n");
 	if(result == -1) //error
 	{
 		perror("Error inserting element into environment variable array");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	reset();
+	if(flag)
+	{
+		reset();
+	}
 }
 void alias_function(char *text, char *text2)
 {
@@ -271,8 +282,9 @@ void cd_function()
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	setenv_function("PWD", myHome); //change PWD
-	reset();
+	//printf("%s\n", myHome);
+	setenv_function("PWD", myHome, 0); //change PWD
+	//reset();
 }
 void cd_function2(char *text)
 {
@@ -353,7 +365,7 @@ void cd_function2(char *text)
 				printf("Error at line %d\n", __LINE__);
 				return;
 			}
-			setenv_function("PWD", "/"); //set to slash
+			setenv_function("PWD", "/", 0); //set to slash
 			//printf("%s\n", getenv("PWD"));
 			return;
 		}
@@ -382,17 +394,17 @@ void cd_function2(char *text)
 			printf("Error at line %d\n", __LINE__);
 			return;
 		}
-		setenv_function("PWD", text); //change PWD to absolute
+		setenv_function("PWD", text, 0); //change PWD to absolute
 		return;
 	}
 	if(strncmp(&directory[strlen(directory) - 1], "/", 1) == 0 && strlen(directory) != 1) //last character is a slash and directory isn't just "/"
 	{
 		directory[strlen(directory) - 1] = '\0'; //remove slash
-		setenv_function("PWD", directory); //change PWD to absolute
+		setenv_function("PWD", directory, 0); //change PWD to absolute
 	}
 	else
 	{
-		setenv_function("PWD", directory); //change PWD to absolute
+		setenv_function("PWD", directory, 0); //change PWD to absolute
 	}
 	reset();
 }
@@ -500,7 +512,6 @@ void printenv_function()
 	{
 		printf("%s\n", *ep); //print everything line by line
 	}
-	reset();
 }
 void alias_function2()
 {
@@ -509,7 +520,6 @@ void alias_function2()
 	{
 		printf("%s\n", aliases[i]); //print each alias line by line
 	}
-	reset();
 }
 int getAliasCount()
 {
@@ -583,138 +593,371 @@ char* getDirectories(char* textmatch)
 	}
 	return "";
 }
-void pipe_function(char *text)
+void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 {
-	int   pid_1,               /* will be process id of first child */
-	      pid_2,               /* will be process id of second child  */
-	      pfd[2];              /* pipe file descriptor table.             */
-	if (pipe(pfd) == -1 )              /* create a pipe  */
-	{                                 /* must do before a fork */
-	    perror ("Error with creating a pipe");
+	pid_t pid[numberOfPipes];
+	int** myPipes = malloc(numberOfPipes * sizeof(int *));
+	if (myPipes == (int**) NULL) //error
+	{
+		perror ("Error with memory allocation.");
 		printf ("Error at line %d\n", __LINE__);
-	    return;
+		return;
 	}
-	if ((pid_1 = fork ()) == -1)        /* create 1st child   */
+	int i;
+	for(i = 0; i < numberOfPipes; i++)
 	{
-	    perror ("Error with forking first child");
-		printf ("Error at line %d\n", __LINE__);
-	    return;
+		myPipes[i] = malloc(2 * sizeof(int));
+		if (myPipes[i] == (int*) NULL) //error
+		{
+			perror ("Error with memory allocation.");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
+		int result = pipe(myPipes[i]);
+		if(result == -1) //error
+		{
+			perror ("Error piping.");
+			printf ("Error at line %d\n", __LINE__);
+			return;
+		}
 	}
-	if (pid_1 != 0 )                      /* in parent  */
+	int j;
+	for(j = 0; j < numberOfPipes; j++)
 	{
-	    if ((pid_2 = fork ()) == -1)     /* create 2nd child  */
-	    {
-	        perror ("Error with forking second child");
-			printf ("Error at line %d\n", __LINE__);
-	        return;
-	    }
-	    if (pid_2 != 0)                   /* still in parent  */
-	    {
-	        int result = close (pfd [0]);         /* close pipe in parent */
+		pid[j] = fork();
+		if(pid[j] == 0 && j == 0)
+		{
+			int k;
+			int l;
+			for(k = 0; k < numberOfPipes; k++)
+			{
+				for(l = 0; l < 2; l++)
+				{
+					int result = close(myPipes[k][l]); //close everything
+					if(result == -1) //error
+					{
+						perror ("Error closing pipe end.");
+						printf ("Error at line %d\n", __LINE__);
+						return;
+					}
+				}
+			}
+			if(strcmp(aliasResolve(textArray[0]), "") != 0 && strcmp(aliasResolve(textArray[0]), "<LOOP>") != 0) //alias value associated with command name
+			{
+				//printf("Here\n");
+				int numberOfSpaces = -1;
+				char* result3 = malloc((strlen(aliasResolve(textArray[0])) + 1) * sizeof(char));
+				if(result3 == (char*)NULL) //error
+				{
+					perror ("Error with memory allocation.");
+					printf ("Error at line %d\n", __LINE__);
+					return;
+				}
+				strcpy(result3, aliasResolve(textArray[0])); //replace command name with alias value
+				char* result2 = malloc(300 * sizeof(char));
+				if(result2 == (char*) NULL) //error
+				{
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+				strcpy(result2, result3);
+				//printf("%s\n", result);
+				char* saved;
+				char* pch = strtok_r(result3, " ", &saved); //parse by spaces for arguments
+				while(pch != NULL)
+				{
+					numberOfSpaces++; //increment number of spaces
+					pch = strtok_r(NULL, " ", &saved); 
+				}
+				//printf("%d\n", numberOfSpaces);
+				char* arguments[pipes[0] + numberOfSpaces + 1]; //arguments for that specific process
+				int i = 0;
+				char* saved2;
+				char* pch2 = strtok_r(result2, " ", &saved2); //parse by spaces for arguments
+				//printf("%s\n", result);
+				while(pch2 != NULL)
+				{
+					arguments[i] = pch2; //set argument equal to token
+					//printf("%s\n", arguments[i]);
+					i++;
+					pch2 = strtok_r(NULL, " ", &saved2); 
+				}
+				int j;
+				for(j = i; j < pipes[0] + numberOfSpaces; j++)
+				{
+					arguments[j] = textArray[j]; //take rest normally
+				}
+				arguments[pipes[0] + numberOfSpaces] = (char *)0; //null terminator
+				int result = execvp(arguments[0], arguments); //execute
+				if(result == -1) //error
+				{
+					perror("Error executing.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+			}
+			else if(strcmp(aliasResolve(textArray[0]), "") == 0) //no alias, so proceed as normal
+			{
+				//printf("Here\n");
+				char* arguments[pipes[0] + 1];
+				int i;
+				for(i = 0; i < pipes[0]; i++)
+				{
+					arguments[i] = textArray[i]; //copy arguments
+				}
+				arguments[pipes[0]] = (char *)0; //null terminator
+				//printf("There\n");
+				int result = execvp(textArray[0], arguments);
+				if(result == -1) //error
+				{
+					perror("Error executing.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+			}
+			else //infinite alias expansion
+			{
+				printf("Attempting to perform infinite alias expansion.\n");
+				return;
+			}
+		}
+		else if(pid[j] == 0 && j == numberOfPipes)
+		{
+			int result = dup2(myPipes[j - 1][0], STDIN_FILENO); //read from previous process
 			if(result == -1) //error
 			{
-				perror ("Error with closing read end of pipe");
+				perror ("Error reading from previous process.");
 				printf ("Error at line %d\n", __LINE__);
 				return;
 			}
-	        result = close (pfd [1]);        /* conserve file descriptors */
+			result = dup2(myPipes[j][1], STDOUT_FILENO); //write to parent
 			if(result == -1) //error
 			{
-				perror ("Error with closing write end of pipe");
+				perror ("Error write to first process.");
 				printf ("Error at line %d\n", __LINE__);
 				return;
 			}
-	        result = wait ((int *) 0);           /* wait for children to die */
+			int k;
+			int l;
+			for(k = 0; k < numberOfPipes; k++)
+			{
+				for(l = 0; l < 2; l++)
+				{
+					int result = close(myPipes[k][l]); //close everything
+					if(result == -1) //error
+					{
+						perror ("Error closing pipe end.");
+						printf ("Error at line %d\n", __LINE__);
+						return;
+					}
+				}
+			}
+			if(strcmp(aliasResolve(textArray[pipes[j] + 1]), "") != 0 && strcmp(aliasResolve(textArray[pipes[j] + 1]), "<LOOP>") != 0) //alias value associated with command name
+			{
+				char* result3 = malloc((strlen(aliasResolve(textArray[pipes[j] + 1])) + 1) * sizeof(char));
+				if(result3 == (char*)NULL) //error
+				{
+					perror ("Error with memory allocation.");
+					printf ("Error at line %d\n", __LINE__);
+					return;
+				}
+				//printf("Here\n");
+				int numberOfSpaces = -1;
+				strcpy(result3, aliasResolve(textArray[pipes[j] + 1])); //replace command name with alias value
+				char* result2 = malloc(300 * sizeof(char));
+				if(result2 == (char*) NULL) //error
+				{
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+				strcpy(result2, result3);
+				//printf("%s\n", result);
+				char* saved;
+				char * pch = strtok_r(result3, " ", &saved); //parse by spaces for arguments
+				while(pch != NULL)
+				{
+					numberOfSpaces++; //increment number of spaces
+					pch = strtok_r(NULL, " ", &saved); 
+				}
+				//printf("%d\n", numberOfSpaces);
+				char* arguments[endOfCommand - pipes[j] + numberOfSpaces];
+				int i = pipes[j];
+				char* saved2;
+				char* pch2 = strtok_r(result2, " ", &saved2); //parse by spaces for arguments
+				//printf("%s\n", result);
+				while(pch2 != NULL)
+				{
+					arguments[i] = pch2; //set argument equal to token
+					printf("%s\n", arguments[i]);
+					i++;
+					pch2 = strtok_r(NULL, " ", &saved2); 
+				}
+				int p;
+				for(p = i; p < endOfCommand + numberOfSpaces; p++)
+				{
+					arguments[p] = textArray[p]; //take rest normally
+				}
+				arguments[endOfCommand + numberOfSpaces] = (char *)0; //null terminator
+				int result = execvp(arguments[0], arguments); //execute
+				if(result == -1) //error
+				{
+					perror("Error executing.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+			}
+			else if(strcmp(aliasResolve(textArray[pipes[j] + 1]), "") == 0) //no alias, so proceed as normal
+			{
+				char* arguments[endOfCommand - pipes[j]];
+				int i;
+				for(i = pipes[j] + 1; i < endOfCommand; i++)
+				{
+					arguments[i] = textArray[i]; //copy arguments
+				}
+				arguments[endOfCommand - pipes[j] - 1] = (char *)0; //null terminator
+				int result = execvp(textArray[pipes[j] + 1], arguments);
+				if(result == -1) //error
+				{
+					perror("Error executing.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+			}
+			else //infinite alias expansion
+			{
+				printf("Attempting to perform infinite alias expansion.\n");
+				return;
+			}
+			exit(0);
+		}
+		else
+		{
+			int result = dup2(myPipes[j - 1][0], STDIN_FILENO);
 			if(result == -1) //error
 			{
-				perror ("Error with waiting");
+				perror ("Error reading from previous process.");
 				printf ("Error at line %d\n", __LINE__);
 				return;
 			}
-	        result = wait ((int *) 0);
+			result = dup2(myPipes[j][1], STDOUT_FILENO);
 			if(result == -1) //error
 			{
-				perror ("Error with waiting");
+				perror ("Error write to first process.");
 				printf ("Error at line %d\n", __LINE__);
 				return;
 			}
-	    }
-	    else                                /* in 2nd child   */
-	    {
-			int result = close (0);           /* close standard input */
-			if(result == -1) //error
+			int k;
+			int l;
+			for(k = 0; k < numberOfPipes; k++)
 			{
-				perror ("Error with closing standard input");
-				printf ("Error at line %d\n", __LINE__);
+				for(l = 0; l < 2; l++)
+				{
+					int result = close(myPipes[k][l]); //close everything
+					if(result == -1) //error
+					{
+						perror ("Error closing pipe end.");
+						printf ("Error at line %d\n", __LINE__);
+						return;
+					}
+				}
+			}
+			if(strcmp(aliasResolve(textArray[pipes[j] + 1]), "") != 0 && strcmp(aliasResolve(textArray[pipes[j] + 1]), "<LOOP>") != 0) //alias value associated with command name
+			{
+				char* result3 = malloc((strlen(aliasResolve(textArray[0])) + 1) * sizeof(char));
+				if(result3 == (char*)NULL) //error
+				{
+					perror ("Error with memory allocation.");
+					printf ("Error at line %d\n", __LINE__);
+					return;
+				}
+				//printf("Here\n");
+				int numberOfSpaces = -1;
+				strcpy(result3, aliasResolve(textArray[pipes[j] + 1])); //replace command name with alias value
+				char* result2 = malloc(300 * sizeof(char));
+				if(result2 == (char*) NULL) //error
+				{
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+				strcpy(result2, result3);
+				//printf("%s\n", result);
+				char* saved;
+				char * pch = strtok_r(result3, " ", &saved); //parse by spaces for arguments
+				while(pch != NULL)
+				{
+					numberOfSpaces++; //increment number of spaces
+					pch = strtok_r(NULL, " ", &saved); 
+				}
+				//printf("%d\n", numberOfSpaces);
+				char* arguments[pipes[j] - pipes[j - 1] + numberOfSpaces + 1];
+				int i = pipes[j - 1];
+				char* saved2;
+				char* pch2 = strtok_r(result2, " ", &saved2); //parse by spaces for arguments
+				//printf("%s\n", result);
+				while(pch2 != NULL)
+				{
+					arguments[i] = pch2; //set argument equal to token
+					printf("%s\n", arguments[i]);
+					i++;
+					pch2 = strtok_r(NULL, " ", &saved2); 
+				}
+				int p;
+				for(p = i; p < pipes[j] - pipes[j - 1] + numberOfSpaces; p++)
+				{
+					arguments[p] = textArray[p]; //take rest normally
+				}
+				arguments[pipes[j] + pipes[j - 1] + numberOfSpaces] = (char *)0; //null terminator
+				int result = execvp(arguments[0], arguments); //execute
+				if(result == -1) //error
+				{
+					perror("Error executing.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+			}
+			else if(strcmp(aliasResolve(textArray[pipes[j]]), "") == 0) //no alias, so proceed as normal
+			{
+				char* arguments[pipes[0] + 1];
+				int i;
+				for(i = pipes[j] + 1; i < pipes[j] + 1; i++)
+				{
+					arguments[i] = textArray[i]; //copy arguments
+				}
+				arguments[endOfCommand] = (char *)0;
+				int result = execvp(textArray[pipes[j] + 1], arguments);
+				if(result == -1) //error
+				{
+					perror("Error executing.");
+					printf("Error at line %d\n", __LINE__);
+					return;
+				}
+			}
+			else
+			{
+				printf("Attempting to perform infinite alias expansion.\n");
 				return;
 			}
-	        result = dup (pfd [0]);      /* read end of pipe becomes stdin */
-			if(result == -1) //error
-			{
-				perror ("Error with making read end of pipe standard input");
-				printf ("Error at line %d\n", __LINE__);
-				return;
-			}
-	        result = close (pfd [0]);            /* close unneeded I/O  */
-			if(result == -1) //error
-			{
-				perror ("Error with closing read end of pipe");
-				printf ("Error at line %d\n", __LINE__);
-				return;
-			}
-	        result = close (pfd [1]);           /* close unneeded I/O   */
-			if(result == -1) //error
-			{
-				perror ("Error with closing write end of pipe");
-				printf ("Error at line %d\n", __LINE__);
-				return;
-			}
-	        result = execl ("/usr/bin/wc", "wc", "-l", (char *) NULL); //execute second child
-			if(result == -1) //error
-			{
-				perror ("Error with executing");
-				printf ("Error at line %d\n", __LINE__);
-				return;
-			}
-	    }	
+			exit(0);
+		}
 	}
-	else                                      /* in 1st child   */
+	int m;
+	int n;
+	for(m = 0; m < numberOfPipes; m++)
 	{
-	    int result = close (1);            /* close standard out	 */
-		if(result == -1) //error
+		for(n = 0; n < 2; n++)
 		{
-			perror ("Error with closing standard output");
-			printf ("Error at line %d\n", __LINE__);
-			return;
+			int result = close(myPipes[m][n]);
+			if(result == -1) //error
+			{
+				perror ("Error closing pipe end.");
+				printf ("Error at line %d\n", __LINE__);
+				return;
+			}
 		}
-	    result = dup (pfd [1]);       /* write end of pipes becomes stdout */
-		if(result == -1) //error
-		{
-			perror ("Error with setting write end of pipe to standard output");
-			printf ("Error at line %d\n", __LINE__);
-			return;
-		}
-	    result = close (pfd [0]);                 /* close unneeded I/O */
-		if(result == -1) //error
-		{
-			perror ("Error with closing read end of pipe");
-			printf ("Error at line %d\n", __LINE__);
-			return;
-		}
-	    result = close (pfd [1]);                /* close unneeded I/O */
-		if(result == -1) //error
-		{
-			perror ("Error with closing write end of pipe");
-			printf ("Error at line %d\n", __LINE__);
-			return;
-		}
-	    result = execl ("/usr/bin/who", "who", (char *) NULL); //execute 1st child
-		if(result == -1) //error
-		{
-			perror ("Error with executing");
-			printf ("Error at line %d\n", __LINE__);
-			return;
-		}
+		wait((int *) 0);
 	}
 }
 int globerr(const char *path, int eerrno) //error
@@ -1093,7 +1336,7 @@ int checkForExecutableOrAlias(char* string)
 }
 void append_function(char* text)
 {
-	int out = open(text, O_WRONLY | O_APPEND | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
+	int out = open(text, O_RDWR | O_APPEND | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
 	if(out == -1) //error
 	{
 		perror("File not created");
@@ -1101,6 +1344,8 @@ void append_function(char* text)
 		return;
 	}
 	savedOutput = dup(1);
+	//printf("%d\n", SEEK_END);
+	//lseek(out, 0, SEEK_END);
 	int result = dup2(out, 1); //redirect output to file
 	if (result == -1) //error
 	{
@@ -1108,7 +1353,6 @@ void append_function(char* text)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	lseek(out, 1, SEEK_END); //append by using lseek to go to the end of the file
 }
 void reset()
 {
@@ -1138,6 +1382,7 @@ void reset()
 }
 void execute()
 {
+	//pipe_function("lol");
 	int numberOfPipes = 0;
 	int numberOfCommands = 0;
 	int i;
@@ -1212,16 +1457,18 @@ void execute()
 			return;
 		}
 		strcpy(result, getDirectories(textArray[globs[i]]));
-		//printf("%s\n", result);
+		printf("%s\n", result);
 		char* pch = strtok_r(result, "$", &saved3); //parse to get each indiviual file
 		int j = 0;
 		while(pch != NULL)
 		{
 			word3_function(pch, globs[i] + j); //insert it a specified position
-			//printf("%s\n", textArray[globs[i] + j]);
+			printf("%s\n", textArray[globs[i] + j]);
 			j++; //increment to move to next position in array
 			pch = strtok_r(NULL, "$", &saved3);
 		}
+		free(pch);
+		free(result);
 	}
 	numberOfCommands = numberOfPipes + 1;
 	int child;
@@ -1318,16 +1565,16 @@ void execute()
 					numberOfSpaces++; //increment number of spaces
 					pch = strtok_r(NULL, " ", &saved); 
 				}
-				printf("%d\n", numberOfSpaces);
+				//printf("%d\n", numberOfSpaces);
 				char* arguments[endOfCommand + numberOfSpaces + 1];
 				int i = 0;
 				char* saved2;
 				char* pch2 = strtok_r(result2, " ", &saved2); //parse by spaces for arguments
-				printf("%s\n", result);
+				//printf("%s\n", result);
 				while(pch2 != NULL)
 				{
 					arguments[i] = pch2; //set argument equal to token
-					printf("%s\n", arguments[i]);
+					//printf("%s\n", arguments[i]);
 					i++;
 					pch2 = strtok_r(NULL, " ", &saved2); 
 				}
@@ -1353,7 +1600,7 @@ void execute()
 				{
 					arguments[i] = textArray[i]; //copy arguments
 				}
-				arguments[endOfCommand] = (char *)0;
+				arguments[endOfCommand] = (char *)0; //null terminator
 				int result = execvp(textArray[0], arguments);
 				if(result == -1) //error
 				{
@@ -1365,37 +1612,12 @@ void execute()
 			else
 			{
 				printf("Attempting to perform infinite alias expansion.\n");
+				return;
 			}
 		}
 		else //perform piping
 		{
-			int i;
-			for(i = 0; i < numberOfPipes; i++)
-			{
-				if(i == 0) //initial case
-				{
-					if(close(1) == -1)
-					{
-						perror("Error closing standard output.");
-						printf("Error at line %d\n", __LINE__);
-						return;
-					}
-					
-				}
-				else if(i == numberOfPipes - 1) //final case
-				{
-					if(close(0) == -1)
-					{
-						perror("Error closing standard input.");
-						printf("Error at line %d\n", __LINE__);
-						return;
-					}
-				}
-				else //default case
-				{
-				
-				}
-			}
+			pipe_function(numberOfPipes, pipes, endOfCommand);
 		}
 	}
 	reset();
@@ -1418,12 +1640,15 @@ void word3_function(char* text, int position)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	printf("Here\n");
 	memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *)); //copy all entries from textArray into newTextArray
 	int i;
 	for(i = position; i < words - 1; i++) //shift everything afterwards to the right
 	{
+		memset(newTextArray[i + 1], '\0', sizeof(newTextArray[i + 1]));
 		strcpy(newTextArray[i + 1], newTextArray[i]);
 	}
+	printf("There\n");
 	newTextArray[position] = es; //word
 	newTextArray[words+1] = NULL; //null entry
 	textArray = newTextArray;
