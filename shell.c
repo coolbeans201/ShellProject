@@ -538,20 +538,25 @@ char* getDirectories(char* textmatch)
 {
 	int i;
 	int flags = 0;
-	glob_t* results;
+	glob_t *results;
 	int ret;
 	DIR *dir;
 	struct dirent *ent;
-	char* result;
-	result = malloc(5000 *sizeof(char));
-	if (result == (char *) NULL) //error
+	results = malloc(5000 * sizeof(glob_t));
+	if(results == (glob_t*) NULL) //error
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	results = malloc(500 * sizeof(glob_t));
-	strcpy(result,"");
+	char* result = malloc(5000 * sizeof(char));
+	if(result == (char*) NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	strcpy(result, "");
 	if ((dir = opendir(getenv("PWD"))) != NULL) 
 	{
 		printf("Opening %s\n", getenv("PWD"));
@@ -564,16 +569,18 @@ char* getDirectories(char* textmatch)
 			{
 				printf("Error with globbing\n");
 				printf("Error at line %d\n", __LINE__);
-				return result;
+				return "";
 			}
 		}
-		for (i = 0; i < results->gl_pathc; i++) //print out results
+		for(i = 0; i < results->gl_pathc; i++)
 		{
 			strcat(result, results->gl_pathv[i]);
 			strcat(result, "$");
 		}
+		printf("Here\n");
+		result[strlen(result) - 1] = '\0'; //null terminate
 		globfree(results); //free glob expression
-		closedir (dir); //close directory 
+		closedir(dir); //close directory 
 		return result;
 	}
 	else 
@@ -581,9 +588,9 @@ char* getDirectories(char* textmatch)
 		/* could not open directory */
 		perror ("Cannot open directory");
 		printf("Error at line %d\n", __LINE__);
-		return result;
+		return "";
 	}
-	return result;
+	return "";
 }
 void pipe_function(char *text)
 {
@@ -807,13 +814,6 @@ void quoteFunction(char* text)
 		return;
 	}
 	strncpy(actualText, &text[1], strlen(text) - 2); //everything between quotes
-	char* actualText2 = malloc(300 * sizeof(char));
-	if(actualText2 == (char*) NULL) //error
-	{
-		perror ("Error with memory allocation.");
-		printf ("Error at line %d\n", __LINE__);
-		return;
-	}
 	char* result = malloc(300 * sizeof(char));
 	if (result == (char*) NULL) //error
 	{
@@ -821,59 +821,6 @@ void quoteFunction(char* text)
 		printf ("Error at line %d\n", __LINE__);
 		return;
 	}
-	strcpy(actualText2, "");
-	char* pch = strtok(actualText, " "); //parse by space to analyze each "word" for presence of alias
-	while(pch != NULL)
-	{
-		int i;
-		int j;
-		int index = 0;
-		int match = 0;
-		for(i = 0; i < aliasCount; i++) //iterate over alias table
-		{
-			for(j = 0; j < strlen(aliases[i]); j++) //get name
-			{
-				if(aliases[i][j] == '=') //everything beforehand is a name
-				{
-					index = j;
-					break;
-				}
-			}
-			if(index == 0)
-			{
-				//do nothing
-			}
-			else if(strncmp(pch, aliases[i], index) == 0 && index > 0) //equal to an alias name
-			{
-				match = 1;
-				strcpy(result, aliasResolve(pch)); //get result of alias detection
-				if(strcmp(result, "<LOOP>") == 0) //infinite loop
-				{
-					perror ("Attempting to perform infinite alias expansion.");
-					printf ("Error at line %d\n", __LINE__);
-					return;
-				}
-				break;
-			}
-			else
-			{
-				//do nothing
-			}
-		}
-		if(match) //have a match
-		{
-			strcat(actualText2, result); 
-			strcat(actualText2, " "); //convert back to original text
-		}
-		else //no match
-		{
-			strcat(actualText2, pch);
-			strcat(actualText2, " "); //convert back to original text
-		}
-		pch = strtok(NULL, " ");
-	}
-	actualText2[strlen(actualText2) - 1] = '\0'; //null terminate and remove last space
-	strcpy(actualText, actualText2);
 	int index = 0;
 	int i;
 	int* results = malloc(300 * sizeof(int));
@@ -1264,6 +1211,29 @@ void execute()
 			indexOfAmpersand = i;
 		}
 	}
+	char* result = malloc(5000 * sizeof(char));
+	if(result == (char*) NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	for(i = 0; i < numberOfGlobs; i++)
+	{
+		strcpy(result, getDirectories(textArray[globs[i]]));
+		textArray[globs[i]] = malloc(strlen(result) + 1);
+		char* saved3;
+		char* pch = strtok_r(result, "$", &saved3); //parse to get each indiviual file
+		strcpy(textArray[globs[i]], "");
+		while(pch != NULL)
+		{
+			strcat(textArray[globs[i]], pch);
+			strcat(textArray[globs[i]], " ");
+			pch = strtok_r(NULL, "$", &saved3);
+		}
+		textArray[globs[i]][strlen(textArray[globs[i]]) - 1] = '\0';
+		printf("%s\n", textArray[globs[i]]);
+	}
 	numberOfCommands = numberOfPipes + 1;
 	int child;
 	if((child = fork()) == -1) //error
@@ -1338,7 +1308,7 @@ void execute()
 				printf("Error at line %d\n", __LINE__);
 				return;
 			}
-			if(strcmp(aliasResolve(textArray[0]), "") != 0 || strcmp(aliasResolve(textArray[0], "<LOOP>") != 0) //alias value associated with command name
+			if(strcmp(aliasResolve(textArray[0]), "") != 0 || strcmp(aliasResolve(textArray[0]), "<LOOP>") != 0) //alias value associated with command name
 			{
 				int numberOfSpaces = 0;
 				strcpy(result, aliasResolve(textArray[0])); //replace command name with alias value
@@ -1352,12 +1322,12 @@ void execute()
 				char* arguments[endOfCommand + numberOfSpaces + 1];
 				int i = 0;
 				char* saved2;
-				char * pch = strtok_r(result, " ", &saved2); //parse by spaces for arguments
-				while(pch != NULL)
+				char * pch2 = strtok_r(result, " ", &saved2); //parse by spaces for arguments
+				while(pch2 != NULL)
 				{
 					arguments[i] = pch; //set argument equal to token
 					i++;
-					pch = strtok_r(NULL, " ", &saved2); 
+					pch2 = strtok_r(NULL, " ", &saved2); 
 				}
 				int j;
 				for(j = i; j < endOfCommand + numberOfSpaces; j++)
