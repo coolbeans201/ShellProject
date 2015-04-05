@@ -19,9 +19,9 @@
   #define AT __FILE__ ":" TOSTRING(__LINE__)
   #define TRUE 1
   #define FALSE 0
-  void unsetenv_function(char *text);
+  void unsetenv_function(char *text, int flag);
   void unalias_function (char *text);
-  void setenv_function (char *text, char *text2);
+  void setenv_function (char *text, char *text2, int flag);
   void alias_function(char *text, char *text2);
   void cd_function(void);
   void printenv_function(void);
@@ -32,7 +32,7 @@
   void read_from_function (char *text);
   void word_function (char *text);
   void alias_function2(void);
-  void pipe_function(char *text);
+  void pipe_function(int numberOfPipes, int* pipes, int endOfCommand);
   int getWords(void);
   int getAliasCount(void);
   int globerr(const char* path, int eerrno);
