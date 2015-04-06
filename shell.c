@@ -42,6 +42,7 @@ void unsetenv_function(char *text, int flag)
 	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) { //error
 		perror("Entered an invalid name");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	length = strlen(text);
@@ -69,6 +70,7 @@ void unalias_function(char *text)
 	if (text == NULL || text == '\0' || strchr(text, '=') != NULL) { //invalid
 		perror("Entered an invalid alias");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	length = strlen(text);
@@ -94,6 +96,7 @@ void setenv_function (char *text, char *text2, int flag)
 	{
 		perror("Invalid argument.");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	//printf("Here\n");
@@ -104,6 +107,7 @@ void setenv_function (char *text, char *text2, int flag)
 	{
 		perror("Error with memory allocation");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	//printf("There\n");
@@ -115,6 +119,7 @@ void setenv_function (char *text, char *text2, int flag)
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
+			reset();
 			return;
 		}
 		strcpy(path, "");
@@ -125,6 +130,7 @@ void setenv_function (char *text, char *text2, int flag)
 			{
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 			strcpy(directory, getenv("PWD"));
@@ -227,6 +233,7 @@ void setenv_function (char *text, char *text2, int flag)
 	{
 		perror("Error inserting element into environment variable array");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	if(flag)
@@ -241,12 +248,14 @@ void alias_function(char *text, char *text2)
 	{
 		perror("Invalid argument");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	if(strcmp(text, "cd") == 0 || strcmp(text, "alias") == 0 || strcmp(text, "unalias") == 0 || strcmp(text, "setenv") == 0 || strcmp(text, "printenv") == 0 || strcmp(text, "unsetenv") == 0) //error
 	{
 		perror("Trying to make an alias out of a built-in command");
-		printf("Error at line %d\n", __LINE__);
+		printf("Error at line %d\n", __LINE__); 
+		reset();
 		return;
 	}
 	unalias_function(text);             /* Remove all occurrences */
@@ -255,6 +264,7 @@ void alias_function(char *text, char *text2)
 	{
 		perror("Error with memory allocation");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	strcpy(es, text); //copy variable
@@ -265,6 +275,7 @@ void alias_function(char *text, char *text2)
 	{
 		perror("Array not created.");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	memcpy ((char *) newAliases, (char *) aliases, aliasCount*sizeof(char *)); //copy all entries from textArray into newTextArray
@@ -295,6 +306,7 @@ void cd_function2(char *text)
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	strcpy(directory, getenv("PWD")); //start with current directory and see if it's relative or absolute
@@ -364,6 +376,7 @@ void cd_function2(char *text)
 			{
 				perror("Directory not changed");
 				printf("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 			setenv_function("PWD", "/", 0); //set to slash
@@ -377,6 +390,7 @@ void cd_function2(char *text)
 			{
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 			strncpy(text2, text, strlen(text)); //copy everything after slash
@@ -393,6 +407,7 @@ void cd_function2(char *text)
 		{
 			perror("Directory not changed");
 			printf("Error at line %d\n", __LINE__);
+			reset();
 			return;
 		}
 		setenv_function("PWD", text, 0); //change PWD to absolute
@@ -417,6 +432,7 @@ void standard_error_redirect_function()
 	{
 		perror("Standard error not redirected to output");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 }
@@ -427,6 +443,7 @@ void standard_error_redirect_function2(char *text)
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	strcpy(text2, &text[2]); //get everything after >
@@ -435,6 +452,7 @@ void standard_error_redirect_function2(char *text)
 	{
 		perror("File not created");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	savedError = dup(2);
@@ -443,6 +461,7 @@ void standard_error_redirect_function2(char *text)
 	{
 		perror("Standard error not redirected");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 }
@@ -453,6 +472,7 @@ void write_to_function(char *text)
 	{
 		perror("File not created");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	savedOutput = dup(1);
@@ -461,6 +481,7 @@ void write_to_function(char *text)
 	{
 		perror("Output not redirected");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 }
@@ -471,6 +492,7 @@ void read_from_function (char *text)
 	{
 		perror("File not opened");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	savedInput = dup(0);
@@ -479,6 +501,7 @@ void read_from_function (char *text)
 	{
 		perror("Input not redirected");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 }
@@ -490,6 +513,7 @@ void word_function(char *text)
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	strcpy(es, text); //copy text into pointer
@@ -498,6 +522,7 @@ void word_function(char *text)
 	{
 		perror("Array not created");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *)); //copy all entries from textArray into newTextArray
@@ -543,6 +568,7 @@ char* getDirectories(char* textmatch)
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	if ((dir = opendir(getenv("PWD"))) != NULL) 
@@ -557,6 +583,7 @@ char* getDirectories(char* textmatch)
 			{
 				printf("Error with globbing\n");
 				printf("Error at line %d\n", __LINE__);
+				reset();
 				return "";
 			}
 		}
@@ -572,6 +599,7 @@ char* getDirectories(char* textmatch)
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
+			reset();
 			return;
 		}
 		strcpy(result, "");
@@ -590,6 +618,7 @@ char* getDirectories(char* textmatch)
 		/* could not open directory */
 		perror ("Cannot open directory");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return "";
 	}
 	return "";
@@ -602,6 +631,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 	{
 		perror ("Error with memory allocation.");
 		printf ("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	int i;
@@ -612,6 +642,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 		{
 			perror ("Error with memory allocation.");
 			printf ("Error at line %d\n", __LINE__);
+			reset();
 			return;
 		}
 		int result = pipe(myPipes[i]);
@@ -619,6 +650,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 		{
 			perror ("Error piping.");
 			printf ("Error at line %d\n", __LINE__);
+			reset();
 			return;
 		}
 	}
@@ -639,6 +671,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 					{
 						perror ("Error closing pipe end.");
 						printf ("Error at line %d\n", __LINE__);
+						reset();
 						return;
 					}
 				}
@@ -652,6 +685,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror ("Error with memory allocation.");
 					printf ("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				strcpy(result3, aliasResolve(textArray[0])); //replace command name with alias value
@@ -660,6 +694,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				strcpy(result2, result3);
@@ -695,6 +730,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror("Error executing.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 			}
@@ -714,12 +750,14 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror("Error executing.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 			}
 			else //infinite alias expansion
 			{
 				printf("Attempting to perform infinite alias expansion.\n");
+				reset();
 				return;
 			}
 		}
@@ -730,6 +768,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 			{
 				perror ("Error reading from previous process.");
 				printf ("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 			result = dup2(myPipes[j][1], STDOUT_FILENO); //write to parent
@@ -737,6 +776,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 			{
 				perror ("Error write to first process.");
 				printf ("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 			int k;
@@ -750,6 +790,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 					{
 						perror ("Error closing pipe end.");
 						printf ("Error at line %d\n", __LINE__);
+						reset();
 						return;
 					}
 				}
@@ -761,6 +802,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror ("Error with memory allocation.");
 					printf ("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				//printf("Here\n");
@@ -771,6 +813,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				strcpy(result2, result3);
@@ -806,6 +849,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror("Error executing.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 			}
@@ -823,12 +867,14 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror("Error executing.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 			}
 			else //infinite alias expansion
 			{
 				printf("Attempting to perform infinite alias expansion.\n");
+				reset();
 				return;
 			}
 			exit(0);
@@ -840,6 +886,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 			{
 				perror ("Error reading from previous process.");
 				printf ("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 			result = dup2(myPipes[j][1], STDOUT_FILENO);
@@ -847,6 +894,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 			{
 				perror ("Error write to first process.");
 				printf ("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 			int k;
@@ -860,6 +908,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 					{
 						perror ("Error closing pipe end.");
 						printf ("Error at line %d\n", __LINE__);
+						reset();
 						return;
 					}
 				}
@@ -871,6 +920,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror ("Error with memory allocation.");
 					printf ("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				//printf("Here\n");
@@ -881,6 +931,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				strcpy(result2, result3);
@@ -916,6 +967,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror("Error executing.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 			}
@@ -933,12 +985,14 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				{
 					perror("Error executing.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 			}
 			else
 			{
 				printf("Attempting to perform infinite alias expansion.\n");
+				reset();
 				return;
 			}
 			exit(0);
@@ -955,6 +1009,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 			{
 				perror ("Error closing pipe end.");
 				printf ("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 		}
@@ -1045,6 +1100,7 @@ void quoteFunction(char* text)
 	{
 		perror ("Error with memory allocation.");
 		printf ("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	strncpy(actualText, &text[1], strlen(text) - 2); //everything between quotes
@@ -1053,6 +1109,7 @@ void quoteFunction(char* text)
 	{
 		perror ("Error with memory allocation.");
 		printf ("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	int index = 0;
@@ -1065,6 +1122,7 @@ void quoteFunction(char* text)
 	{
 		perror ("Error with memory allocation.");
 		printf ("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	for(i = 0; i < strlen(actualText); i ++)
@@ -1087,6 +1145,7 @@ void quoteFunction(char* text)
 		{
 			perror ("Error with input.");
 			printf ("Error at line %d\n", __LINE__);
+			reset();
 			return;
 		}
 	}
@@ -1094,6 +1153,7 @@ void quoteFunction(char* text)
 	{
 		perror ("Syntax error");
 		printf ("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	char *result2 = malloc(300 * sizeof(char));
@@ -1115,6 +1175,7 @@ void quoteFunction(char* text)
 		{
 			perror ("Error with memory allocation.");
 			printf ("Error at line %d\n", __LINE__);
+			reset();
 			return;
 		}
 		for(i = 0; i < resultCount; i++)
@@ -1127,6 +1188,7 @@ void quoteFunction(char* text)
 				{
 					perror ("Entered an invalid environment variable.");
 					printf ("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				strcpy(result3, getenv(result3));
@@ -1141,6 +1203,7 @@ void quoteFunction(char* text)
 				{
 					perror ("Entered an invalid environment variable.");
 					printf ("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				strcpy(result3,getenv(result3));
@@ -1170,6 +1233,7 @@ void word2Function(char* text)
 	{
 		perror ("Error with memory allocation.");
 		printf ("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	char* pch = strtok(text, ":"); //colon-separate
@@ -1181,6 +1245,7 @@ void word2Function(char* text)
 		{
 			perror ("Error with memory allocation.");
 			printf ("Error at line %d\n", __LINE__);
+			reset();
 			return;
 		}
 		strcpy(result, tildeExpansion(pch)); //get result of tilde expansion and reset
@@ -1203,6 +1268,7 @@ char* tildeExpansion(char* text)
 			{
 				perror("Directory not changed");
 				printf("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 			return myHome;
@@ -1217,6 +1283,7 @@ char* tildeExpansion(char* text)
 				{
 					perror("Error with getting struct.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				int result = chdir(pwd->pw_dir); //get home directory and move to it
@@ -1224,6 +1291,7 @@ char* tildeExpansion(char* text)
 				{
 					perror("Directory not changed");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				return pwd->pw_dir; //username
@@ -1247,6 +1315,7 @@ char* tildeExpansion(char* text)
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				strcpy(toadd, &text[index + 1]); //add everything after /
@@ -1283,6 +1352,7 @@ int checkForExecutableOrAlias(char* string)
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	if(strcmp(getAliasValue(string), "") == 0) //does it have an alias?
@@ -1296,6 +1366,7 @@ int checkForExecutableOrAlias(char* string)
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
+			reset();
 			return;
 		}
 		strcpy(directory, getenv("PWD"));
@@ -1307,6 +1378,7 @@ int checkForExecutableOrAlias(char* string)
 			{
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 			char* files = malloc(500*sizeof(char));
@@ -1342,6 +1414,7 @@ void append_function(char* text)
 	{
 		perror("File not created");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	savedOutput = dup(1);
@@ -1352,6 +1425,7 @@ void append_function(char* text)
 	{
 		perror("Output not redirected");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 }
@@ -1455,17 +1529,19 @@ void execute()
 	{
 		//printf("%d\n", globs[i] + addedWords);
 		//printf("%s\n",textArray[globs[i] + addedWords]);
-		char* result = malloc((strlen(getDirectories(textArray[globs[i] + addedWords])) + 1) * sizeof(char));
-		if(result == (char*) NULL)
+		char* result = malloc((strlen(getDirectories(textArray[globs[i] + addedWords])) + 1) * sizeof(char)); //allocate space
+		if(result == (char*) NULL) //error
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			reset();
 			return;
 		}
-		strcpy(result, getDirectories(textArray[globs[i] + addedWords]));
-		if(strcmp(result, "") == 0){
-			printf("No matches found, command not executed\n");
+		strcpy(result, getDirectories(textArray[globs[i] + addedWords])); //copy result
+		if(strcmp(result, "") == 0) //no matches
+		{
+			perror("No matches found, so command will not execute.");
+			printf("Error at line %d\n", __LINE__);
 			reset();
 			return;
 		}
@@ -1651,23 +1727,23 @@ void word3_function(char* text, int position)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	strcpy(result2, result);
+	strcpy(result2, result); //copy another one since strtok_r changes actual text
 	char* pch = strtok_r(result, "$", &saved3); //parse to get each indiviual file
-	int tokens = 0;
+	int tokens = 0; //how many positions we add
 	while(pch != NULL)
 	{
 		tokens++;
 		pch = strtok_r(NULL, "$", &saved3);
 	}
-	newTextArray = (char **) malloc((words+tokens)*sizeof(char *)); //null entry and new word
+	newTextArray = (char **) malloc((words+tokens)*sizeof(char *)); //null entry and new words
 	if ( newTextArray == (char **) NULL ) //no array created
 	{
 		perror("Array not created");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	memcpy ((char *) newTextArray, (char *) textArray, position*sizeof(char *)); //copy all entries from textArray into newTextArray
-	char** textForLater = malloc((words - position) * sizeof(char *));
+	memcpy ((char *) newTextArray, (char *) textArray, position*sizeof(char *)); //copy all entries from 0 to position of textArray into newTextArray
+	char** textForLater = malloc((words - position) * sizeof(char *)); //text we add at the end of the textArray
 	if(textForLater == (char**)NULL) //error
 	{
 		perror("Array not created");
@@ -1678,14 +1754,14 @@ void word3_function(char* text, int position)
 	int index = 0;
 	for(i = position + 1; i < words; i++)
 	{
-		textForLater[index] = malloc((strlen(textArray[i]) + 1) * sizeof(char));
+		textForLater[index] = malloc((strlen(textArray[i]) + 1) * sizeof(char)); //allocate enough space for entry
 		if(textForLater[index] == (char*) NULL) //error
 		{
 			perror("Error with memory allocation");
 			printf("Error at line %d\n", __LINE__);
 			return;
 		}
-		strcpy(textForLater[index], textArray[i]);
+		strcpy(textForLater[index], textArray[i]); //copy entry into array
 		//printf("%s\n", textForLater[index]);
 		index++;
 	}
@@ -1693,7 +1769,7 @@ void word3_function(char* text, int position)
 	char* pch2 = strtok_r(result2, "$", &saved4);
 	int j = 0;
 	int originalWords = words;
-	words--;
+	words--; //since we are overwriting an entry, need to decrement words beforehand
 	while(pch2 != NULL)
 	{
 		char* es;
@@ -1707,8 +1783,8 @@ void word3_function(char* text, int position)
 		strcpy(es, pch2); //copy text into pointer
 		//printf("%s\n", es);
 		newTextArray[position + j] = es; //word
-		j++;
-		words++;
+		j++; //move forward
+		words++; //added another word
 		pch2 = strtok_r(NULL, "$", &saved4);
 	}
 	int k;
@@ -1716,12 +1792,18 @@ void word3_function(char* text, int position)
 	for(k = position + j; k < words; k++)
 	{
 		//printf("%d %d\n", k, originalWords + tokens);
-		newTextArray[k] = malloc((strlen(textForLater[index]) + 1)*sizeof(char));
-		strcpy(newTextArray[k], textForLater[index]);
+		newTextArray[k] = malloc((strlen(textForLater[index]) + 1)*sizeof(char)); //allocate space
+		if(newTextArray[k] == (char*) NULL) //error
+		{
+			perror("Error with memory allocation.");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		strcpy(newTextArray[k], textForLater[index]); //copy over
 		//printf("%s\n", newTextArray[k]);
-		index++;
+		index++; //move to next entry
 	}
-	newTextArray[words + 1] = NULL;
+	newTextArray[words + 1] = NULL; //null entry
 	textArray = newTextArray;
-	addedWords += j - 1;
+	addedWords += j - 1; //how many words we added
 }
