@@ -554,8 +554,8 @@ char* getDirectories(char* textmatch)
 			ret = glob(textmatch, flags, globerr, results); //glob expression
 			if (ret != 0) //error
 			{
-				//printf("Error with globbing\n");
-				//printf("Error at line %d\n", __LINE__);
+				printf("Error with globbing\n");
+				printf("Error at line %d\n", __LINE__);
 				return "";
 			}
 		}
@@ -1395,7 +1395,6 @@ void execute()
 	int endOfCommand = 0;
 	int numberOfGlobs = 0;
 	int* pipes = malloc(300 * sizeof(int));
-	int runExecVpFlag = 1;
 	if(pipes == (int*) NULL) //error
 	{
 		perror("Error with memory allocation.");
@@ -1448,53 +1447,27 @@ void execute()
 	}
 	//printf("%d\n", numberOfGlobs);
 	char* saved3;
-	char** savedTextArray = malloc((words+2)*sizeof(char *)); //null entry and new word
-	if ( savedTextArray == (char **) NULL ) //no array created
-	{
-		perror("Array not created");
-		printf("Error at line %d\n", __LINE__);
-		return;
-	}
-	memcpy (savedTextArray, textArray, words*sizeof(char *)); //copy all entries from textArray into newTextArray
-	char* multResult = malloc(5000*sizeof(char*));
-	strcpy(multResult, "");
 	for(i = 0; i < numberOfGlobs; i++)
 	{
-		char* result = malloc(strlen(getDirectories(savedTextArray[globs[i]])) * sizeof(char));
+		char* result = malloc(strlen(getDirectories(textArray[globs[i]])) * sizeof(char));
 		if(result == (char*) NULL) //error
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			return;
 		}
-		//printf("%s\n",savedTextArray[globs[i]]);
-		strcpy(result, getDirectories(savedTextArray[globs[i]]));
-		strcat(multResult, result);
-		strcat(multResult, "$");
+		strcpy(result, getDirectories(textArray[globs[i]]));
+		printf("%s\n", result);
 		char* pch = strtok_r(result, "$", &saved3); //parse to get each indiviual file
 		int j = 0;
 		while(pch != NULL)
 		{
 			word3_function(pch, globs[i] + j); //insert it a specified position
-			//printf(" %s\n", savedTextArray[globs[i] + j]);
+			printf("%s\n", textArray[globs[i] + j]);
 			j++; //increment to move to next position in array
 			pch = strtok_r(NULL, "$", &saved3);
 		}
-		runExecVpFlag = 0; //turns flag false so execvp DOES NOT run
 	}
-	int k;
-	for(k = 0; k < strlen(multResult); k++){//prints ls command with wildcard matching
-		if(multResult[k] == '$'){
-			printf("  ");
-		}
-		else{
-			printf("%c",multResult[k]);
-		}
-	}
-	if(runExecVpFlag == 0){
-		printf("\n");
-	}
-	
 	numberOfCommands = numberOfPipes + 1;
 	int child;
 	if((child = fork()) == -1) //error
@@ -1609,14 +1582,12 @@ void execute()
 					arguments[j] = textArray[j]; //take rest normally
 				}
 				arguments[endOfCommand + numberOfSpaces] = (char *)0; //null terminator
-				if(runExecVpFlag == 1){
-					int result = execvp(arguments[0], arguments); //execute
-					if(result == -1) //error
-					{
-						perror("Error executing.");
-						printf("Error at line %d\n", __LINE__);
-						return;
-					}
+				int result = execvp(arguments[0], arguments); //execute
+				if(result == -1) //error
+				{
+					perror("Error executing.");
+					printf("Error at line %d\n", __LINE__);
+					return;
 				}
 			}
 			else if(strcmp(aliasResolve(textArray[0]), "") == 0) //no alias, so proceed as normal
@@ -1626,17 +1597,14 @@ void execute()
 				for(i = 0; i < endOfCommand; i++)
 				{
 					arguments[i] = textArray[i]; //copy arguments
-					//printf("%s\n", arguments[i]);
 				}
 				arguments[endOfCommand] = (char *)0; //null terminator
-				if(runExecVpFlag == 1){
-					int result = execvp(textArray[0], arguments);
-					if(result == -1) //error
-					{
-						perror("Error executing.");
-						printf("Error at line %d\n", __LINE__);
-						return;
-					}
+				int result = execvp(textArray[0], arguments);
+				if(result == -1) //error
+				{
+					perror("Error executing.");
+					printf("Error at line %d\n", __LINE__);
+					return;
 				}
 			}
 			else
@@ -1670,15 +1638,15 @@ void word3_function(char* text, int position)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
+	printf("Here\n");
 	memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *)); //copy all entries from textArray into newTextArray
 	int i;
-	//printf("Words: %d\n", words);
-	/*for(i = position; i < words - 1; i++) //shift everything afterwards to the right
+	for(i = position; i < words - 1; i++) //shift everything afterwards to the right
 	{
-		printf("i: %d\n", i);
 		memset(newTextArray[i + 1], '\0', sizeof(newTextArray[i + 1]));
 		strcpy(newTextArray[i + 1], newTextArray[i]);
-	}*/
+	}
+	printf("There\n");
 	newTextArray[position] = es; //word
 	newTextArray[words+1] = NULL; //null entry
 	textArray = newTextArray;
