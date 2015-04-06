@@ -468,6 +468,7 @@ void standard_error_redirect_function2(char *text)
 void write_to_function(char *text)
 {
 	int out = open(text, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
+	flock(out, LOCK_UN);
 	if(out == -1) //error
 	{
 		perror("File not created");
@@ -1535,6 +1536,7 @@ void execute()
 			}
 			else if(strcmp(aliasResolve(textArray[i]), "") != 0){
 				strcpy(textArray[i], aliasResolve(textArray[i]));
+				textArrayAliasExpansion(textArray[i], i + addedWords);
 			}
 		}
 		else{
@@ -1545,7 +1547,8 @@ void execute()
 				return;
 			}
 			else if(strcmp(aliasResolve(textArray[pipes[i] + 1]), "") != 0){
-				strcpy(textArray[pipes[i] + 1], aliasResolve(textArray[pipes[i] + 1]));
+				strcpy(textArray[pipes[i] + 1], aliasResolve(textArray[pipes[i] + addedWords + 1]));
+				textArrayAliasExpansion(textArray[pipes[i] + addedWords + 1], pipes[i] + addedWords);
 			}
 		}
 	}
@@ -1830,3 +1833,111 @@ void word3_function(char* text, int position)
 	textArray = newTextArray;
 	addedWords += j - 1; //how many words we added
 }
+
+void printTextArray(){
+	int i;
+	for(i = 0; i < words; i++){
+		printf("%s\n", textArray[i]);
+	}
+}
+
+void textArrayAliasExpansion(char* text, int position){
+	char* saved3;
+	char* result = malloc((strlen(text) + 1) * sizeof(char));
+	if(result == (char*) NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	strcpy(result, text);
+	//printf("%s\n", result);
+	char* result2 = malloc((strlen(text) + 1) * sizeof(char));
+	if(result2 == (char*) NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	strcpy(result2, result); //copy another one since strtok_r changes actual text
+	char* pch = strtok_r(result, " ", &saved3); //parse to get each indiviual file
+	int tokens = 0; //how many positions we add
+	while(pch != NULL)
+	{
+		tokens++;
+		pch = strtok_r(NULL, " ", &saved3);
+	}
+	newTextArray = (char **) malloc((words+tokens)*sizeof(char *)); //null entry and new words
+	if ( newTextArray == (char **) NULL ) //no array created
+	{
+		perror("Array not created");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	memcpy ((char *) newTextArray, (char *) textArray, position*sizeof(char *)); //copy all entries from 0 to position of textArray into newTextArray
+	char** textForLater = malloc((words - position) * sizeof(char *)); //text we add at the end of the textArray
+	if(textForLater == (char**)NULL) //error
+	{
+		perror("Array not created");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	int i;
+	int index = 0;
+	for(i = position + 1; i < words; i++)
+	{
+		textForLater[index] = malloc((strlen(textArray[i]) + 1) * sizeof(char)); //allocate enough space for entry
+		if(textForLater[index] == (char*) NULL) //error
+		{
+			perror("Error with memory allocation");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		strcpy(textForLater[index], textArray[i]); //copy entry into array
+		//printf("%s\n", textForLater[index]);
+		index++;
+	}
+	char* saved4;
+	char* pch2 = strtok_r(result2, " ", &saved4);
+	int j = 0;
+	int originalWords = words;
+	words--; //since we are overwriting an entry, need to decrement words beforehand
+	while(pch2 != NULL)
+	{
+		char* es;
+		es = malloc(strlen(pch2) + 1); //allocate space for word and terminating character
+		if (es == NULL) //error
+		{
+			perror("Error with memory allocation.");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		strcpy(es, pch2); //copy text into pointer
+		//printf("%s\n", es);
+		newTextArray[position + j] = es; //word
+		j++; //move forward
+		words++; //added another word
+		pch2 = strtok_r(NULL, " ", &saved4);
+	}
+	int k;
+	index = 0;
+	for(k = position + j; k < words; k++)
+	{
+		//printf("%d %d\n", k, originalWords + tokens);
+		newTextArray[k] = malloc((strlen(textForLater[index]) + 1)*sizeof(char)); //allocate space
+		if(newTextArray[k] == (char*) NULL) //error
+		{
+			perror("Error with memory allocation.");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		strcpy(newTextArray[k], textForLater[index]); //copy over
+		//printf("%s\n", newTextArray[k]);
+		index++; //move to next entry
+	}
+	newTextArray[words + 1] = NULL; //null entry
+	textArray = newTextArray;
+	addedWords += j - 1; //how many words we added
+}
+
+
