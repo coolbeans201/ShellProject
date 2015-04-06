@@ -43,6 +43,7 @@
   char* tildeExpansion(char* text);
   char* aliasResolve(char* string);
   char* getAliasValue(char* aliasName);
+  int checkForExecutableOrAlias(char* string);
   void shell_init(void);
   void changeGroupedSpacesIntoOneSpace(char* string);
   void append_function(char* text);
