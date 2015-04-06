@@ -625,7 +625,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 	for(j = 0; j < numberOfPipes; j++)
 	{
 		pid[j] = fork();
-		if(pid[j] == 0 && j == 0)
+		if(pid[j] == 0 && j == 0) //first pipe
 		{
 			int k;
 			int l;
@@ -722,7 +722,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				return;
 			}
 		}
-		else if(pid[j] == 0 && j == numberOfPipes)
+		else if(pid[j] == 0 && j == (numberOfPipes - 1)) //last pipe
 		{
 			int result = dup2(myPipes[j - 1][0], STDIN_FILENO); //read from previous process
 			if(result == -1) //error
@@ -783,14 +783,14 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				}
 				//printf("%d\n", numberOfSpaces);
 				char* arguments[endOfCommand - pipes[j] + numberOfSpaces];
-				int i = pipes[j];
+				int i = pipes[j] + 1;
 				char* saved2;
 				char* pch2 = strtok_r(result2, " ", &saved2); //parse by spaces for arguments
 				//printf("%s\n", result);
 				while(pch2 != NULL)
 				{
 					arguments[i] = pch2; //set argument equal to token
-					printf("%s\n", arguments[i]);
+					//printf("%s\n", arguments[i]);
 					i++;
 					pch2 = strtok_r(NULL, " ", &saved2); 
 				}
@@ -832,7 +832,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 			}
 			exit(0);
 		}
-		else
+		else //middle pipes
 		{
 			int result = dup2(myPipes[j - 1][0], STDIN_FILENO);
 			if(result == -1) //error
@@ -865,8 +865,8 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 			}
 			if(strcmp(aliasResolve(textArray[pipes[j] + 1]), "") != 0 && strcmp(aliasResolve(textArray[pipes[j] + 1]), "<LOOP>") != 0) //alias value associated with command name
 			{
-				char* result3 = malloc((strlen(aliasResolve(textArray[0])) + 1) * sizeof(char));
-				if(result3 == (char*)NULL) //error
+				char* result3 = malloc((strlen(aliasResolve(textArray[pipes[j] + 1])) + 1) * sizeof(char));
+				if(result3 == (char*) NULL) //error
 				{
 					perror ("Error with memory allocation.");
 					printf ("Error at line %d\n", __LINE__);
@@ -893,7 +893,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 				}
 				//printf("%d\n", numberOfSpaces);
 				char* arguments[pipes[j] - pipes[j - 1] + numberOfSpaces + 1];
-				int i = pipes[j - 1];
+				int i = pipes[j - 1] + 1;
 				char* saved2;
 				char* pch2 = strtok_r(result2, " ", &saved2); //parse by spaces for arguments
 				//printf("%s\n", result);
@@ -920,14 +920,14 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 			}
 			else if(strcmp(aliasResolve(textArray[pipes[j]]), "") == 0) //no alias, so proceed as normal
 			{
-				char* arguments[pipes[0] + 1];
+				char* arguments[pipes[j] - pipes[j - 1] + 1];
 				int i;
-				for(i = pipes[j] + 1; i < pipes[j] + 1; i++)
+				for(i = pipes[j - 1] + 1; i < pipes[j]; i++)
 				{
 					arguments[i] = textArray[i]; //copy arguments
 				}
-				arguments[endOfCommand] = (char *)0;
-				int result = execvp(textArray[pipes[j] + 1], arguments);
+				arguments[pipes[j] - pipes[j - 1]] = (char *)0; //null terminator
+				int result = execvp(textArray[pipes[j - 1] + 1], arguments);
 				if(result == -1) //error
 				{
 					perror("Error executing.");
@@ -1615,7 +1615,7 @@ void execute()
 		}
 		else //perform piping
 		{
-			pipe_function(numberOfPipes, pipes, endOfCommand);
+			pipe_function(numberOfCommands, pipes, endOfCommand);
 		}
 	}
 	reset();
