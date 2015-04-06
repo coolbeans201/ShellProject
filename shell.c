@@ -11,6 +11,7 @@ char* myHome;
 int savedOutput; //output channel
 int savedInput; //input channel
 int savedError; //error channel
+int addedWords = 0;
 void shell_init()
 {
 	myPath = malloc(500 * sizeof(char));
@@ -1378,6 +1379,7 @@ void reset()
 		return;
 	}
 	words = 0;
+	addedWords = 0;
 	memset(textArray, 0, sizeof(textArray));
 }
 void execute()
@@ -1399,6 +1401,7 @@ void execute()
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	int* globs = malloc(300 * sizeof(int));
@@ -1406,6 +1409,7 @@ void execute()
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}
 	for(i = 0; i < words; i++)
@@ -1449,16 +1453,24 @@ void execute()
 	char* saved3;
 	for(i = 0; i < numberOfGlobs; i++)
 	{
-		char* result = malloc((strlen(getDirectories(textArray[globs[i]])) + 1) * sizeof(char));
+		//printf("%d\n", globs[i] + addedWords);
+		//printf("%s\n",textArray[globs[i] + addedWords]);
+		char* result = malloc((strlen(getDirectories(textArray[globs[i] + addedWords])) + 1) * sizeof(char));
 		if(result == (char*) NULL)
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
+			reset();
 			return;
 		}
-		strcpy(result, getDirectories(textArray[globs[i]]));
+		strcpy(result, getDirectories(textArray[globs[i] + addedWords]));
+		if(strcmp(result, "") == 0){
+			printf("No matches found, command not executed\n");
+			reset();
+			return;
+		}
 		//printf("%s\n", result);
-		word3_function(result, globs[i]);
+		word3_function(result, globs[i] + addedWords);
 	}
 	numberOfCommands = numberOfPipes + 1;
 	int child;
@@ -1466,6 +1478,7 @@ void execute()
 	{
 		perror("Error forking");
 		printf("Error at line %d\n", __LINE__);
+		reset();
 		return;
 	}	
 	if(child != 0) //in parent
@@ -1532,6 +1545,7 @@ void execute()
 			{
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
+				reset();
 				return;
 			}
 			if(strcmp(aliasResolve(textArray[0]), "") != 0 && strcmp(aliasResolve(textArray[0]), "<LOOP>") != 0) //alias value associated with command name
@@ -1544,6 +1558,7 @@ void execute()
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 				strcpy(result2, result);
@@ -1579,6 +1594,7 @@ void execute()
 				{
 					perror("Error executing.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 			}
@@ -1598,12 +1614,14 @@ void execute()
 				{
 					perror("Error executing.");
 					printf("Error at line %d\n", __LINE__);
+					reset();
 					return;
 				}
 			}
 			else
 			{
 				printf("Attempting to perform infinite alias expansion.\n");
+				reset();
 				return;
 			}
 		}
@@ -1641,7 +1659,7 @@ void word3_function(char* text, int position)
 		tokens++;
 		pch = strtok_r(NULL, "$", &saved3);
 	}
-	newTextArray = (char **) malloc((words+tokens+1)*sizeof(char *)); //null entry and new word
+	newTextArray = (char **) malloc((words+tokens)*sizeof(char *)); //null entry and new word
 	if ( newTextArray == (char **) NULL ) //no array created
 	{
 		perror("Array not created");
@@ -1668,6 +1686,7 @@ void word3_function(char* text, int position)
 			return;
 		}
 		strcpy(textForLater[index], textArray[i]);
+		//printf("%s\n", textForLater[index]);
 		index++;
 	}
 	char* saved4;
@@ -1694,12 +1713,15 @@ void word3_function(char* text, int position)
 	}
 	int k;
 	index = 0;
-	for(k = position + j; k < originalWords; k++)
+	for(k = position + j; k < words; k++)
 	{
+		//printf("%d %d\n", k, originalWords + tokens);
+		newTextArray[k] = malloc((strlen(textForLater[index]) + 1)*sizeof(char));
 		strcpy(newTextArray[k], textForLater[index]);
 		//printf("%s\n", newTextArray[k]);
 		index++;
 	}
 	newTextArray[words + 1] = NULL;
 	textArray = newTextArray;
+	addedWords += j - 1;
 }
