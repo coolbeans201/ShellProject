@@ -1523,32 +1523,55 @@ void execute()
 			indexOfAmpersand = i;
 		}
 	}
+	numberOfCommands = numberOfPipes + 1;
+	for(i = 0; i < numberOfCommands; i++)
+	{
+		if(i == 0)
+		{
+			if(strcmp(aliasResolve(textArray[i]), "<LOOP>") == 0){
+				printf("Infinite alias expansion detected, command not executed\n");
+				reset();
+				return;
+			}
+			else if(strcmp(aliasResolve(textArray[i]), "") != 0){
+				strcpy(textArray[i], aliasResolve(textArray[i]));
+			}
+		}
+		else{
+			int j;
+			if(strcmp(aliasResolve(textArray[pipes[i] + 1]), "<LOOP>") == 0){
+				printf("Infinite alias expansion detected, command not executed\n");
+				reset();
+				return;
+			}
+			else if(strcmp(aliasResolve(textArray[pipes[i] + 1]), "") != 0){
+				strcpy(textArray[pipes[i] + 1], aliasResolve(textArray[pipes[i] + 1]));
+			}
+		}
+	}
 	//printf("%d\n", numberOfGlobs);
 	char* saved3;
 	for(i = 0; i < numberOfGlobs; i++)
 	{
 		//printf("%d\n", globs[i] + addedWords);
 		//printf("%s\n",textArray[globs[i] + addedWords]);
-		char* result = malloc((strlen(getDirectories(textArray[globs[i] + addedWords])) + 1) * sizeof(char)); //allocate space
-		if(result == (char*) NULL) //error
+		char* result = malloc((strlen(getDirectories(textArray[globs[i] + addedWords])) + 1) * sizeof(char));
+		if(result == (char*) NULL)
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			reset();
 			return;
 		}
-		strcpy(result, getDirectories(textArray[globs[i] + addedWords])); //copy result
-		if(strcmp(result, "") == 0) //no matches
-		{
-			perror("No matches found, so command will not execute.");
-			printf("Error at line %d\n", __LINE__);
+		strcpy(result, getDirectories(textArray[globs[i] + addedWords]));
+		if(strcmp(result, "") == 0){
+			printf("No matches found, command not executed\n");
 			reset();
 			return;
 		}
 		//printf("%s\n", result);
 		word3_function(result, globs[i] + addedWords);
 	}
-	numberOfCommands = numberOfPipes + 1;
 	int child;
 	if((child = fork()) == -1) //error
 	{
