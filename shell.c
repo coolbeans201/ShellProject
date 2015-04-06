@@ -1449,24 +1449,16 @@ void execute()
 	char* saved3;
 	for(i = 0; i < numberOfGlobs; i++)
 	{
-		char* result = malloc(strlen(getDirectories(textArray[globs[i]])) * sizeof(char));
-		if(result == (char*) NULL) //error
+		char* result = malloc((strlen(getDirectories(textArray[globs[i]])) + 1) * sizeof(char));
+		if(result == (char*) NULL)
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			return;
 		}
 		strcpy(result, getDirectories(textArray[globs[i]]));
-		printf("%s\n", result);
-		char* pch = strtok_r(result, "$", &saved3); //parse to get each indiviual file
-		int j = 0;
-		while(pch != NULL)
-		{
-			word3_function(pch, globs[i] + j); //insert it a specified position
-			printf("%s\n", textArray[globs[i] + j]);
-			j++; //increment to move to next position in array
-			pch = strtok_r(NULL, "$", &saved3);
-		}
+		//printf("%s\n", result);
+		word3_function(result, globs[i]);
 	}
 	numberOfCommands = numberOfPipes + 1;
 	int child;
@@ -1592,14 +1584,16 @@ void execute()
 			}
 			else if(strcmp(aliasResolve(textArray[0]), "") == 0) //no alias, so proceed as normal
 			{
+				//printf("%d\n", endOfCommand);
 				char* arguments[endOfCommand + 1];
 				int i;
 				for(i = 0; i < endOfCommand; i++)
 				{
 					arguments[i] = textArray[i]; //copy arguments
+					//printf("%s\n", arguments[i]);
 				}
 				arguments[endOfCommand] = (char *)0; //null terminator
-				int result = execvp(textArray[0], arguments);
+				int result = execvp(arguments[0], arguments);
 				if(result == -1) //error
 				{
 					perror("Error executing.");
@@ -1622,33 +1616,90 @@ void execute()
 }
 void word3_function(char* text, int position)
 {
-	char * es;
-	es = malloc(strlen(text) + 1); //allocate space for word and terminating character
-	if (es == NULL) //error
+	char* saved3;
+	char* result = malloc((strlen(text) + 1) * sizeof(char));
+	if(result == (char*) NULL) //error
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	strcpy(es, text); //copy text into pointer
-	newTextArray = (char **) malloc((words+2)*sizeof(char *)); //null entry and new word
+	strcpy(result, text);
+	//printf("%s\n", result);
+	char* result2 = malloc((strlen(text) + 1) * sizeof(char));
+	if(result2 == (char*) NULL) //error
+	{
+		perror("Error with memory allocation.");
+		printf("Error at line %d\n", __LINE__);
+		return;
+	}
+	strcpy(result2, result);
+	char* pch = strtok_r(result, "$", &saved3); //parse to get each indiviual file
+	int tokens = 0;
+	while(pch != NULL)
+	{
+		tokens++;
+		pch = strtok_r(NULL, "$", &saved3);
+	}
+	newTextArray = (char **) malloc((words+tokens+1)*sizeof(char *)); //null entry and new word
 	if ( newTextArray == (char **) NULL ) //no array created
 	{
 		perror("Array not created");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	printf("Here\n");
-	memcpy ((char *) newTextArray, (char *) textArray, words*sizeof(char *)); //copy all entries from textArray into newTextArray
-	int i;
-	for(i = position; i < words - 1; i++) //shift everything afterwards to the right
+	memcpy ((char *) newTextArray, (char *) textArray, position*sizeof(char *)); //copy all entries from textArray into newTextArray
+	char** textForLater = malloc((words - position) * sizeof(char *));
+	if(textForLater == (char**)NULL) //error
 	{
-		memset(newTextArray[i + 1], '\0', sizeof(newTextArray[i + 1]));
-		strcpy(newTextArray[i + 1], newTextArray[i]);
+		perror("Array not created");
+		printf("Error at line %d\n", __LINE__);
+		return;
 	}
-	printf("There\n");
-	newTextArray[position] = es; //word
-	newTextArray[words+1] = NULL; //null entry
+	int i;
+	int index = 0;
+	for(i = position + 1; i < words; i++)
+	{
+		textForLater[index] = malloc((strlen(textArray[i]) + 1) * sizeof(char));
+		if(textForLater[index] == (char*) NULL) //error
+		{
+			perror("Error with memory allocation");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		strcpy(textForLater[index], textArray[i]);
+		index++;
+	}
+	char* saved4;
+	char* pch2 = strtok_r(result2, "$", &saved4);
+	int j = 0;
+	int originalWords = words;
+	words--;
+	while(pch2 != NULL)
+	{
+		char* es;
+		es = malloc(strlen(pch2) + 1); //allocate space for word and terminating character
+		if (es == NULL) //error
+		{
+			perror("Error with memory allocation.");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		strcpy(es, pch2); //copy text into pointer
+		//printf("%s\n", es);
+		newTextArray[position + j] = es; //word
+		j++;
+		words++;
+		pch2 = strtok_r(NULL, "$", &saved4);
+	}
+	int k;
+	index = 0;
+	for(k = position + j; k < originalWords; k++)
+	{
+		strcpy(newTextArray[k], textForLater[index]);
+		//printf("%s\n", newTextArray[k]);
+		index++;
+	}
+	newTextArray[words + 1] = NULL;
 	textArray = newTextArray;
-	words++; //increment index
 }
