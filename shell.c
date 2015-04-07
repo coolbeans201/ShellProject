@@ -1,4 +1,8 @@
 #include "shell.h"
+struct command
+{
+  const char **argv;
+};
 char** newTextArray; //copied words
 int words = 0; //number of words
 extern char** environ; //environment variables
@@ -12,6 +16,8 @@ int savedOutput; //output channel
 int savedInput; //input channel
 int savedError; //error channel
 int addedWords = 0;
+int spawn_proc(int in, int out, struct command *cmd);
+int fork_pipes (int n, struct command *cmd);
 void shell_init()
 {
 	myPath = malloc(500 * sizeof(char));
@@ -1355,6 +1361,7 @@ void execute()
 			if(strcmp(textArray[i], "|") == 0) //it's a pipe
 			{
 				pipes[numberOfPipes] = i;
+				//printf("%d\n", i);
 				numberOfPipes++;
 			}
 			if(strcmp(textArray[i], "<") == 0) //read in
@@ -1483,7 +1490,70 @@ void execute()
 			{
 				endOfCommand = indexOfAmpersand;
 			}
-			pipe_function(numberOfCommands, pipes, endOfCommand);
+			else //just a command with no special components
+			{ 
+				endOfCommand = words;
+			}
+			struct command cmd[numberOfCommands];
+			//printTextArray();
+			//printf("%d\n", numberOfCommands);
+			for(i = 0; i < numberOfCommands; i++)
+			{
+				if(i == 0) //first command
+				{
+					const char* arguments [pipes[0] + 1];
+					int j = 0;
+					for(j = 0; j < pipes[0]; j++)
+					{
+						arguments[j] = textArray[j];
+					}
+					arguments[pipes[0]] = (char*)0;
+					cmd[0].argv = arguments;
+					for(j = 0; j < pipes[0]; j++)
+					{
+						printf("%s\n", cmd[0].argv[j]);
+					}
+				}
+				else if(i != (numberOfCommands - 1)) //in the middle
+				{
+					printf("%d\n", pipes[i] - pipes[i - 1]);
+					const char* arguments[pipes[i] - pipes[i - 1]];
+					int j;
+					for(j = 0; j < pipes[i] - pipes[i - 1] - 1; j++)
+					{
+						arguments[j] = textArray[pipes[i - 1] + 1 + j]; //copy arguments
+					}
+					arguments[pipes[i] - pipes[i - 1] - 1] = (char *)0; //null terminator
+					cmd[i].argv = arguments;
+					for(j = 0; j < pipes[i] - pipes[i - 1] - 1; j++)
+					{
+						printf("%s\n", cmd[i].argv[j]);
+					}
+				}
+				else //at the end
+				{
+					printf("%d\n", endOfCommand - pipes[i - 1]);
+					const char* arguments[endOfCommand - pipes[i - 1]];
+					int j;
+					for(j = 0; i < endOfCommand - pipes[i - 1] - 1; j++)
+					{
+						arguments[j] = textArray[pipes[i - 1] + 1 + j]; //copy arguments
+					}
+					arguments[endOfCommand - pipes[i - 1] - 1] = (char *)0; //null terminator
+					cmd[numberOfCommands - 1].argv = arguments;
+					for(j = 0; j < endOfCommand - pipes[i - 1] - 1; j++)
+					{
+						printf("%s\n", cmd[numberOfCommands - 1].argv[j]);
+					}
+				}
+			}
+			//int result = fork_pipes(numberOfCommands, cmd);
+			//if(result == -1) //error
+			//{
+				//perror("Error executing.");
+				//printf("Error at line %d\n", __LINE__);
+				//return;
+			//}
 		}
 	}
 }
@@ -1587,7 +1657,7 @@ void printTextArray()
 	int i;
 	for(i = 0; i < words; i++)
 	{
-		//printf("%s\n", textArray[i]);
+		printf("%s\n", textArray[i]);
 	}
 }
 
@@ -1727,4 +1797,60 @@ char *fixText(char *orig, char *rep, char *with) {
     }
     strcpy(tmp, orig);
     return result;
+}
+int spawn_proc (int in, int out, struct command *cmd)
+{
+  pid_t pid;
+
+  if ((pid = fork ()) == 0)
+    {
+      if (in != 0)
+        {
+          dup2 (in, 0);
+          close (in);
+        }
+
+      if (out != 1)
+        {
+          dup2 (out, 1);
+          close (out);
+        }
+
+      return execvp (cmd->argv [0], (char * const *)cmd->argv);
+    }
+
+  return pid;
+}
+int fork_pipes (int n, struct command *cmd)
+{
+  int i;
+  pid_t pid;
+  int in, fd [2];
+
+  /* The first process should get its input from the original file descriptor 0.  */
+  in = 0;
+
+  /* Note the loop bound, we spawn here all, but the last stage of the pipeline.  */
+  for (i = 0; i < n - 1; ++i)
+    {
+      pipe (fd);
+
+      /* f [1] is the write end of the pipe, we carry `in` from the prev iteration.  */
+      spawn_proc (in, fd [1], cmd + i);
+
+      /* No need for the write and of the pipe, the child will write here.  */
+      close (fd [1]);
+
+      /* Keep the read end of the pipe, the next child will read from there.  */
+      in = fd [0];
+    }
+
+  /* Last stage of the pipeline - set stdin be the read end of the previous pipe
+     and output to the original file descriptor 1. */  
+  if (in != 0)
+    dup2 (in, 0);
+
+  /* Execute the last stage with the current process. */
+  printf("%s\n", cmd[i].argv[0]);
+  return execvp (cmd [i].argv [0], (char * const *)cmd [i].argv);
 }
