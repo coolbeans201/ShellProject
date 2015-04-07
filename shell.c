@@ -1,9 +1,6 @@
 #include "shell.h"
-struct command
-{
-  const char **argv;
-};
 char** newTextArray; //copied words
+char*** ourCommands;
 int words = 0; //number of words
 extern char** environ; //environment variables
 char** aliases; //alias names and values
@@ -16,8 +13,6 @@ int savedOutput; //output channel
 int savedInput; //input channel
 int savedError; //error channel
 int addedWords = 0;
-int spawn_proc(int in, int out, struct command *cmd);
-int fork_pipes (int n, struct command *cmd);
 void shell_init()
 {
 	myPath = malloc(500 * sizeof(char));
@@ -1494,7 +1489,8 @@ void execute()
 			{ 
 				endOfCommand = words;
 			}
-			struct command cmd[numberOfCommands];
+			struct command* cmd = malloc(numberOfCommands * sizeof(struct command));
+			struct command* cmd2 = malloc(numberOfCommands * sizeof(struct command));
 			//printTextArray();
 			//printf("%d\n", numberOfCommands);
 			for(i = 0; i < numberOfCommands; i++)
@@ -1505,18 +1501,15 @@ void execute()
 					int j = 0;
 					for(j = 0; j < pipes[0]; j++)
 					{
-						arguments[j] = textArray[j];
+						arguments[j] = textArray[j]; //copy arguments
 					}
-					arguments[pipes[0]] = (char*)0;
+					arguments[pipes[0]] = (char*)0; //null terminator
 					cmd[0].argv = arguments;
-					for(j = 0; j < pipes[0]; j++)
-					{
-						printf("%s\n", cmd[0].argv[j]);
-					}
+					//printf("%s\n", cmd[0].argv[0]);
 				}
 				else if(i != (numberOfCommands - 1)) //in the middle
 				{
-					printf("%d\n", pipes[i] - pipes[i - 1]);
+					//printf("%d\n", pipes[i] - pipes[i - 1]);
 					const char* arguments[pipes[i] - pipes[i - 1]];
 					int j;
 					for(j = 0; j < pipes[i] - pipes[i - 1] - 1; j++)
@@ -1525,35 +1518,30 @@ void execute()
 					}
 					arguments[pipes[i] - pipes[i - 1] - 1] = (char *)0; //null terminator
 					cmd[i].argv = arguments;
-					for(j = 0; j < pipes[i] - pipes[i - 1] - 1; j++)
-					{
-						printf("%s\n", cmd[i].argv[j]);
-					}
 				}
 				else //at the end
 				{
-					printf("%d\n", endOfCommand - pipes[i - 1]);
+					//printf("%d\n", endOfCommand - pipes[i - 1]);
 					const char* arguments[endOfCommand - pipes[i - 1]];
 					int j;
-					for(j = 0; i < endOfCommand - pipes[i - 1] - 1; j++)
+					for(j = 0; j < endOfCommand - pipes[i - 1] - 1; j++)
 					{
 						arguments[j] = textArray[pipes[i - 1] + 1 + j]; //copy arguments
 					}
 					arguments[endOfCommand - pipes[i - 1] - 1] = (char *)0; //null terminator
 					cmd[numberOfCommands - 1].argv = arguments;
-					for(j = 0; j < endOfCommand - pipes[i - 1] - 1; j++)
-					{
-						printf("%s\n", cmd[numberOfCommands - 1].argv[j]);
-					}
+					//printf("%s\n", cmd[numberOfCommands - 1].argv[0]);
 				}
+				memcpy(cmd2, cmd, (i + 1) * sizeof(struct command));				
 			}
-			//int result = fork_pipes(numberOfCommands, cmd);
-			//if(result == -1) //error
-			//{
-				//perror("Error executing.");
-				//printf("Error at line %d\n", __LINE__);
-				//return;
-			//}
+			//printf("%s\n", cmd2[1].argv[0]);
+			int result = fork_pipes(numberOfCommands, cmd2);
+			if(result == -1) //error
+			{
+				perror("Error executing.");
+				printf("Error at line %d\n", __LINE__);
+				return;
+			}
 		}
 	}
 }
@@ -1801,7 +1789,7 @@ char *fixText(char *orig, char *rep, char *with) {
 int spawn_proc (int in, int out, struct command *cmd)
 {
   pid_t pid;
-
+	printf("Here2\n");
   if ((pid = fork ()) == 0)
     {
       if (in != 0)
@@ -1823,6 +1811,7 @@ int spawn_proc (int in, int out, struct command *cmd)
 }
 int fork_pipes (int n, struct command *cmd)
 {
+  //printf("%s\n", cmd[0].argv[0]);
   int i;
   pid_t pid;
   int in, fd [2];
@@ -1833,8 +1822,8 @@ int fork_pipes (int n, struct command *cmd)
   /* Note the loop bound, we spawn here all, but the last stage of the pipeline.  */
   for (i = 0; i < n - 1; ++i)
     {
+	  printf("There\n");
       pipe (fd);
-
       /* f [1] is the write end of the pipe, we carry `in` from the prev iteration.  */
       spawn_proc (in, fd [1], cmd + i);
 
@@ -1851,6 +1840,5 @@ int fork_pipes (int n, struct command *cmd)
     dup2 (in, 0);
 
   /* Execute the last stage with the current process. */
-  printf("%s\n", cmd[i].argv[0]);
   return execvp (cmd [i].argv [0], (char * const *)cmd [i].argv);
 }
