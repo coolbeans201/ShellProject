@@ -39,7 +39,7 @@ command:
 		|append_case
 		|standard_error_redirect_case
 		|standard_error_redirect_case2
-		|error_case
+		|error_case        
 		|words
 		|pipes
 		|pipe2_case
@@ -67,7 +67,7 @@ unsetenv_case:
 							{
 								unsetenv_function(textArray[getWords() - 1], 1);
 							};
-setenv_case:
+setenv_case:             
 		SETENV word_case word_case   
 							{
 								setenv_function(textArray[getWords() - 2], textArray [getWords() - 1], 1);		
@@ -85,7 +85,7 @@ alias_case:
 unalias_case:
 		UNALIAS word_case       
 							{
-								unalias_function(textArray[getWords() - 1]);
+								unalias_function(textArray[getWords() - 1], 1);                              
 							}
 bye_case:
 		BYE				   
