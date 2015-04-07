@@ -1159,6 +1159,7 @@ void execute()
 	int indexOfStandardError2 = 0;
 	int indexOfAmpersand = 0; 
 	int endOfCommand = 0;
+	int numberOfSpaces = 0;
 	int numberOfGlobs = 0;
 	int child;
 	if((child = fork()) == -1) //error
@@ -1178,6 +1179,62 @@ void execute()
 	}
 	else //in child
 	{
+		int* spaces = malloc(300 * sizeof(int));
+		if(spaces == (int*) NULL) //error
+		{
+			perror("Error with memory allocation.");
+			printf("Error at line %d\n", __LINE__);
+			reset();
+			return;
+		}
+		for(i = 0; i < words; i++)
+		{
+			if(strchr(textArray[i], ' ') != NULL) //there's a space
+			{
+				spaces[numberOfSpaces] = i;
+				numberOfSpaces++;
+			}
+		}
+		for(i = 0; i < numberOfSpaces; i++)
+		{
+			char ** ep;
+			int index;
+			int j;
+			for(ep = environ; *ep!= NULL; ep++)
+			{
+				char* theVariable = malloc((strlen(*ep) + 1) * sizeof(char));
+				if(theVariable == (char*) NULL) //error
+				{
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					reset();
+					return;
+				}
+				strcpy(theVariable, *ep); //copy environment variable
+				for(j = 0; j < strlen(theVariable); j++)
+				{
+					if(theVariable[j] == '=') //found =
+					{
+						index = j;
+						break;
+					}
+				}
+				char* result = malloc((strlen(theVariable) - index + 1) * sizeof(char));
+				if(result == (char*) NULL) //error
+				{
+					perror("Error with memory allocation.");
+					printf("Error at line %d\n", __LINE__);
+					reset();
+					return;
+				}
+				strcpy(result, &theVariable[index + 1]); //take everything after =
+				if(strcmp(textArray[spaces[i]], result) == 0) //there's a match
+				{
+					textArrayAliasExpansion(textArray[spaces[i] + addedWords], spaces[i] + addedWords); //expand to get rid of spaces
+					break;
+				}
+			}
+		}
 		int* pipes = malloc(300 * sizeof(int));
 		if(pipes == (int*) NULL) //error
 		{
@@ -1194,6 +1251,7 @@ void execute()
 			reset();
 			return;
 		}
+		addedWords = 0;
 		for(i = 0; i < words; i++)
 		{
 			if(strcmp(textArray[i], "|") == 0) //it's a pipe
