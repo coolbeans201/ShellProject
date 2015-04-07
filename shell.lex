@@ -17,7 +17,6 @@ bye return BYE;
 \n return NEWLINE;
 [ \t]+ /* ignore end of line */;
 "${"[-*?@!#%,'=~._:/:AAN-Za-z0-9]+"}" return ENVIRONMENTVARIABLE; 
-\\ return SLASH;
 "<" return READFROM;
 ">" return WRITETO;
 "|" return PIPE;
