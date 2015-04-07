@@ -1121,17 +1121,17 @@ void execute()
 			}
 			else{
 				int j;
-				if(strcmp(aliasResolve(textArray[pipes[i] + 1]), "<LOOP>") == 0) //infinite alias expansion
+				if(strcmp(aliasResolve(textArray[pipes[i - 1] + 1]), "<LOOP>") == 0) //infinite alias expansion
 				{
 					perror("Infinite alias expansion.");
 					printf("Error at line %d\n", __LINE__);
 					reset();
 					return;
 				}
-				else if(strcmp(aliasResolve(textArray[pipes[i] + 1]), "") != 0) //alias has a value
+				else if(strcmp(aliasResolve(textArray[pipes[i - 1] + 1]), "") != 0) //alias has a value
 				{
-					strcpy(textArray[pipes[i] + 1], aliasResolve(textArray[pipes[i] + addedWords + 1]));
-					textArrayAliasExpansion(textArray[pipes[i] + addedWords + 1], pipes[i] + addedWords);
+					strcpy(textArray[pipes[i - 1] + 1 + addedWords], aliasResolve(textArray[pipes[i - 1] + addedWords + 1]));
+					textArrayAliasExpansion(textArray[pipes[i - 1] + 1 + addedWords], pipes[i - 1] + 1 + addedWords);
 				}
 			}
 		}
@@ -1369,7 +1369,6 @@ void execute()
 					//printf("%s\n", cmd[numberOfCommands - 1].argv[1]);
 				}		
 			}
-			//printTextArray();
 			int result = fork_pipes(numberOfCommands, cmd);
 			if(result == -1) //error
 			{
@@ -1623,9 +1622,9 @@ char *fixText(char *orig, char *rep, char *with) {
 }
 int spawn_proc (int in, int out, struct command *cmd)
 {
-  pid_t pid;
+	pid_t pid;
 	//printf("Here2\n");
-  if ((pid = fork ()) == 0)
+	if ((pid = fork ()) == 0)
     {
       if (in != 0)
         {
@@ -1641,12 +1640,13 @@ int spawn_proc (int in, int out, struct command *cmd)
 
       return execvp (cmd->argv [0], (char * const *)cmd->argv);
     }
-
   return pid;
 }
 int fork_pipes (int n, struct command *cmd)
 {
-	//printf("%s\n", cmd[0].argv[0]);
+	printf("%s\n", cmd[0].argv[0]);
+	printf("%s\n", cmd[1].argv[0]);
+	printf("%s\n", cmd[1].argv[1]);
 	int i;
 	pid_t pid;
 	int in, fd [2];
