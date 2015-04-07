@@ -19,6 +19,10 @@
   #define AT __FILE__ ":" TOSTRING(__LINE__)
   #define TRUE 1
   #define FALSE 0
+  struct command
+  {
+      const char **argv;
+  };
   void unsetenv_function(char *text, int flag);
   void unalias_function (char *text, int flag);
   void setenv_function (char *text, char *text2, int flag);
@@ -52,5 +56,7 @@
   void printTextArray();
   char *fixText(char *orig, char *rep, char *with);
   void textArrayAliasExpansion(char* text, int position);
+  int spawn_proc(int in, int out, struct command *cmd);
+  int fork_pipes (int n, struct command *cmd);
   char** textArray; //words
   #endif
