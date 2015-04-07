@@ -704,7 +704,7 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 			}
 			exit(0);
 		}
-		else //middle pipes
+		else if (pid[j] == 0) //middle pipes
 		{
 			int result = dup2(myPipes[j - 1][0], STDIN_FILENO);
 			if(result == -1) //error
@@ -751,22 +751,31 @@ void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
 			}
 			exit(0);
 		}
-	}
-	int m;
-	int n;
-	for(m = 0; m < numberOfPipes; m++)
-	{
-		for(n = 0; n < 2; n++)
+		else if(pid [j] == -1) //error
 		{
-			int result = close(myPipes[m][n]);
-			if(result == -1) //error
+			perror("Error forking");
+			printf("Error at line %d\n", __LINE__);
+			return;
+		}
+		else
+		{
+			int m;
+			int n;
+			for(m = 0; m < numberOfPipes; m++)
 			{
-				perror ("Error closing pipe end.");
-				printf ("Error at line %d\n", __LINE__);
-				return;
+				for(n = 0; n < 2; n++)
+				{
+					int result = close(myPipes[m][n]);
+					if(result == -1) //error
+					{
+						perror ("Error closing pipe end.");
+						printf ("Error at line %d\n", __LINE__);
+						return;
+					}
+				}
+				wait((int *) 0);
 			}
 		}
-		wait((int *) 0);
 	}
 }
 int globerr(const char *path, int eerrno) //error
@@ -1179,6 +1188,21 @@ void execute()
 	}
 	else //in child
 	{
+		if(strcmp(textArray[0], "echo") == 0 && strcmp(textArray[1], "-e") != 0) //echo command without -e
+		{
+			char* result = malloc((strlen(textArray[1]) + 1) * sizeof(char));
+			if(result == (char*)NULL)
+			{
+				perror("Error with memory allocation.");
+				printf("Error at line %d\n", __LINE__);
+				reset();
+				return;
+			}
+			strcpy(result, fixText(textArray[1], "\\\\", "\\"));
+			strcpy(textArray[1], result);
+			strcpy(result, fixText(textArray[1], "\\\"", "\""));
+			strcpy(textArray[1], result);
+		}
 		int* spaces = malloc(300 * sizeof(int));
 		if(spaces == (int*) NULL) //error
 		{
@@ -1435,6 +1459,30 @@ void execute()
 		}
 		else //perform piping
 		{
+			if(indexOfRead != 0) //take everything up until this 
+			{
+				endOfCommand = indexOfRead;
+			}
+			else if(indexOfWrite != 0) //no read from
+			{
+				endOfCommand = indexOfWrite;
+			}
+			else if(indexOfAppend != 0) //no read from
+			{
+				endOfCommand = indexOfAppend;
+			}
+			else if(indexOfStandardError2 != 0) //no other I/O redirection
+			{
+				endOfCommand = indexOfStandardError2;
+			}
+			else if(indexOfStandardError1 != 0) //no other I/O redirection
+			{
+				endOfCommand = indexOfStandardError1;
+			}
+			else if(indexOfAmpersand != 0) //no I/O redirection
+			{
+				endOfCommand = indexOfAmpersand;
+			}
 			pipe_function(numberOfCommands, pipes, endOfCommand);
 		}
 	}
@@ -1636,4 +1684,47 @@ void textArrayAliasExpansion(char* text, int position)
 	newTextArray[words + 1] = NULL; //null entry
 	textArray = newTextArray;
 	addedWords += j - 1; //how many words we added
+}
+char *fixText(char *orig, char *rep, char *with) {
+    char *result; // the return string
+    char *ins;    // the next insert point
+    char *tmp;    // varies
+    int len_rep;  // length of rep
+    int len_with; // length of with
+    int len_front; // distance between rep and end of last rep
+    int count;    // number of replacements
+
+    if (!orig)
+        return NULL;
+    if (!rep)
+        rep = "";
+    len_rep = strlen(rep);
+    if (!with)
+        with = "";
+    len_with = strlen(with);
+
+    ins = orig;
+    for (count = 0; tmp = strstr(ins, rep); ++count) {
+        ins = tmp + len_rep;
+    }
+
+    // first time through the loop, all the variable are set correctly
+    // from here on,
+    //    tmp points to the end of the result string
+    //    ins points to the next occurrence of rep in orig
+    //    orig points to the remainder of orig after "end of rep"
+    tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
+
+    if (!result)
+        return NULL;
+
+    while (count--) {
+        ins = strstr(orig, rep);
+        len_front = ins - orig;
+        tmp = strncpy(tmp, orig, len_front) + len_front;
+        tmp = strcpy(tmp, with) + len_with;
+        orig += len_front + len_rep; // move to next "end of rep"
+    }
+    strcpy(tmp, orig);
+    return result;
 }
