@@ -413,7 +413,7 @@ void cd_function2(char *text)
 }
 void standard_error_redirect_function()
 {
-	savedError = dup(2);
+	savedError = dup(2); //get current standard error
 	int result = dup2(1, 2); //redirect output to standard error
 	if (result == -1) //error
 	{
@@ -439,7 +439,7 @@ void standard_error_redirect_function2(char *text)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	savedError = dup(2);
+	savedError = dup(2); //get current standard error
 	int result = dup2(out, 2); //redirect standard error to output file
 	if (result == -1) //error
 	{
@@ -451,14 +451,13 @@ void standard_error_redirect_function2(char *text)
 void write_to_function(char *text)
 {
 	int out = open(text, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
-	flock(out, LOCK_UN);
 	if(out == -1) //error
 	{
 		perror("File not created");
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	savedOutput = dup(1);
+	savedOutput = dup(1); //get current output
 	int result = dup2(out, 1); //redirect output to file
 	if (result == -1) //error
 	{
@@ -476,7 +475,7 @@ void read_from_function (char *text)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	savedInput = dup(0);
+	savedInput = dup(0); //get current input
 	int result = dup2(in, 0); //redirect input from file
 	if (result == -1) //error
 	{
@@ -777,7 +776,8 @@ int globerr(const char *path, int eerrno) //error
 	return 0;	/* let glob() keep going */
 }
 
-void changeGroupedSlashesIntoOneSlash(char* string){ //removes extra slashes in the beginning of a string so ////home -> /home, ./////home -> ./home
+void changeGroupedSlashesIntoOneSlash(char* string)
+{ //removes extra slashes in the beginning of a string so ////home -> /home, ./////home -> ./home
 	int i = 0;
 	int size = strlen(string);
 	for(i = 0; i < size;){
@@ -793,7 +793,8 @@ void changeGroupedSlashesIntoOneSlash(char* string){ //removes extra slashes in 
 	}
 }
 
-char* aliasResolve(char* alias){//takes in name of alias and returns the final resolved value of that alias name or <LOOP> if it loops infinitely,
+char* aliasResolve(char* alias)
+{//takes in name of alias and returns the final resolved value of that alias name or <LOOP> if it loops infinitely,
 	//if string passed in argument is not an alias then it returns empty string
 	char* name = malloc(300*sizeof(char)); //declares name and value strings used to resolve
 	char* value;
@@ -803,12 +804,17 @@ char* aliasResolve(char* alias){//takes in name of alias and returns the final r
 	nameTracker[trackSize] = name;
 	trackSize++;
 	value = getAliasValue(name);//gets initial value
-	if(strcmp(value, "") == 0)//if initial alias name does not resolve to anything(resolves to empty string), return empty string
+	if(strcmp(value, "") == 0)
+	{//if initial alias name does not resolve to anything(resolves to empty string), return empty string
 		return value;
-	while(value[0] != '\0'){ //loop runs until value cannot be further resolved into an additional alias
+	}
+	while(value[0] != '\0')
+	{ //loop runs until value cannot be further resolved into an additional alias
 		int i;
-		for(i = 0; i < trackSize; i++){
-			if(strcmp(value, nameTracker[i]) == 0){ //returns "<LOOP>" if the alias generates an infinite loop
+		for(i = 0; i < trackSize; i++)
+		{
+			if(strcmp(value, nameTracker[i]) == 0)
+			{ //returns "<LOOP>" if the alias generates an infinite loop
 				strcpy(value, "<LOOP>");
 				return value;
 			}
@@ -823,21 +829,26 @@ char* aliasResolve(char* alias){//takes in name of alias and returns the final r
 	return value;
 }
 
-char* getAliasValue(char* aliasName){//returns the value of an alias when given the name as an argument,returns empty string if the alias name does not exist
+char* getAliasValue(char* aliasName)
+{//returns the value of an alias when given the name as an argument,returns empty string if the alias name does not exist
 	int i = 0;
 	char* value = malloc(300*sizeof(char));
 	value[0] = '\0';
-	for(i = 0; i < aliasCount; i++){//goes through aliases arary
+	for(i = 0; i < aliasCount; i++)
+	{//goes through aliases arary
 		int j = 0;
 		int eqindex = strlen(aliases[i]);
-		for(j = 0; j < eqindex; j++){
-			if(aliases[i][j] == '='){//finds the = character which separates name and value
+		for(j = 0; j < eqindex; j++)
+		{
+			if(aliases[i][j] == '=')
+			{//finds the = character which separates name and value
 				eqindex = j;
 			}
 		}
 		char* possibleNameMatch = malloc(300*sizeof(char));
 		strncpy(possibleNameMatch, aliases[i], eqindex);//copies everything up to the = value into possibleNameMatch
-		if(strcmp(aliasName, possibleNameMatch) == 0){//if name is possibleNameMatch then copies everything after the = into the return value
+		if(strcmp(aliasName, possibleNameMatch) == 0)
+		{//if name is possibleNameMatch then copies everything after the = into the return value
 			strcpy(value, &aliases[i][eqindex+1]);
 			return value;
 		}
@@ -1070,19 +1081,25 @@ char* tildeExpansion(char* text)
 		return text;
 	}
 }
-void changeGroupedSpacesIntoOneSpace(char* string){ //removes extra spaces in the word so that each word has one space between it
+void changeGroupedSpacesIntoOneSpace(char* string)
+{ //removes extra spaces in the word so that each word has one space between it
 	int i = 0;
 	int size = strlen(string);
-	for(i = 0; i < size;){
-		if(string[i] == ' ' && string[i+1] == ' '){
+	for(i = 0; i < size;)
+	{
+		if(string[i] == ' ' && string[i+1] == ' ')
+		{
 			int j = i + 1;
-			for(j = i; j <=size; j++){
+			for(j = i; j <=size; j++)
+			{
 				string[j] = string[j+1];
 			}
 			size--;
 		}
 		else
+		{
 			i++;
+		}
 	}
 }
 void append_function(char* text)
@@ -1094,7 +1111,7 @@ void append_function(char* text)
 		printf("Error at line %d\n", __LINE__);
 		return;
 	}
-	savedOutput = dup(1);
+	savedOutput = dup(1); //save current output
 	int result = dup2(out, 1); //redirect output to file
 	if (result == -1) //error
 	{
@@ -1128,7 +1145,7 @@ void reset()
 	}
 	words = 0;
 	addedWords = 0;
-	memset(textArray, 0, sizeof(textArray));
+	memset(textArray, 0, sizeof(textArray)); //clear contents
 }
 void execute()
 {
@@ -1153,7 +1170,8 @@ void execute()
 	}	
 	if(child != 0) //in parent
 	{
-		if(indexOfAmpersand == 0){
+		if(indexOfAmpersand == 0) //wait for process to finish executing
+		{
 			wait((int *) 0);
 		}
 		reset();
@@ -1232,7 +1250,7 @@ void execute()
 		for(i = 0; i < numberOfGlobs; i++)//takes care of globbing
 		{
 			char* result = malloc((strlen(getDirectories(textArray[globs[i] + addedWords])) + 1) * sizeof(char));
-			if(result == (char*) NULL)
+			if(result == (char*) NULL) //error
 			{
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
@@ -1240,15 +1258,15 @@ void execute()
 				return;
 			}
 			strcpy(result, getDirectories(textArray[globs[i] + addedWords]));
-			if(strcmp(result, "") == 0){
-				printf("No matches found, command not executed\n");
+			if(strcmp(result, "") == 0) //error
+			{
+				perror("No matches, so not executing.");
+				printf("Error at line %d\n", __LINE__);
 				reset();
 				return;
 			}
-			//printf("%s\n", result);
 			word3_function(result, globs[i] + addedWords);
 		}
-		
 		numberOfPipes = 0;
 		for(i = 0; i < words; i++)
 		{
@@ -1277,12 +1295,11 @@ void execute()
 			{
 				indexOfStandardError1 = i;
 			}
-			if(strcmp(textArray[i], "&") == 0)
+			if(strcmp(textArray[i], "&") == 0) //ampersand
 			{
 				indexOfAmpersand = i;
 			}
 		}
-		
 		if(indexOfRead != 0) //there's a read present
 		{
 			read_from_function(textArray[indexOfRead + 1]); 
@@ -1459,14 +1476,17 @@ void word3_function(char* text, int position)
 	addedWords += j - 1; //how many words we added
 }
 
-void printTextArray(){
+void printTextArray()
+{
 	int i;
-	for(i = 0; i < words; i++){
+	for(i = 0; i < words; i++)
+	{
 		//printf("%s\n", textArray[i]);
 	}
 }
 
-void textArrayAliasExpansion(char* text, int position){
+void textArrayAliasExpansion(char* text, int position)
+{
 	char* saved3;
 	char* result = malloc((strlen(text) + 1) * sizeof(char)); //allocate space
 	if(result == (char*) NULL) //error
