@@ -21,7 +21,7 @@
   #define FALSE 0
   struct command
   {
-      const char **argv;
+      char **argv;
   };
   void unsetenv_function(char *text, int flag);
   void unalias_function (char *text, int flag);
@@ -36,7 +36,6 @@
   void read_from_function (char *text);
   void word_function (char *text);
   void alias_function2(void);
-  void pipe_function(int numberOfPipes, int* pipes, int endOfCommand);
   int getWords(void);
   int getAliasCount(void);
   int globerr(const char* path, int eerrno);
