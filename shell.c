@@ -1,6 +1,5 @@
 #include "shell.h"
 char** newTextArray; //copied words
-char*** ourCommands;
 int words = 0; //number of words
 extern char** environ; //environment variables
 char** aliases; //alias names and values
@@ -1130,13 +1129,10 @@ void execute()
 				}
 				else if(strcmp(aliasResolve(textArray[pipes[i - 1] + 1 + addedWords]), "") != 0) //alias has a value
 				{
-					//printf("R: %d\n", i);
 					strcpy(textArray[pipes[i - 1] + 1 + addedWords], aliasResolve(textArray[pipes[i - 1] + addedWords + 1]));
 					textArrayAliasExpansion(textArray[pipes[i - 1] + 1 + addedWords], pipes[i - 1] + 1 + addedWords);
 				}
 			}
-			//printf("NC: %d\n", i);
-			//printTextArray();
 		}
 		numberOfGlobs = 0;
 		addedWords = 0;
@@ -1175,7 +1171,6 @@ void execute()
 			if(strcmp(textArray[i], "|") == 0) //it's a pipe
 			{
 				pipes[numberOfPipes] = i;
-				//printf("%d\n", i);
 				numberOfPipes++;
 			}
 			if(strcmp(textArray[i], "<") == 0) //read in
@@ -1266,7 +1261,6 @@ void execute()
 			for(i = 0; i < endOfCommand; i++)
 			{
 				arguments[i] = textArray[i]; //copy arguments
-				//printf("%s\n", arguments[i]);
 			}
 			arguments[endOfCommand] = (char *)0; //null terminator
 			int result2 = execvp(arguments[0], arguments);
@@ -1309,8 +1303,6 @@ void execute()
 				endOfCommand = words;
 			}
 			struct command* cmd = malloc(numberOfCommands * sizeof(struct command));
-			struct command* cmd2 = malloc(numberOfCommands * sizeof(struct command));
-			//printf("%d\n", numberOfCommands);
 			for(i = 0; i < numberOfCommands; i++)
 			{
 				if(i == 0) //first command
@@ -1323,18 +1315,29 @@ void execute()
 					}
 					arguments[pipes[0]] = (char*)0; //null terminator
 					cmd[0].argv = malloc(j*sizeof(char*));
+					if(cmd[0].argv == (char**)NULL) //error
+					{
+						perror("Error with memory allocation.");
+						printf("Error at line %d\n", __LINE__);
+						reset();
+						return;
+					}
 					int k = 0;
 					for(k = 0; k < j; k++){
 						cmd[0].argv[k] = malloc((strlen(arguments[k]) + 1) * sizeof(char));
+						if(cmd[0].argv[k] == (char*) NULL) //error
+						{
+							perror("Error with memory allocation.");
+							printf("Error at line %d\n", __LINE__);
+							reset();
+							return;
+						}
 						strcpy(cmd[0].argv[k], arguments[k]);
 					}
 					cmd[0].argv[j] = (char*) 0;
-					//cmd[0].argv = arguments;
-					//printf("%s\n", cmd[0].argv[0]);
 				}
 				else if(i != (numberOfCommands - 1)) //in the middle
 				{
-					//printf("%d\n", pipes[i] - pipes[i - 1]);
 					char* arguments[pipes[i] - pipes[i - 1]];
 					int j;
 					for(j = 0; j < pipes[i] - pipes[i - 1] - 1; j++)
@@ -1343,17 +1346,29 @@ void execute()
 					}
 					arguments[pipes[i] - pipes[i - 1] - 1] = (char *)0; //null terminator
 					cmd[i].argv = malloc(j*sizeof(char*));
+					if(cmd[i].argv == (char**)NULL) //error
+					{
+						perror("Error with memory allocation.");
+						printf("Error at line %d\n", __LINE__);
+						reset();
+						return;
+					}
 					int k = 0;
 					for(k = 0; k < j; k++){
 						cmd[i].argv[k] = malloc((strlen(arguments[k]) + 1) * sizeof(char));
+						if(cmd[i].argv[k] == (char*) NULL) //error
+						{
+							perror("Error with memory allocation.");
+							printf("Error at line %d\n", __LINE__);
+							reset();
+							return;
+						}
 						strcpy(cmd[i].argv[k], arguments[k]);
 					}
 					cmd[i].argv[j] = (char*) 0;
 				}
 				else //at the end
 				{
-					//printf("%s\n", cmd[0].argv[0]);
-					//printf("%d\n", endOfCommand - pipes[i - 1]);
 					char* arguments[endOfCommand - pipes[i - 1]];
 					int j;
 					for(j = 0; j < endOfCommand - pipes[i - 1] - 1; j++)
@@ -1362,9 +1377,23 @@ void execute()
 					}
 					arguments[endOfCommand - pipes[i - 1] - 1] = (char *)0; //null terminator
 					cmd[numberOfCommands - 1].argv = malloc(j*sizeof(char*));
+					if(cmd[numberOfCommands - 1].argv == (char**) NULL) //error
+					{
+						perror("Error with memory allocation.");
+						printf("Error at line %d\n", __LINE__);
+						reset();
+						return;
+					}
 					int k = 0;
 					for(k = 0; k < j; k++){
 						cmd[numberOfCommands - 1].argv[k] = malloc((strlen(arguments[k]) + 1) * sizeof(char));
+						if(cmd[numberOfCommands - 1].argv[k] == (char*) NULL) //error
+						{
+							perror("Error with memory allocation.");
+							printf("Error at line %d\n", __LINE__);
+							reset();
+							return;
+						}
 						strcpy(cmd[numberOfCommands - 1].argv[k], arguments[k]);
 					}
 					cmd[numberOfCommands - 1].argv[j] = (char*) 0;
@@ -1438,7 +1467,6 @@ void word3_function(char* text, int position)
 	char* saved4;
 	char* pch2 = strtok_r(result2, "$", &saved4);
 	int j = 0;
-	int originalWords = words;
 	words--; //since we are overwriting an entry, need to decrement words beforehand
 	while(pch2 != NULL)
 	{
@@ -1542,7 +1570,6 @@ void textArrayAliasExpansion(char* text, int position)
 	char* saved4;
 	char* pch2 = strtok_r(result2, " ", &saved4);
 	int j = 0;
-	int originalWords = words;
 	words--; //since we are overwriting an entry, need to decrement words beforehand
 	while(pch2 != NULL)
 	{
@@ -1624,7 +1651,6 @@ char *fixText(char *orig, char *rep, char *with) {
 int spawn_proc (int in, int out, struct command *cmd)
 {
 	pid_t pid;
-	//printf("Here2\n");
 	if ((pid = fork ()) == 0)
     {
       if (in != 0)
@@ -1645,13 +1671,6 @@ int spawn_proc (int in, int out, struct command *cmd)
 }
 int fork_pipes (int n, struct command *cmd)
 {
-	//printf("%s\n", cmd[0].argv[0]);
-	//printf("%s\n", cmd[0].argv[1]);
-	//printf("%s\n", cmd[0].argv[2]);
-	//printf("%s\n", cmd[0].argv[3]);
-	//printf("%s\n", cmd[0].argv[4]);
-	//printf("%s\n", cmd[1].argv[0]);
-	//printf("%s\n", cmd[1].argv[1]);
 	int i;
 	pid_t pid;
 	int in, fd [2];
