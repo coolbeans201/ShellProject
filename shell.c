@@ -594,191 +594,7 @@ char* getDirectories(char* textmatch)
 	}
 	return "";
 }
-void pipe_function(int numberOfPipes, int* pipes, int endOfCommand)
-{
-	pid_t pid[numberOfPipes];
-	int** myPipes = malloc(numberOfPipes * sizeof(int *));
-	if (myPipes == (int**) NULL) //error
-	{
-		perror ("Error with memory allocation.");
-		printf ("Error at line %d\n", __LINE__);
-		return;
-	}
-	int i;
-	for(i = 0; i < numberOfPipes; i++)
-	{
-		myPipes[i] = malloc(2 * sizeof(int));
-		if (myPipes[i] == (int*) NULL) //error
-		{
-			perror ("Error with memory allocation.");
-			printf ("Error at line %d\n", __LINE__);
-			return;
-		}
-		int result = pipe(myPipes[i]);
-		if(result == -1) //error
-		{
-			perror ("Error piping.");
-			printf ("Error at line %d\n", __LINE__);
-			return;
-		}
-	}
-	int j;
-	for(j = 0; j < numberOfPipes; j++)
-	{
-		pid[j] = fork();
-		if(pid[j] == 0 && j == 0) //first pipe
-		{
-			int k;
-			int l;
-			for(k = 0; k < numberOfPipes; k++)
-			{
-				for(l = 0; l < 2; l++)
-				{
-					int result = close(myPipes[k][l]); //close everything
-					if(result == -1) //error
-					{
-						perror ("Error closing pipe end.");
-						printf ("Error at line %d\n", __LINE__);
-						return;
-					}
-				}
-			}
-			char* arguments[pipes[0] + 1];
-			int i;
-			for(i = 0; i < pipes[0]; i++)
-			{
-				arguments[i] = textArray[i]; //copy arguments
-			}
-			arguments[pipes[0]] = (char *)0; //null terminator
-			int result = execvp(textArray[0], arguments);
-			if(result == -1) //error
-			{
-				perror("Error executing.");
-				printf("Error at line %d\n", __LINE__);
-				return;
-			}
-		}
-		else if(pid[j] == 0 && j == (numberOfPipes - 1)) //last pipe
-		{
-			int result = dup2(myPipes[j - 1][0], STDIN_FILENO); //read from previous process
-			if(result == -1) //error
-			{
-				perror ("Error reading from previous process.");
-				printf ("Error at line %d\n", __LINE__);
-				return;
-			}
-			result = dup2(myPipes[j][1], STDOUT_FILENO); //write to parent
-			if(result == -1) //error
-			{
-				perror ("Error write to first process.");
-				printf ("Error at line %d\n", __LINE__);
-				return;
-			}
-			int k;
-			int l;
-			for(k = 0; k < numberOfPipes; k++)
-			{
-				for(l = 0; l < 2; l++)
-				{
-					int result = close(myPipes[k][l]); //close everything
-					if(result == -1) //error
-					{
-						perror ("Error closing pipe end.");
-						printf ("Error at line %d\n", __LINE__);
-						return;
-					}
-				}
-			}
-			char* arguments[endOfCommand - pipes[j] + 1];
-			int i;
-			for(i = 0; i < endOfCommand - pipes[j]; i++)
-			{
-				arguments[i] = textArray[endOfCommand - pipes[j] + 1 + i]; //copy arguments
-			}
-			arguments[endOfCommand - pipes[j]] = (char *)0; //null terminator
-			result = execvp(arguments[0], arguments);
-			if(result == -1) //error
-			{
-				perror("Error executing.");
-				printf("Error at line %d\n", __LINE__);
-				return;
-			}
-			exit(0);
-		}
-		else if (pid[j] == 0) //middle pipes
-		{
-			int result = dup2(myPipes[j - 1][0], STDIN_FILENO);
-			if(result == -1) //error
-			{
-				perror ("Error reading from previous process.");
-				printf ("Error at line %d\n", __LINE__);
-				return;
-			}
-			result = dup2(myPipes[j][1], STDOUT_FILENO);
-			if(result == -1) //error
-			{
-				perror ("Error write to first process.");
-				printf ("Error at line %d\n", __LINE__);
-				return;
-			}
-			int k;
-			int l;
-			for(k = 0; k < numberOfPipes; k++)
-			{
-				for(l = 0; l < 2; l++)
-				{
-					int result = close(myPipes[k][l]); //close everything
-					if(result == -1) //error
-					{
-						perror ("Error closing pipe end.");
-						printf ("Error at line %d\n", __LINE__);
-						return;
-					}
-				}
-			}
-			char* arguments[pipes[j] - pipes[j - 1] + 1];
-			int i;
-			for(i = 0; i < pipes[j] - pipes[j - 1]; i++)
-			{
-				arguments[i] = textArray[pipes[j] - pipes[j - 1] + 1 + i]; //copy arguments
-			}
-			arguments[pipes[j] - pipes[j - 1]] = (char *)0; //null terminator
-			result = execvp(arguments[0], arguments);
-			if(result == -1) //error
-			{
-				perror("Error executing.");
-				printf("Error at line %d\n", __LINE__);
-				return;
-			}
-			exit(0);
-		}
-		else if(pid [j] == -1) //error
-		{
-			perror("Error forking");
-			printf("Error at line %d\n", __LINE__);
-			return;
-		}
-		else
-		{
-			int m;
-			int n;
-			for(m = 0; m < numberOfPipes; m++)
-			{
-				for(n = 0; n < 2; n++)
-				{
-					int result = close(myPipes[m][n]);
-					if(result == -1) //error
-					{
-						perror ("Error closing pipe end.");
-						printf ("Error at line %d\n", __LINE__);
-						return;
-					}
-				}
-				wait((int *) 0);
-			}
-		}
-	}
-}
+
 int globerr(const char *path, int eerrno) //error
 {
 	perror ("Error with globbing\n");
@@ -1497,45 +1313,64 @@ void execute()
 			{
 				if(i == 0) //first command
 				{
-					const char* arguments [pipes[0] + 1];
+					char* arguments [pipes[0] + 1];
 					int j = 0;
 					for(j = 0; j < pipes[0]; j++)
 					{
 						arguments[j] = textArray[j]; //copy arguments
 					}
 					arguments[pipes[0]] = (char*)0; //null terminator
-					cmd[0].argv = arguments;
+					cmd[0].argv = malloc(j*sizeof(char*));
+					int k = 0;
+					for(k = 0; k < j; k++){
+						cmd[0].argv[k] = malloc((strlen(arguments[k]) + 1) * sizeof(char));
+						strcpy(cmd[0].argv[k], arguments[k]);
+					}
+					//cmd[0].argv = arguments;
 					//printf("%s\n", cmd[0].argv[0]);
 				}
 				else if(i != (numberOfCommands - 1)) //in the middle
 				{
 					//printf("%d\n", pipes[i] - pipes[i - 1]);
-					const char* arguments[pipes[i] - pipes[i - 1]];
+					char* arguments[pipes[i] - pipes[i - 1]];
 					int j;
 					for(j = 0; j < pipes[i] - pipes[i - 1] - 1; j++)
 					{
 						arguments[j] = textArray[pipes[i - 1] + 1 + j]; //copy arguments
 					}
 					arguments[pipes[i] - pipes[i - 1] - 1] = (char *)0; //null terminator
-					cmd[i].argv = arguments;
+					cmd[i].argv = malloc(j*sizeof(char*));
+					int k = 0;
+					for(k = 0; k < j; k++){
+						cmd[i].argv[k] = malloc((strlen(arguments[k]) + 1) * sizeof(char));
+						strcpy(cmd[i].argv[k], arguments[k]);
+					}
 				}
 				else //at the end
 				{
+					//printf("%s\n", cmd[0].argv[0]);
 					//printf("%d\n", endOfCommand - pipes[i - 1]);
-					const char* arguments[endOfCommand - pipes[i - 1]];
+					char* arguments[endOfCommand - pipes[i - 1]];
 					int j;
 					for(j = 0; j < endOfCommand - pipes[i - 1] - 1; j++)
 					{
 						arguments[j] = textArray[pipes[i - 1] + 1 + j]; //copy arguments
 					}
 					arguments[endOfCommand - pipes[i - 1] - 1] = (char *)0; //null terminator
-					cmd[numberOfCommands - 1].argv = arguments;
+					cmd[numberOfCommands - 1].argv = malloc(j*sizeof(char*));
+					int k = 0;
+					for(k = 0; k < j; k++){
+						cmd[numberOfCommands - 1].argv[k] = malloc((strlen(arguments[k]) + 1) * sizeof(char));
+						strcpy(cmd[numberOfCommands - 1].argv[k], arguments[k]);
+					}
+					//cmd[numberOfCommands - 1].argv = arguments;
+					//printf("%s\n", cmd[0].argv[0]);
 					//printf("%s\n", cmd[numberOfCommands - 1].argv[0]);
-				}
-				memcpy(cmd2, cmd, (i + 1) * sizeof(struct command));				
+					//printf("%s\n", cmd[numberOfCommands - 1].argv[1]);
+				}		
 			}
-			//printf("%s\n", cmd2[1].argv[0]);
-			int result = fork_pipes(numberOfCommands, cmd2);
+			//printTextArray();
+			int result = fork_pipes(numberOfCommands, cmd);
 			if(result == -1) //error
 			{
 				perror("Error executing.");
@@ -1789,7 +1624,7 @@ char *fixText(char *orig, char *rep, char *with) {
 int spawn_proc (int in, int out, struct command *cmd)
 {
   pid_t pid;
-	printf("Here2\n");
+	//printf("Here2\n");
   if ((pid = fork ()) == 0)
     {
       if (in != 0)
@@ -1811,34 +1646,34 @@ int spawn_proc (int in, int out, struct command *cmd)
 }
 int fork_pipes (int n, struct command *cmd)
 {
-  //printf("%s\n", cmd[0].argv[0]);
-  int i;
-  pid_t pid;
-  int in, fd [2];
+	//printf("%s\n", cmd[0].argv[0]);
+	int i;
+	pid_t pid;
+	int in, fd [2];
 
-  /* The first process should get its input from the original file descriptor 0.  */
-  in = 0;
+	/* The first process should get its input from the original file descriptor 0.  */
+	in = 0;
 
-  /* Note the loop bound, we spawn here all, but the last stage of the pipeline.  */
-  for (i = 0; i < n - 1; ++i)
+	/* Note the loop bound, we spawn here all, but the last stage of the pipeline.  */
+	for (i = 0; i < n - 1; ++i)
     {
-	  printf("There\n");
-      pipe (fd);
-      /* f [1] is the write end of the pipe, we carry `in` from the prev iteration.  */
-      spawn_proc (in, fd [1], cmd + i);
+		//printf("There\n");
+		pipe (fd);
+		/* f [1] is the write end of the pipe, we carry `in` from the prev iteration.  */
+		spawn_proc (in, fd [1], cmd + i);
 
-      /* No need for the write and of the pipe, the child will write here.  */
-      close (fd [1]);
+		/* No need for the write and of the pipe, the child will write here.  */
+		close (fd [1]);
 
-      /* Keep the read end of the pipe, the next child will read from there.  */
-      in = fd [0];
+		/* Keep the read end of the pipe, the next child will read from there.  */
+		in = fd [0];
     }
 
-  /* Last stage of the pipeline - set stdin be the read end of the previous pipe
-     and output to the original file descriptor 1. */  
-  if (in != 0)
+    /* Last stage of the pipeline - set stdin be the read end of the previous pipe
+    and output to the original file descriptor 1. */  
+    if (in != 0)
     dup2 (in, 0);
 
-  /* Execute the last stage with the current process. */
-  return execvp (cmd [i].argv [0], (char * const *)cmd [i].argv);
+	 /* Execute the last stage with the current process. */
+	return execvp (cmd [i].argv [0], (char * const *)cmd [i].argv);
 }
