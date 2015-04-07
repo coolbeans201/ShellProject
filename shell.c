@@ -991,6 +991,10 @@ void execute()
 	{
 		perror("Error forking");
 		printf("Error at line %d\n", __LINE__);
+		if(indexOfAmpersand == 0)
+		{
+			wait(int(*) 0);
+		}
 		reset();
 		return;
 	}	
@@ -1011,6 +1015,10 @@ void execute()
 			{
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
+				if(indexOfAmpersand == 0)
+				{
+					wait(int(*) 0);
+				}
 				reset();
 				return;
 			}
@@ -1024,6 +1032,10 @@ void execute()
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
+			if(indexOfAmpersand == 0)
+			{
+				wait(int(*) 0);
+			}
 			reset();
 			return;
 		}
@@ -1047,6 +1059,10 @@ void execute()
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
+					if(indexOfAmpersand == 0)
+					{
+						wait(int(*) 0);
+					}
 					reset();
 					return;
 				}
@@ -1064,6 +1080,10 @@ void execute()
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
+					if(indexOfAmpersand == 0)
+					{
+						wait(int(*) 0);
+					}
 					reset();
 					return;
 				}
@@ -1081,6 +1101,10 @@ void execute()
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			reset();
+			if(indexOfAmpersand == 0)
+			{
+				wait(int(*) 0);
+			}
 			return;
 		}
 		int* globs = malloc(300 * sizeof(int));
@@ -1089,6 +1113,10 @@ void execute()
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			reset();
+			if(indexOfAmpersand == 0)
+			{
+				wait(int(*) 0);
+			}
 			return;
 		}
 		addedWords = 0;
@@ -1109,6 +1137,10 @@ void execute()
 				{
 					perror("Infinite alias expansion.");
 					printf("Error at line %d\n", __LINE__);
+					if(indexOfAmpersand == 0)
+					{
+						wait(int(*) 0);
+					}
 					reset();
 					return;
 				}
@@ -1124,6 +1156,10 @@ void execute()
 				{
 					perror("Infinite alias expansion.");
 					printf("Error at line %d\n", __LINE__);
+					if(indexOfAmpersand == 0)
+					{
+						wait(int(*) 0);
+					}
 					reset();
 					return;
 				}
@@ -1152,6 +1188,10 @@ void execute()
 			{
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
+				if(indexOfAmpersand == 0)
+				{
+					wait(int(*) 0);
+				}
 				reset();
 				return;
 			}
@@ -1160,6 +1200,10 @@ void execute()
 			{
 				perror("No matches, so not executing.");
 				printf("Error at line %d\n", __LINE__);
+				if(indexOfAmpersand == 0)
+				{
+					wait(int(*) 0);
+				}
 				reset();
 				return;
 			}
@@ -1268,6 +1312,10 @@ void execute()
 			{
 				perror("Error executing.");
 				printf("Error at line %d\n", __LINE__);
+				if(indexOfAmpersand == 0)
+				{
+					wait(int(*) 0);
+				}
 				reset();
 				return;
 			}
@@ -1319,6 +1367,10 @@ void execute()
 					{
 						perror("Error with memory allocation.");
 						printf("Error at line %d\n", __LINE__);
+						if(indexOfAmpersand == 0)
+						{
+							wait(int(*) 0);
+						}
 						reset();
 						return;
 					}
@@ -1329,6 +1381,10 @@ void execute()
 						{
 							perror("Error with memory allocation.");
 							printf("Error at line %d\n", __LINE__);
+							if(indexOfAmpersand == 0)
+							{
+								wait(int(*) 0);
+							}
 							reset();
 							return;
 						}
@@ -1350,6 +1406,10 @@ void execute()
 					{
 						perror("Error with memory allocation.");
 						printf("Error at line %d\n", __LINE__);
+						if(indexOfAmpersand == 0)
+						{
+							wait(int(*) 0);
+						}
 						reset();
 						return;
 					}
@@ -1360,6 +1420,10 @@ void execute()
 						{
 							perror("Error with memory allocation.");
 							printf("Error at line %d\n", __LINE__);
+							if(indexOfAmpersand == 0)
+							{
+								wait(int(*) 0);
+							}
 							reset();
 							return;
 						}
@@ -1381,6 +1445,10 @@ void execute()
 					{
 						perror("Error with memory allocation.");
 						printf("Error at line %d\n", __LINE__);
+						if(indexOfAmpersand == 0)
+						{
+							wait(int(*) 0);
+						}
 						reset();
 						return;
 					}
@@ -1391,6 +1459,10 @@ void execute()
 						{
 							perror("Error with memory allocation.");
 							printf("Error at line %d\n", __LINE__);
+							if(indexOfAmpersand == 0)
+							{
+								wait(int(*) 0);
+							}
 							reset();
 							return;
 						}
@@ -1404,6 +1476,10 @@ void execute()
 			{
 				perror("Error executing.");
 				printf("Error at line %d\n", __LINE__);
+				if(indexOfAmpersand == 0)
+				{
+					wait(int(*) 0);
+				}
 				return;
 			}
 		}
