@@ -4,8 +4,7 @@ README
 -------------------
 Features NOT Implemented
 1. File name completion    
-2. Other commands (piping)
-3. Alias commands (more YACC handling)
+2. Alias commands (with pipes)
 
 Features Implemented
 1. Built-in commands
@@ -20,9 +19,7 @@ Features Implemented
 10. Quotes being interpreted as one word
 11. Metacharacters
 12. Shell never crashes
-13. I/O redirection with other commands
-14. External matching for other commands
+13. Other commands
 
 Questions
-1. Metacharacters and \
-2. Connecting pipes together
+1. Performing file name completion
