@@ -20,7 +20,7 @@
   #define TRUE 1
   #define FALSE 0
   void unsetenv_function(char *text, int flag);
-  void unalias_function (char *text);
+  void unalias_function (char *text, int flag);
   void setenv_function (char *text, char *text2, int flag);
   void alias_function(char *text, char *text2);
   void cd_function(void);
@@ -43,7 +43,6 @@
   char* tildeExpansion(char* text);
   char* aliasResolve(char* string);
   char* getAliasValue(char* aliasName);
-  int checkForExecutableOrAlias(char* string);
   void shell_init(void);
   void changeGroupedSpacesIntoOneSpace(char* string);
   void append_function(char* text);
