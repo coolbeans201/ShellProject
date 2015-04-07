@@ -50,6 +50,7 @@
   void execute(void);
   void word3_function(char* text, int position);
   void printTextArray();
+  char *fixText(char *orig, char *rep, char *with);
   void textArrayAliasExpansion(char* text, int position);
   char** textArray; //words
   #endif
