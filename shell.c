@@ -991,10 +991,6 @@ void execute()
 	{
 		perror("Error forking");
 		printf("Error at line %d\n", __LINE__);
-		if(indexOfAmpersand == 0)
-		{
-			wait(int(*) 0);
-		}
 		reset();
 		return;
 	}	
@@ -1015,10 +1011,6 @@ void execute()
 			{
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
-				if(indexOfAmpersand == 0)
-				{
-					wait(int(*) 0);
-				}
 				reset();
 				return;
 			}
@@ -1032,10 +1024,6 @@ void execute()
 		{
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
-			if(indexOfAmpersand == 0)
-			{
-				wait(int(*) 0);
-			}
 			reset();
 			return;
 		}
@@ -1059,10 +1047,6 @@ void execute()
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
-					if(indexOfAmpersand == 0)
-					{
-						wait(int(*) 0);
-					}
 					reset();
 					return;
 				}
@@ -1080,10 +1064,6 @@ void execute()
 				{
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
-					if(indexOfAmpersand == 0)
-					{
-						wait(int(*) 0);
-					}
 					reset();
 					return;
 				}
@@ -1101,10 +1081,6 @@ void execute()
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			reset();
-			if(indexOfAmpersand == 0)
-			{
-				wait(int(*) 0);
-			}
 			return;
 		}
 		int* globs = malloc(300 * sizeof(int));
@@ -1113,10 +1089,6 @@ void execute()
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			reset();
-			if(indexOfAmpersand == 0)
-			{
-				wait(int(*) 0);
-			}
 			return;
 		}
 		addedWords = 0;
@@ -1137,10 +1109,6 @@ void execute()
 				{
 					perror("Infinite alias expansion.");
 					printf("Error at line %d\n", __LINE__);
-					if(indexOfAmpersand == 0)
-					{
-						wait(int(*) 0);
-					}
 					reset();
 					return;
 				}
@@ -1156,10 +1124,6 @@ void execute()
 				{
 					perror("Infinite alias expansion.");
 					printf("Error at line %d\n", __LINE__);
-					if(indexOfAmpersand == 0)
-					{
-						wait(int(*) 0);
-					}
 					reset();
 					return;
 				}
@@ -1188,10 +1152,6 @@ void execute()
 			{
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
-				if(indexOfAmpersand == 0)
-				{
-					wait(int(*) 0);
-				}
 				reset();
 				return;
 			}
@@ -1200,10 +1160,6 @@ void execute()
 			{
 				perror("No matches, so not executing.");
 				printf("Error at line %d\n", __LINE__);
-				if(indexOfAmpersand == 0)
-				{
-					wait(int(*) 0);
-				}
 				reset();
 				return;
 			}
@@ -1312,10 +1268,6 @@ void execute()
 			{
 				perror("Error executing.");
 				printf("Error at line %d\n", __LINE__);
-				if(indexOfAmpersand == 0)
-				{
-					wait(int(*) 0);
-				}
 				reset();
 				return;
 			}
@@ -1367,10 +1319,6 @@ void execute()
 					{
 						perror("Error with memory allocation.");
 						printf("Error at line %d\n", __LINE__);
-						if(indexOfAmpersand == 0)
-						{
-							wait(int(*) 0);
-						}
 						reset();
 						return;
 					}
@@ -1381,10 +1329,6 @@ void execute()
 						{
 							perror("Error with memory allocation.");
 							printf("Error at line %d\n", __LINE__);
-							if(indexOfAmpersand == 0)
-							{
-								wait(int(*) 0);
-							}
 							reset();
 							return;
 						}
@@ -1406,10 +1350,6 @@ void execute()
 					{
 						perror("Error with memory allocation.");
 						printf("Error at line %d\n", __LINE__);
-						if(indexOfAmpersand == 0)
-						{
-							wait(int(*) 0);
-						}
 						reset();
 						return;
 					}
@@ -1420,10 +1360,6 @@ void execute()
 						{
 							perror("Error with memory allocation.");
 							printf("Error at line %d\n", __LINE__);
-							if(indexOfAmpersand == 0)
-							{
-								wait(int(*) 0);
-							}
 							reset();
 							return;
 						}
@@ -1445,10 +1381,6 @@ void execute()
 					{
 						perror("Error with memory allocation.");
 						printf("Error at line %d\n", __LINE__);
-						if(indexOfAmpersand == 0)
-						{
-							wait(int(*) 0);
-						}
 						reset();
 						return;
 					}
@@ -1459,10 +1391,6 @@ void execute()
 						{
 							perror("Error with memory allocation.");
 							printf("Error at line %d\n", __LINE__);
-							if(indexOfAmpersand == 0)
-							{
-								wait(int(*) 0);
-							}
 							reset();
 							return;
 						}
@@ -1476,10 +1404,6 @@ void execute()
 			{
 				perror("Error executing.");
 				printf("Error at line %d\n", __LINE__);
-				if(indexOfAmpersand == 0)
-				{
-					wait(int(*) 0);
-				}
 				return;
 			}
 		}
@@ -1689,32 +1613,37 @@ char *fixText(char *orig, char *rep, char *with) {
     int len_with; // length of with
     int len_front; // distance between rep and end of last rep
     int count;    // number of replacements
-
     if (!orig)
+	{
         return NULL;
+	}
     if (!rep)
+	{
         rep = "";
+	}
     len_rep = strlen(rep);
     if (!with)
+	{
         with = "";
+	}
     len_with = strlen(with);
-
     ins = orig;
-    for (count = 0; tmp = strstr(ins, rep); ++count) {
+    for (count = 0; tmp = strstr(ins, rep); ++count) 
+	{
         ins = tmp + len_rep;
     }
-
     // first time through the loop, all the variable are set correctly
     // from here on,
-    //    tmp points to the end of the result string
-    //    ins points to the next occurrence of rep in orig
-    //    orig points to the remainder of orig after "end of rep"
+    // tmp points to the end of the result string
+    // ins points to the next occurrence of rep in orig
+    // orig points to the remainder of orig after "end of rep"
     tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
-
     if (!result)
+	{
         return NULL;
-
-    while (count--) {
+	}
+    while (count--) 
+	{
         ins = strstr(orig, rep);
         len_front = ins - orig;
         tmp = strncpy(tmp, orig, len_front) + len_front;
@@ -1727,20 +1656,18 @@ char *fixText(char *orig, char *rep, char *with) {
 int spawn_proc (int in, int out, struct command *cmd)
 {
 	pid_t pid;
-	if ((pid = fork ()) == 0)
+	if ((pid = fork ()) == 0) //in parent
     {
       if (in != 0)
-        {
-          dup2 (in, 0);
-          close (in);
-        }
-
+      {
+        dup2 (in, 0);
+        close (in);
+      }
       if (out != 1)
-        {
-          dup2 (out, 1);
-          close (out);
-        }
-
+      {
+        dup2 (out, 1);
+        close (out);
+      }
       return execvp (cmd->argv [0], (char * const *)cmd->argv);
     }
 	return pid;
@@ -1754,27 +1681,23 @@ int fork_pipes (int n, struct command *cmd)
 	/* The first process should get its input from the original file descriptor 0.  */
 	in = 0;
 
-	/* Note the loop bound, we spawn here all, but the last stage of the pipeline.  */
+	/* All but the last part of the pipeline.  */
 	for (i = 0; i < n - 1; ++i)
     {
-		//printf("There\n");
 		pipe (fd);
-		/* f [1] is the write end of the pipe, we carry `in` from the prev iteration.  */
-		spawn_proc (in, fd [1], cmd + i);
-
-		/* No need for the write and of the pipe, the child will write here.  */
+		spawn_proc (in, fd [1], cmd + i); //take in read end of previous iteration, goes to write end of next iteration
+		/* Close redundant output.  */
 		close (fd [1]);
-
-		/* Keep the read end of the pipe, the next child will read from there.  */
+		/* Need this for next iteration.  */
 		in = fd [0];
     }
 
     /* Last stage of the pipeline - set stdin be the read end of the previous pipe
     and output to the original file descriptor 1. */  
     if (in != 0)
-    dup2 (in, 0);
-
+	{
+		dup2 (in, 0);
+	}
 	/* Execute the last stage with the current process. */
-	
 	return execvp (cmd [i].argv [0], (char * const *)cmd [i].argv);
 }
