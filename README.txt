@@ -4,7 +4,6 @@ README
 -------------------
 Features NOT Implemented
 1. File name completion    
-2. Alias commands (with pipes)
 
 Features Implemented
 1. Built-in commands
@@ -20,6 +19,12 @@ Features Implemented
 11. Metacharacters
 12. Shell never crashes
 13. Other commands
+14. External matching
+15. I/O redirection
+16. Pipinh
+17. Alias commands
+18. Escape characters
 
 Questions
 1. Performing file name completion
+2. Globbing on Thunder
