@@ -992,6 +992,7 @@ void execute()
 		perror("Error forking");
 		printf("Error at line %d\n", __LINE__);
 		reset();
+		exit(0);
 		return;
 	}	
 	if(child != 0) //in parent
@@ -1012,6 +1013,7 @@ void execute()
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
 				reset();
+				exit(0);
 				return;
 			}
 			strcpy(result, fixText(textArray[1], "\\\\", "\\"));
@@ -1025,6 +1027,7 @@ void execute()
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			reset();
+			exit(0);
 			return;
 		}
 		for(i = 0; i < words; i++)
@@ -1048,6 +1051,7 @@ void execute()
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
 					reset();
+					exit(0);
 					return;
 				}
 				strcpy(theVariable, *ep); //copy environment variable
@@ -1065,6 +1069,7 @@ void execute()
 					perror("Error with memory allocation.");
 					printf("Error at line %d\n", __LINE__);
 					reset();
+					exit(0);
 					return;
 				}
 				strcpy(result, &theVariable[index + 1]); //take everything after =
@@ -1081,6 +1086,7 @@ void execute()
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			reset();
+			exit(0);
 			return;
 		}
 		int* globs = malloc(300 * sizeof(int));
@@ -1089,6 +1095,7 @@ void execute()
 			perror("Error with memory allocation.");
 			printf("Error at line %d\n", __LINE__);
 			reset();
+			exit(0);
 			return;
 		}
 		addedWords = 0;
@@ -1110,6 +1117,7 @@ void execute()
 					perror("Infinite alias expansion.");
 					printf("Error at line %d\n", __LINE__);
 					reset();
+					exit(0);
 					return;
 				}
 				else if(strcmp(aliasResolve(textArray[i]), "") != 0) //alias has a value
@@ -1125,6 +1133,7 @@ void execute()
 					perror("Infinite alias expansion.");
 					printf("Error at line %d\n", __LINE__);
 					reset();
+					exit(0);
 					return;
 				}
 				else if(strcmp(aliasResolve(textArray[pipes[i - 1] + 1 + addedWords]), "") != 0) //alias has a value
@@ -1153,6 +1162,7 @@ void execute()
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
 				reset();
+				exit(0);
 				return;
 			}
 			strcpy(result, getDirectories(textArray[globs[i] + addedWords]));
@@ -1161,6 +1171,7 @@ void execute()
 				perror("No matches, so not executing.");
 				printf("Error at line %d\n", __LINE__);
 				reset();
+				exit(0);
 				return;
 			}
 			word3_function(result, globs[i] + addedWords);
@@ -1254,6 +1265,7 @@ void execute()
 				perror("Error with memory allocation.");
 				printf("Error at line %d\n", __LINE__);
 				reset();
+				exit(0);
 				return;
 			}
 			char* arguments[endOfCommand + 1];
@@ -1269,6 +1281,7 @@ void execute()
 				perror("Error executing.");
 				printf("Error at line %d\n", __LINE__);
 				reset();
+				exit(0);
 				return;
 			}
 		}
@@ -1320,6 +1333,7 @@ void execute()
 						perror("Error with memory allocation.");
 						printf("Error at line %d\n", __LINE__);
 						reset();
+						exit(0);
 						return;
 					}
 					int k = 0;
@@ -1330,6 +1344,7 @@ void execute()
 							perror("Error with memory allocation.");
 							printf("Error at line %d\n", __LINE__);
 							reset();
+							exit(0);
 							return;
 						}
 						strcpy(cmd[0].argv[k], arguments[k]);
@@ -1351,6 +1366,7 @@ void execute()
 						perror("Error with memory allocation.");
 						printf("Error at line %d\n", __LINE__);
 						reset();
+						exit(0);
 						return;
 					}
 					int k = 0;
@@ -1361,6 +1377,7 @@ void execute()
 							perror("Error with memory allocation.");
 							printf("Error at line %d\n", __LINE__);
 							reset();
+							exit(0);
 							return;
 						}
 						strcpy(cmd[i].argv[k], arguments[k]);
@@ -1382,6 +1399,7 @@ void execute()
 						perror("Error with memory allocation.");
 						printf("Error at line %d\n", __LINE__);
 						reset();
+						exit(0);
 						return;
 					}
 					int k = 0;
@@ -1392,6 +1410,7 @@ void execute()
 							perror("Error with memory allocation.");
 							printf("Error at line %d\n", __LINE__);
 							reset();
+							exit(0);
 							return;
 						}
 						strcpy(cmd[numberOfCommands - 1].argv[k], arguments[k]);
@@ -1404,9 +1423,12 @@ void execute()
 			{
 				perror("Error executing.");
 				printf("Error at line %d\n", __LINE__);
+				reset();
+				exit(0);
 				return;
 			}
 		}
+		exit(0);
 	}
 }
 void word3_function(char* text, int position)
@@ -1653,22 +1675,22 @@ char *fixText(char *orig, char *rep, char *with) {
     strcpy(tmp, orig);
     return result;
 }
-int spawn_proc (int in, int out, struct command *cmd)
+int spawn_proc (int inChannel, int outChannel, struct command *cmd)
 {
 	pid_t pid;
 	if ((pid = fork ()) == 0) //in parent
     {
-      if (in != 0)
-      {
-        dup2 (in, 0);
-        close (in);
-      }
-      if (out != 1)
-      {
-        dup2 (out, 1);
-        close (out);
-      }
-      return execvp (cmd->argv [0], (char * const *)cmd->argv);
+    	if (inChannel != 0)
+    	{
+			dup2 (inChannel, 0);
+			close (inChannel);
+		}
+		if (outChannel != 1)
+		{
+			dup2 (outChannel, 1);
+			close (outChannel);
+		}
+	return execvp (cmd->argv [0], (char * const *)cmd->argv);
     }
 	return pid;
 }
@@ -1676,27 +1698,27 @@ int fork_pipes (int n, struct command *cmd)
 {
 	int i;
 	pid_t pid;
-	int in, fd [2];
+	int inChannel, fd [2];
 
 	/* The first process should get its input from the original file descriptor 0.  */
-	in = 0;
+	inChannel = 0;
 
 	/* All but the last part of the pipeline.  */
 	for (i = 0; i < n - 1; ++i)
     {
 		pipe (fd);
-		spawn_proc (in, fd [1], cmd + i); //take in read end of previous iteration, goes to write end of next iteration
+		spawn_proc (inChannel, fd [1], cmd + i); //take in read end of previous iteration, goes to write end of next iteration
 		/* Close redundant output.  */
 		close (fd [1]);
 		/* Need this for next iteration.  */
-		in = fd [0];
+		inChannel = fd [0];
     }
 
     /* Last stage of the pipeline - set stdin be the read end of the previous pipe
     and output to the original file descriptor 1. */  
-    if (in != 0)
+    if (inChannel != 0)
 	{
-		dup2 (in, 0);
+		dup2 (inChannel, 0);
 	}
 	/* Execute the last stage with the current process. */
 	return execvp (cmd [i].argv [0], (char * const *)cmd [i].argv);
