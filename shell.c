@@ -411,7 +411,7 @@ void cd_function2(char *text)
 	}
 	reset();
 }
-void standard_error_redirect_function()
+int standard_error_redirect_function()
 {
 	savedError = dup(2); //get current standard error
 	int result = dup2(1, 2); //redirect output to standard error
@@ -419,17 +419,18 @@ void standard_error_redirect_function()
 	{
 		perror("Standard error not redirected to output");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return -1;
 	}
+	return 0;
 }
-void standard_error_redirect_function2(char *text)
+int standard_error_redirect_function2(char *text)
 {
 	char* text2 = malloc(300 * sizeof(char));
 	if (text2 == (char *)NULL) //error
 	{
 		perror("Error with memory allocation.");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return -1;
 	}
 	strcpy(text2, &text[2]); //get everything after >
 	int out = open(text2, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
@@ -437,7 +438,7 @@ void standard_error_redirect_function2(char *text)
 	{
 		perror("File not created");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return -1;
 	}
 	savedError = dup(2); //get current standard error
 	int result = dup2(out, 2); //redirect standard error to output file
@@ -445,17 +446,18 @@ void standard_error_redirect_function2(char *text)
 	{
 		perror("Standard error not redirected");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return -1;
 	}
+	return 0;
 }
-void write_to_function(char *text)
+int write_to_function(char *text)
 {
 	int out = open(text, O_WRONLY | O_CREAT | O_TRUNC | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
 	if(out == -1) //error
 	{
 		perror("File not created");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return -1;
 	}
 	savedOutput = dup(1); //get current output
 	int result = dup2(out, 1); //redirect output to file
@@ -463,17 +465,18 @@ void write_to_function(char *text)
 	{
 		perror("Output not redirected");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return -1;
 	}
+	return 0;
 }
-void read_from_function (char *text)
+int read_from_function (char *text)
 {
 	int in = open(text, O_RDONLY); //open file
 	if(in == -1) //error
 	{
 		perror("File not opened");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return -1;
 	}
 	savedInput = dup(0); //get current input
 	int result = dup2(in, 0); //redirect input from file
@@ -481,8 +484,9 @@ void read_from_function (char *text)
 	{
 		perror("Input not redirected");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return -1;
 	}
+	return 0;
 }
 void word_function(char *text)
 {
@@ -927,14 +931,14 @@ void changeGroupedSpacesIntoOneSpace(char* string)
 		}
 	}
 }
-void append_function(char* text)
+int append_function(char* text)
 {
 	int out = open(text, O_RDWR | O_APPEND | S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR); //open file
 	if(out == -1) //error
 	{
 		perror("File not created");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return -1;
 	}
 	savedOutput = dup(1); //save current output
 	int result = dup2(out, 1); //redirect output to file
@@ -942,8 +946,9 @@ void append_function(char* text)
 	{
 		perror("Output not redirected");
 		printf("Error at line %d\n", __LINE__);
-		return;
+		return -1;
 	}
+	return 0;
 }
 void reset()
 {
@@ -1211,23 +1216,53 @@ void execute()
 		}
 		if(indexOfRead != 0) //there's a read present
 		{
-			read_from_function(textArray[indexOfRead + 1]); 
+			int result = read_from_function(textArray[indexOfRead + 1]); 
+			if(result == -1)
+			{
+				reset();
+				exit(0);
+				return;
+			}
 		}
 		if(indexOfWrite != 0) //there's a write to present
 		{
-			write_to_function(textArray[indexOfWrite + 1]);
+			int result = write_to_function(textArray[indexOfWrite + 1]);
+			if(result == -1)
+			{
+				reset();
+				exit(0);
+				return;
+			}
 		}
 		if (indexOfAppend != 0) //there's an append present
 		{
-			append_function(textArray[indexOfAppend + 1]);
+			int result = append_function(textArray[indexOfAppend + 1]);
+			if(result == -1)
+			{
+				reset();
+				exit(0);
+				return;
+			}
 		}
 		if(indexOfStandardError2 != 0) //second standard error case present
 		{
-			standard_error_redirect_function();
+			int result = standard_error_redirect_function();
+			if(result == -1)
+			{
+				reset();
+				exit(0);
+				return;
+			}
 		}
 		if(indexOfStandardError1 != 0) //first standard error case present
 		{
-			standard_error_redirect_function2(textArray[indexOfStandardError2]);
+			int result = standard_error_redirect_function2(textArray[indexOfStandardError2]);
+			if(result == -1)
+			{
+				reset();
+				exit(0);
+				return;
+			}
 		}
 		if(numberOfPipes == 0) //no pipes, just this command
 		{
