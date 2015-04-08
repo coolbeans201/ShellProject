@@ -30,10 +30,10 @@
   void cd_function(void);
   void printenv_function(void);
   void cd_function2(char *text);
-  void standard_error_redirect_function ();
-  void standard_error_redirect_function2 (char *text);
-  void write_to_function (char *text);
-  void read_from_function (char *text);
+  int standard_error_redirect_function ();
+  int standard_error_redirect_function2 (char *text);
+  int write_to_function (char *text);
+  int read_from_function (char *text);
   void word_function (char *text);
   void alias_function2(void);
   int getWords(void);
@@ -48,7 +48,7 @@
   char* getAliasValue(char* aliasName);
   void shell_init(void);
   void changeGroupedSpacesIntoOneSpace(char* string);
-  void append_function(char* text);
+  int append_function(char* text);
   void reset(void);
   void execute(void);
   void word3_function(char* text, int position);
