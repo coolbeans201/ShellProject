@@ -31,7 +31,6 @@ command:
 		|alias_case
 		|unalias_case
 		|bye_case
-		|slash_case
 		|read_from_case
 		|write_to_case
 		|pipe_case
@@ -91,10 +90,6 @@ bye_case:
 		BYE				   
 							{ 
 								exit(0); //exit shell
-							};
-slash_case:
-		SLASH				
-							{
 							};
 read_from_case2:
 		READFROM
