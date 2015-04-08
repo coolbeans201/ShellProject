@@ -1152,7 +1152,7 @@ void execute()
 		addedWords = 0;
 		for(i = 0; i < words; i++)
 		{
-			if(strncmp(textArray[i], "*", 1) == 0 || strncmp(textArray[i], "?", 1) == 0) //begins with an * or ?
+			if(strchr(textArray[i], '*') != NULL || strchr(textArray[i], '?') != NULL) //contains a * or ?
 			{
 				globs[numberOfGlobs] = i;
 				numberOfGlobs++;
