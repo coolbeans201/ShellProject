@@ -1161,7 +1161,8 @@ void execute()
 		char* saved3;
 		for(i = 0; i < numberOfGlobs; i++)//takes care of globbing
 		{
-			char* result = malloc((strlen(getDirectories(textArray[globs[i] + addedWords])) + 1) * sizeof(char));
+			printf(" ");
+			char* result = malloc((strlen(getDirectories(textArray[globs[i] + addedWords])) + 1)* sizeof(char));
 			if(result == (char*) NULL) //error
 			{
 				perror("Error with memory allocation.");
