@@ -14,7 +14,7 @@ int savedError; //error channel
 int addedWords = 0;
 void shell_init()
 {
-	myPath = malloc(500 * sizeof(char));
+	myPath = malloc((strlen(getenv("PATH")) + 1) * sizeof(char));
 	if(myPath == (char *) NULL) //error
 	{
 		perror("Error with memory allocation.");
@@ -22,7 +22,7 @@ void shell_init()
 		return;
 	}
 	strcpy(myPath, getenv("PATH")); //get path directory so it stays constant
-	myHome = malloc(500 * sizeof(char));
+	myHome = malloc((strlen(getenv("HOME")) + 1) * sizeof(char));
 	if(myHome == (char *) NULL) //error
 	{
 		perror("Error with 																																																														memory allocation.");
@@ -625,7 +625,7 @@ void changeGroupedSlashesIntoOneSlash(char* string)
 char* aliasResolve(char* alias)
 {//takes in name of alias and returns the final resolved value of that alias name or <LOOP> if it loops infinitely,
 	//if string passed in argument is not an alias then it returns empty string
-	char* name = malloc(500*sizeof(char)); //declares name and value strings used to resolve
+	char* name = malloc((strlen(alias) + 1) *sizeof(char)); //declares name and value strings used to resolve
 	char* value = malloc(500*sizeof(char));
 	char* nameTracker[100]; //keeps track of alias names already encountered in order to detect infinite loops
 	int trackSize = 0; //keeps track of size of names in the tracker
@@ -689,7 +689,7 @@ char* getAliasValue(char* aliasName)
 void quoteFunction(char* text)
 {
 	changeGroupedSpacesIntoOneSpace(text);
-	char* actualText = malloc(300 * sizeof(char));
+	char* actualText = malloc((strlen(text) - 1) * sizeof(char));
 	if(actualText == (char*) NULL) //error
 	{
 		perror ("Error with memory allocation.");
@@ -1128,6 +1128,14 @@ void execute()
 				else if(strcmp(aliasResolve(textArray[i]), "") != 0) //alias has a value
 				{	
 					char* resolved = malloc((strlen(aliasResolve(textArray[i])) + 1) * sizeof(char));
+					if(resolved == (char*)NULL) //error
+					{
+						perror("Error with memory allocation.");
+						printf("Error at line %d\n", __LINE__);
+						reset();
+						exit(0);
+						return;
+					}
 					strcpy(resolved,aliasResolve(textArray[i]));
 					textArray[i] = resolved;
 					textArrayAliasExpansion(textArray[i], i + addedWords);
@@ -1146,6 +1154,14 @@ void execute()
 				else if(strcmp(aliasResolve(textArray[pipes[i - 1] + 1 + addedWords]), "") != 0) //alias has a value
 				{
 					char* resolved = malloc((strlen(aliasResolve(textArray[pipes[i - 1] + 1 + addedWords]) + 1) * sizeof(char)));
+					if(resolved == (char*)NULL) //error
+					{
+						perror("Error with memory allocation.");
+						printf("Error at line %d\n", __LINE__);
+						reset();
+						exit(0);
+						return;
+					}
 					strcpy(resolved,aliasResolve(textArray[pipes[i - 1] + 1 + addedWords]));
 					textArray[pipes[i - 1] + 1 + addedWords] = resolved;
 					textArrayAliasExpansion(textArray[pipes[i - 1] + 1 + addedWords], pipes[i - 1] + 1 + addedWords);
