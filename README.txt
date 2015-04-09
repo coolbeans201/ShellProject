@@ -27,4 +27,3 @@ Features Implemented
 
 Questions
 1. Performing file name completion
-2. Globbing on Thunder
