@@ -1740,9 +1740,6 @@ int spawn_proc (int inChannel, int outChannel, struct command *cmd)
 }
 int fork_pipes (int n, struct command *cmd)
 {
-	//printf("%s\n", cmd[0].argv[0]);
-	//printf("%s\n", cmd[1].argv[0]);
-	//printf("%s\n", cmd[1].argv[1]);
 	int i;
 	pid_t pid;
 	int inChannel, fd [2];
