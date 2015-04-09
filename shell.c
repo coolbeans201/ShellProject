@@ -625,14 +625,14 @@ void changeGroupedSlashesIntoOneSlash(char* string)
 char* aliasResolve(char* alias)
 {//takes in name of alias and returns the final resolved value of that alias name or <LOOP> if it loops infinitely,
 	//if string passed in argument is not an alias then it returns empty string
-	char* name = malloc(300*sizeof(char)); //declares name and value strings used to resolve
-	char* value;
+	char* name = malloc(500*sizeof(char)); //declares name and value strings used to resolve
+	char* value = malloc(500*sizeof(char));
 	char* nameTracker[100]; //keeps track of alias names already encountered in order to detect infinite loops
 	int trackSize = 0; //keeps track of size of names in the tracker
 	strcpy(name, alias); //copies initial name into name string
 	nameTracker[trackSize] = name;
 	trackSize++;
-	value = getAliasValue(name);//gets initial value
+	strcpy(value,getAliasValue(name));//gets initial value
 	if(strcmp(value, "") == 0)
 	{//if initial alias name does not resolve to anything(resolves to empty string), return empty string
 		return value;
@@ -1127,7 +1127,9 @@ void execute()
 				}
 				else if(strcmp(aliasResolve(textArray[i]), "") != 0) //alias has a value
 				{	
-					strcpy(textArray[i], aliasResolve(textArray[i]));
+					char* resolved = malloc((strlen(aliasResolve(textArray[i])) + 1) * sizeof(char));
+					strcpy(resolved,aliasResolve(textArray[i]));
+					textArray[i] = resolved;
 					textArrayAliasExpansion(textArray[i], i + addedWords);
 				}
 			}
@@ -1143,7 +1145,9 @@ void execute()
 				}
 				else if(strcmp(aliasResolve(textArray[pipes[i - 1] + 1 + addedWords]), "") != 0) //alias has a value
 				{
-					strcpy(textArray[pipes[i - 1] + 1 + addedWords], aliasResolve(textArray[pipes[i - 1] + addedWords + 1]));
+					char* resolved = malloc((strlen(aliasResolve(textArray[pipes[i - 1] + 1 + addedWords]) + 1) * sizeof(char)));
+					strcpy(resolved,aliasResolve(textArray[pipes[i - 1] + 1 + addedWords]));
+					textArray[pipes[i - 1] + 1 + addedWords] = resolved;
 					textArrayAliasExpansion(textArray[pipes[i - 1] + 1 + addedWords], pipes[i - 1] + 1 + addedWords);
 				}
 			}
@@ -1268,6 +1272,7 @@ void execute()
 				return;
 			}
 		}
+		numberOfCommands = numberOfPipes + 1;
 		if(numberOfPipes == 0) //no pipes, just this command
 		{
 			if(indexOfRead != 0) //take everything up until this 
@@ -1735,6 +1740,9 @@ int spawn_proc (int inChannel, int outChannel, struct command *cmd)
 }
 int fork_pipes (int n, struct command *cmd)
 {
+	//printf("%s\n", cmd[0].argv[0]);
+	//printf("%s\n", cmd[1].argv[0]);
+	//printf("%s\n", cmd[1].argv[1]);
 	int i;
 	pid_t pid;
 	int inChannel, fd [2];
