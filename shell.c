@@ -1021,9 +1021,11 @@ void execute()
 				exit(0);
 				return;
 			}
-			strcpy(result, fixText(textArray[1], "\\\\", "\\"));
+			strcpy(result, fixText(textArray[1], "\\\\", "\\")); //fix slashes
 			strcpy(textArray[1], result);
-			strcpy(result, fixText(textArray[1], "\\\"", "\""));
+			strcpy(result, fixText(textArray[1], "\\\"", "\"")); //fit double quotes
+			strcpy(textArray[1], result);
+			strcpy(result, fixText(textArray[1], "\\\'", "\'")); //fix single quotes
 			strcpy(textArray[1], result);
 		}
 		int* spaces = malloc(300 * sizeof(int));
