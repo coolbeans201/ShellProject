@@ -24,6 +24,3 @@ Features Implemented
 16. Pipinh
 17. Alias commands
 18. Escape characters
-
-Questions
-1. Performing file name completion
