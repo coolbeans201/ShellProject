@@ -13,14 +13,16 @@ Features Implemented
 5. Error messages 
 6. Re-parsing with PATH
 7. Explicit matching for built-in commands
-8. Piping base case
-9. Infinite alias expansion detection
-10. Quotes being interpreted as one word
-11. Metacharacters
-12. Shell never crashes
-13. Other commands
-14. External matching
-15. I/O redirection
-16. Pipinh
-17. Alias commands
-18. Escape characters
+8. Infinite alias expansion detection
+9. Quotes being interpreted as one word
+10. Metacharacters
+11. Shell never crashes
+12. Other commands
+13. External matching
+14. I/O redirection
+15. Piping
+16. Alias commands
+17. Escape characters
+
+To Run
+Compile using make and then run using ./shell. To run with a file input, do ./shell < myFile.
