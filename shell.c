@@ -30,9 +30,61 @@ void shell_init()
 		return;
 	}
 	strcpy(myHome, getenv("HOME")); //get home directory so that it stays constant
-	signal(SIGINT, SIG_IGN); //prevent crash from ctrl-c
-	signal(SIGTSTP, SIG_IGN); //prevent crash from ctrl-z
-	signal(SIGQUIT, SIG_IGN); //prevent crash from ctrl-/
+	signal(SIGHUP, SIG_IGN); //1
+	signal(SIGINT, SIG_IGN); //2
+	signal(SIGQUIT, SIG_IGN); //3
+	signal(SIGILL, SIG_IGN); //4
+	signal(SIGTRAP, SIG_IGN); //5
+	signal(SIGABRT, SIG_IGN); //6
+	signal(SIGBUS, SIG_IGN); //7
+	signal(SIGFPE, SIG_IGN); //8
+	signal(SIGKILL, SIG_IGN); //9
+	signal(SIGUSR1, SIG_IGN); //10
+	signal(SIGSEGV, SIG_IGN); //11
+	signal(SIGUSR2, SIG_IGN); //12
+	signal(SIGPIPE, SIG_IGN); //13
+	signal(SIGALRM, SIG_IGN); //14
+	signal(SIGTERM, SIG_IGN); //15
+	signal(SIGCHLD, SIG_IGN); //17
+	signal(SIGCONT, SIG_IGN); //18
+	signal(SIGSTOP, SIG_IGN); //19
+	signal(SIGTSTP, SIG_IGN); //20
+	signal(SIGTTIN, SIG_IGN); //21
+	signal(SIGTTOU, SIG_IGN); //22
+	signal(SIGURG, SIG_IGN); //23
+	signal(SIGXCPU, SIG_IGN); //24
+	signal(SIGXFSZ, SIG_IGN); //25
+	signal(SIGVTALRM, SIG_IGN); //26
+	signal(SIGPROF, SIG_IGN); //27
+	signal(SIGWINCH, SIG_IGN); //28
+	signal(SIGIO, SIG_IGN); //29
+	signal(SIGPWR, SIG_IGN); //30
+	signal(SIGSYS, SIG_IGN); //31
+	int i;
+	for(i = 0; i <= 15; i++)
+	{
+		signal(SIGRTMIN + i, SIG_IGN);
+	}
+	for(i = 0; i <= 14; i++)
+	{
+		signal(SIGRTMAX - i, SIG_IGN);
+	}
+	/*1) SIGHUP 2) SIGINT 3) SIGQUIT 4) SIGILL
+	5) SIGTRAP 6) SIGABRT 7) SIGBUS 8) SIGFPE
+	9) SIGKILL 10) SIGUSR1 11) SIGSEGV 12) SIGUSR2
+	13) SIGPIPE 14) SIGALRM 15) SIGTERM 17) SIGCHLD
+	18) SIGCONT 19) SIGSTOP 20) SIGTSTP 21) SIGTTIN
+	22) SIGTTOU 23) SIGURG 24) SIGXCPU 25) SIGXFSZ
+	26) SIGVTALRM 27) SIGPROF 28) SIGWINCH 29) SIGIO
+	30) SIGPWR 31) SIGSYS 34) SIGRTMIN 35) SIGRTMIN+1
+	36) SIGRTMIN+2 37) SIGRTMIN+3 38) SIGRTMIN+4 39) SIGRTMIN+5
+	40) SIGRTMIN+6 41) SIGRTMIN+7 42) SIGRTMIN+8 43) SIGRTMIN+9
+	44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12 47) SIGRTMIN+13
+	48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14 51) SIGRTMAX-13
+	52) SIGRTMAX-12 53) SIGRTMAX-11 54) SIGRTMAX-10 55) SIGRTMAX-9
+	56) SIGRTMAX-8 57) SIGRTMAX-7 58) SIGRTMAX-6 59) SIGRTMAX-5
+	60) SIGRTMAX-4 61) SIGRTMAX-3 62) SIGRTMAX-2 63) SIGRTMAX-1
+	64) SIGRTMAX*/
 }
 void unsetenv_function(char *text, int flag)
 {
@@ -952,27 +1004,6 @@ int append_function(char* text)
 }
 void reset()
 {
-	int result = dup2(savedInput, 0);
-	if(result == -1) //error
-	{
-		perror("Input not redirected");
-		printf("Error at line %d\n", __LINE__);
-		return;
-	}
-	result = dup2(savedOutput, 1);
-	if(result == -1) //error
-	{
-		perror("Output not redirected");
-		printf("Error at line %d\n", __LINE__);
-		return;
-	}
-	result = dup2(savedError, 2);
-	if(result == -1) //error
-	{
-		perror("Error not redirected");
-		printf("Error at line %d\n", __LINE__);
-		return;
-	}
 	words = 0;
 	addedWords = 0;
 	memset(textArray, 0, sizeof(textArray)); //clear contents
