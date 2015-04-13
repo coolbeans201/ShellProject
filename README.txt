@@ -26,3 +26,6 @@ Features Implemented
 
 To Run
 Compile using make and then run using ./shell. To run with a file input, do ./shell < myFile.
+
+Note
+Globbing sometimes does not work on Thunder but works all the time on other Linux platforms.
